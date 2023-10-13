@@ -1,15 +1,15 @@
-# labbuilder2
+# rhis-builder
 Be sure to check out the [Wiki](https://github.com/parmstro/labbuilder2/wiki)
 
-Welcome to version2 of lab builder. We have changed the project to focus on building virtual environments instead of physical environments. In its current iteration, labbuilder2 requires a VMware environment to start off. If you want to build some physical systems in place of the IdM and Satellite nodes, that shouldn't be a problem, however, it is left as an exercise for the user.
+Welcome to rhis-builder. We currently build on VMware and aws, you can swag a deployment on metal with some tweaking, but that is currently an exercise for the user. 
 
-## Lab builder goals
+## rhis-builder goals
 
-The goal of this project is to build a Red Hat based lab environment suitable for demostrating the a Red Hat infrastructure that implements several  Standard Operating Environments for Red Hat Enterprise Linux. There will be more documentation and presentation material made available later, but for now, please check out the [Wiki](https://github.com/parmstro/labbuilder2/wiki)
+The goal of this project is to build a Red Hat based environment suitable for demostrating the a Red Hat infrastructure that implements several Standard Operating Environments for Red Hat Enterprise Linux (Red Hat Infrastructure Standard Adoption Model). There will be more documentation and presentation material made available later, but for now, please check out the [Wiki](https://github.com/parmstro/labbuilder2/wiki)
 
-When completed Lab builder should be able to deploy all parts of the standard infrastructure on any hypervisor or cloud (or combinations thereof). The basic deployment builds a lab on VMware, sets up the the hosting VMware cluster as a compute resource in Satellite and deploys the rest of the hosts on that cluster. The build is controlled by a provisioning node (usually your laptop) that kicks off the main ansible playbook, site.yml.
+The rhis-builder project deploys all parts of the standard infrastructure on a hypervisor or cloud (or combinations thereof). The basic deployment builds 2 nodes on VMware or AWS, IdM and Satellite; sets up the compute resources in Satellite and deploys the rest of the hosts on that cluster. The build is controlled by a provisioning node (usually your laptop) that kicks off the main ansible playbook, site.yml.
 
-The lab build includes:
+The build includes:
   - creating and downloading a base image from Red Hat image builder on console.redhat.com
   - Red Hat Identity Management primary server with "POC" users, groups, HBAC and sudo, etc..
   - Red Hat Satellite with all the bells and whistles turned on
@@ -17,9 +17,9 @@ The lab build includes:
   - Red Hat Ansible Automation Hub
   - 2 x Container hosts that run tang servers in containers to manage NBDE for some of the sample hostgroups
   
-## Lab builder non-goals
+## rhis-builder non-goals
 
-It is not currently a goal of lab builder to create a production environment, although it could do that for small environments. The flexibility to build a completely custom production environment is not there yet.
+It is not currently a goal of rhis-builder to create a production environment, although it could do that for small environments. The flexibility to build a completely custom production environment is not there yet.
 
 
 ## High Level Flow
@@ -32,7 +32,7 @@ It is not currently a goal of lab builder to create a production environment, al
 
 ## Preparation
 
-We can break lab builder flow into a number of phases. 
+We can break rhis-builder flow into a number of phases. 
 - create the image and load it to our target
 - bootstrap our idm system and configure it
 - bootstrap our satellite system and configure it
@@ -52,9 +52,7 @@ You also need access to the target VMware instance that you are going to build y
   - All Privileges -> Virtual Machine -> Edit Inventory (All) 
   - All Privileges -> Virtual Machine -> Provisioning (All)
   
-As a general note, we are using ansible vault for storing our credentials and follow a standard pattern. For each variable file that stores encrypted variables, we also have a corresponding file _vault.yml. For example:
-- builder_vars.yml
-- builder_vault.yml
+As a general note, we are using ansible vault for storing our credentials. All vaulted variables are stored in rhisbuilder_vault.yml and stored in the home directory of the launching user.
 
 When we have a variable secret that we are vaulting we reference a vaulted variable using variablename_vault, like this:
 - offline_token: "{{ offline_token_vault }}"
