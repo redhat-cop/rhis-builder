@@ -1,0 +1,10 @@
+---
+# This playbook configures the optional hostgroups 
+#
+- name: "Create the optional hostgroups"
+  include_tasks: create_hostgroup.yml
+  loop: "{{ hostgroups_optional }}"
+  loop_control:
+    loop_var: hg
+  when: "hostgroups_optional is defined"
+

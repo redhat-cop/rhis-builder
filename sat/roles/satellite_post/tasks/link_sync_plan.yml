@@ -1,0 +1,13 @@
+---
+# This task links a specified product with a specified sync plan 
+
+- name: Linking synchronization plan {{ pp.plan }} to the product {{ pp.name }}
+  redhat.satellite.product:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    organization: "{{ satellite_initial_organization }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ pp.name }}"
+    sync_plan: "{{ pp.plan }}"
+    state: present

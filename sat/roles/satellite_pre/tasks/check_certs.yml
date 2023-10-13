@@ -1,0 +1,3 @@
+---
+- name: Checking the certificates for Satellite
+  ansible.builtin.command: "katello-certs-check -c {{ sat_ssl_crt_path }} -k {{ sat_ssl_key_path }} -b {{ ipa_server_ca_path }}"

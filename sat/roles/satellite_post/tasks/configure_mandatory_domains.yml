@@ -1,0 +1,7 @@
+---
+- name: "Configure the mandatory domains"
+  include_tasks: "create_domain.yml"
+  loop: "{{ domains_mandatory }}"
+  loop_control:
+    loop_var: domain
+  when: "domains_mandatory is defined"

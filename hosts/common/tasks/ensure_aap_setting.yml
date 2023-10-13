@@ -1,0 +1,23 @@
+---
+# Apply a given setting to a target AAP server
+
+- name: "Apply the setting for {{ aap_setting.name }}"
+  ansible.controller.settings:
+    controller_host: "{{ active_controller }}"
+    controller_username: "{{ aap_admin_username }}"
+    controller_password: "{{ aap_admin_password }}"
+    name: "{{ aap_setting.name }}"
+    value: "{{ aap_setting.value }}"
+    validate_certs: "{{ aap_validate_certs }}"
+  no_log: "{{ aap_setting.no_log | default(false) }}"
+  when: aap_setting.settings is not defined
+
+- name: "Apply the setting for {{ aap_setting.name }}"
+  ansible.controller.settings:
+    controller_host: "{{ active_controller }}"
+    controller_username: "{{ aap_admin_username }}"
+    controller_password: "{{ aap_admin_password }}"
+    settings: "{{ aap_setting.settings }}"
+    validate_certs: "{{ aap_validate_certs }}"
+  no_log: "{{ aap_setting.no_log | default(false) }}"
+  when: aap_setting.settings is defined

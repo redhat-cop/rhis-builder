@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xccdf:Tailoring xmlns:xccdf="http://checklists.nist.gov/xccdf/1.2" id="xccdf_scap-workbench_tailoring_default">
+  <xccdf:benchmark href="/tmp/scap-workbench-quPEws/ssg-rhel9-ds.xml"/>
+  <xccdf:version time="2023-02-01T11:27:59">1</xccdf:version>
+  <xccdf:Profile id="xccdf_org.ssgproject.content_profile_cis_2_rhel9_customized" extends="xccdf_org.ssgproject.content_profile_cis">
+    <xccdf:title xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">[DRAFT] CIS Red Hat Enterprise Linux 9 Benchmark for Level 2 - Server [CUSTOMIZED]</xccdf:title>
+    <xccdf:description xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">This is a draft profile based on its RHEL8 version for experimental purposes.
+It is not based on the CIS benchmark for RHEL9, because this one was not available at time of
+the release.</xccdf:description>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_accounts_password_set_min_life_existing" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_file_groupownership_home_directories" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_set_ip6tables_default_rule" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_iptables_activation" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_network-iptables" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_kernel_module_ipv6_option_disabled" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_disabling_ipv6" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_all_disable_ipv6" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_default_disable_ipv6" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_all_accept_ra" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_all_accept_redirects" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_all_accept_source_route" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_default_accept_ra" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_all_forwarding" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_default_accept_redirects" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_default_accept_source_route" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_configuring_ipv6" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_file_permissions_ungroupowned" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_no_files_unowned_by_user" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_selinux_confinement_of_daemons" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_openldap-clients_removed" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_openldap_client" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_ldap" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_chrony_installed" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_service_chronyd_enabled" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_ntpd_specify_multiple_servers" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_chronyd_server_directive" selected="true"/>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_login_banner_text">^[\s\n]+\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*(?:[\n]+|(?:\\n)+)[\s\n]+The[\s\n]+credentials[\s\n]+you[\s\n]+used[\s\n]+to[\s\n]+access[\s\n]+this[\s\n]+information[\s\n]+system[\s\n]+\(IS\)[\s\n]+have(?:[\n]+|(?:\\n)+)[\s\n]+been[\s\n]+authenticated\.[\s\n]+By[\s\n]+remaining[\s\n]+connected,[\s\n]+you[\s\n]+declare[\s\n]+that[\s\n]+you[\s\n]+are(?:[\n]+|(?:\\n)+)[\s\n]+the[\s\n]+authorized[\s\n]+user[\s\n]+of[\s\n]+these[\s\n]+credentials[\s\n]+and[\s\n]+agree[\s\n]+to[\s\n]+the[\s\n]+terms[\s\n]+of(?:[\n]+|(?:\\n)+)[\s\n]+use[\s\n]+of[\s\n]+this[\s\n]+IS\.(?:[\n]+|(?:\\n)+)(?:[\n]+|(?:\\n)+)[\s\n]+All[\s\n]+activities[\s\n]+performed[\s\n]+on[\s\n]+this[\s\n]+device[\s\n]+are[\s\n]+logged[\s\n]+and[\s\n]+monitored\.(?:[\n]+|(?:\\n)+)(?:[\n]+|(?:\\n)+)[\s\n]+Unauthorized[\s\n]+attempts[\s\n]+to[\s\n]+elevate[\s\n]+privilege[\s\n]+or[\s\n]+attempts[\s\n]+to[\s\n]+circumvent(?:[\n]+|(?:\\n)+)[\s\n]+system[\s\n]+security[\s\n]+will[\s\n]+result[\s\n]+in[\s\n]+civil[\s\n]+and/or[\s\n]+criminal[\s\n]+penalties\.(?:[\n]+|(?:\\n)+)[\s\n]+\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*(?:[\n]+|(?:\\n)+)$</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_accounts_maximum_age_login_defs">365</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_accounts_tmout">900</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_multiple_time_servers">time.example.ca,time2.example.ca,time.nrc.ca,time.chu.nrc.ca</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_sshd_idle_timeout_value">900</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_authselect_profile">sssd</xccdf:set-value>
+  </xccdf:Profile>
+  <xccdf:Profile id="xccdf_org.ssgproject.content_profile_cis_server_l1_RHEL9_customized" extends="xccdf_org.ssgproject.content_profile_cis_server_l1">
+    <xccdf:title xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">[DRAFT] CIS Red Hat Enterprise Linux 9 Benchmark for Level 1 - Server [CUSTOMIZED]</xccdf:title>
+    <xccdf:description xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">This is a draft profile based on its RHEL8 version for experimental purposes.
+It is not based on the CIS benchmark for RHEL9, because this one was not available at time of
+the release.</xccdf:description>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_file_permissions_ungroupowned" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_no_files_unowned_by_user" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_selinux_policytype" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_selinux" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_selinux_state" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_chrony_installed" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_service_chronyd_enabled" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_chronyd_client_only" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_chronyd_server_directive" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_ntpd_specify_multiple_servers" selected="true"/>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_authselect_profile">sssd</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_login_banner_text">^[\s\n]+\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*(?:[\n]+|(?:\\n)+)[\s\n]+The[\s\n]+credentials[\s\n]+you[\s\n]+used[\s\n]+to[\s\n]+access[\s\n]+this[\s\n]+information[\s\n]+system[\s\n]+\(IS\)[\s\n]+have(?:[\n]+|(?:\\n)+)[\s\n]+been[\s\n]+authenticated\.[\s\n]+By[\s\n]+remaining[\s\n]+connected,[\s\n]+you[\s\n]+declare[\s\n]+that[\s\n]+you[\s\n]+are(?:[\n]+|(?:\\n)+)[\s\n]+the[\s\n]+authorized[\s\n]+user[\s\n]+of[\s\n]+these[\s\n]+credentials[\s\n]+and[\s\n]+agree[\s\n]+to[\s\n]+the[\s\n]+terms[\s\n]+of(?:[\n]+|(?:\\n)+)[\s\n]+use[\s\n]+of[\s\n]+this[\s\n]+IS\.(?:[\n]+|(?:\\n)+)(?:[\n]+|(?:\\n)+)[\s\n]+All[\s\n]+activities[\s\n]+performed[\s\n]+on[\s\n]+this[\s\n]+device[\s\n]+are[\s\n]+logged[\s\n]+and[\s\n]+monitored\.(?:[\n]+|(?:\\n)+)(?:[\n]+|(?:\\n)+)[\s\n]+Unauthorized[\s\n]+attempts[\s\n]+to[\s\n]+elevate[\s\n]+privilege[\s\n]+or[\s\n]+attempts[\s\n]+to[\s\n]+circumvent(?:[\n]+|(?:\\n)+)[\s\n]+system[\s\n]+security[\s\n]+will[\s\n]+result[\s\n]+in[\s\n]+civil[\s\n]+and/or[\s\n]+criminal[\s\n]+penalties\.(?:[\n]+|(?:\\n)+)[\s\n]+\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*(?:[\n]+|(?:\\n)+)$</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_accounts_passwords_pam_faillock_unlock_time">900</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_password_pam_remember_control_flag">required</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_password_pam_minclass">4</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_password_pam_minlen">14</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_accounts_maximum_age_login_defs">365</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_accounts_tmout">900</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_multiple_time_servers">time.example.ca,time2.example.ca,time.nrc.ca,time.chu.nrc.ca</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_sshd_idle_timeout_value">900</xccdf:set-value>
+  </xccdf:Profile>
+  <xccdf:Profile id="xccdf_org.ssgproject.content_profile_stig_rhel9_customized" extends="xccdf_org.ssgproject.content_profile_stig">
+    <xccdf:title xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">[DRAFT] DISA STIG for Red Hat Enterprise Linux 9 [CUSTOMIZED]</xccdf:title>
+    <xccdf:description xmlns:xhtml="http://www.w3.org/1999/xhtml" xml:lang="en-US" override="true">This is a draft profile based on its RHEL8 version for experimental purposes.
+It is not based on the DISA STIG for RHEL9, because this one was not available at time of
+the release.
+
+In addition to being applicable to Red Hat Enterprise Linux 9, DISA recognizes this
+configuration baseline as applicable to the operating system tier of
+Red Hat technologies that are based on Red Hat Enterprise Linux 9, such as:
+
+- Red Hat Enterprise Linux Server
+- Red Hat Enterprise Linux Workstation and Desktop
+- Red Hat Enterprise Linux for HPC
+- Red Hat Storage
+- Red Hat Containers with a Red Hat Enterprise Linux 9 image</xccdf:description>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_aide_build_database" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_configure_gnutls_tls_crypto_policy" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_harden_sshd_macs_opensshserver_conf_crypto_policy" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_mcafee_hbss_software" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_MFEhiplsm_installed" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_mcafee_security_software" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_endpoint_security_software" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_gdm_removed" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_dconf_db_up_to_date" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_gnome_media_settings" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_dconf_gnome_disable_thumbnailers" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_dconf_gnome_disable_autorun" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_dconf_gnome_disable_automount_open" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_dconf_gnome_disable_automount" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_dconf_gnome_disable_user_list" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_sudo_installed" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sudoers_default_includedir" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_disallow_bypass_password_sudo" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_account_password_pam_faillock_password_auth" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_account_password_pam_faillock_system_auth" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_account_password_selinux_faillock_dir" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_account_passwords_pam_faillock_dir" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_accounts_password_pam_enforce_root" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_set_password_hashing_algorithm_libuserconf" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_grub2_disable_interactive_boot" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_pcsc-lite_installed" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_service_pcscd_enabled" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_configure_opensc_card_drivers" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_no_empty_passwords_etc_shadow" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_gid_passwd_group_same" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_no_shelllogin_for_systemaccounts" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_use_pam_wheel_for_su" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_audit_rules_system_shutdown" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_audit_rules_dac_modification_umount" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_audit_rules_dac_modification_umount2" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_audit_rules_login_events_faillock" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_audit_rules_login_events_tallylog" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_audit_privileged_commands_init" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_audit_privileged_commands_poweroff" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_audit_privileged_commands_reboot" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_audit_privileged_commands_shutdown" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_auditd_audispd_configure_sufficiently_large_partition" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_service_systemd-journald_enabled" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_journald" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_set_firewalld_default_zone" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_configured_firewalld_default_deny" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_network-ipsec" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_libreswan_approved_tunnels" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_libreswan_installed" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_kernel_module_firewire-core_disabled" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_kernel_module_sctp_disabled" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sysctl_kernel_exec_shield" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_fapolicyd_prevent_home_folder_access" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_kerberos" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_kerberos_disable_no_keytab" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_krb5-server_removed" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_ntpd_specify_multiple_servers" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_chronyd_run_as_chrony_user" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_rsh-server_removed" selected="true"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_openssh-clients_installed" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_ssh_client_rekey_limit" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_group_ssh_client" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_sshd_set_keepalive" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_disable_host_auth" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_firewalld_sshd_port_enabled" selected="false"/>
+    <xccdf:select idref="xccdf_org.ssgproject.content_rule_package_xorg-x11-server-common_removed" selected="false"/>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_system_crypto_policy">FIPS</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_ssh_client_rekey_limit_size">1G</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_sudo_timestamp_timeout">0</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_authselect_profile">sssd</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_login_banner_text">^[\s\n]+\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*(?:[\n]+|(?:\\n)+)[\s\n]+The[\s\n]+credentials[\s\n]+you[\s\n]+used[\s\n]+to[\s\n]+access[\s\n]+this[\s\n]+information[\s\n]+system[\s\n]+\(IS\)[\s\n]+have(?:[\n]+|(?:\\n)+)[\s\n]+been[\s\n]+authenticated\.[\s\n]+By[\s\n]+remaining[\s\n]+connected,[\s\n]+you[\s\n]+declare[\s\n]+that[\s\n]+you[\s\n]+are(?:[\n]+|(?:\\n)+)[\s\n]+the[\s\n]+authorized[\s\n]+user[\s\n]+of[\s\n]+these[\s\n]+credentials[\s\n]+and[\s\n]+agree[\s\n]+to[\s\n]+the[\s\n]+terms[\s\n]+of(?:[\n]+|(?:\\n)+)[\s\n]+use[\s\n]+of[\s\n]+this[\s\n]+IS\.(?:[\n]+|(?:\\n)+)(?:[\n]+|(?:\\n)+)[\s\n]+All[\s\n]+activities[\s\n]+performed[\s\n]+on[\s\n]+this[\s\n]+device[\s\n]+are[\s\n]+logged[\s\n]+and[\s\n]+monitored\.(?:[\n]+|(?:\\n)+)(?:[\n]+|(?:\\n)+)[\s\n]+Unauthorized[\s\n]+attempts[\s\n]+to[\s\n]+elevate[\s\n]+privilege[\s\n]+or[\s\n]+attempts[\s\n]+to[\s\n]+circumvent(?:[\n]+|(?:\\n)+)[\s\n]+system[\s\n]+security[\s\n]+will[\s\n]+result[\s\n]+in[\s\n]+civil[\s\n]+and/or[\s\n]+criminal[\s\n]+penalties\.(?:[\n]+|(?:\\n)+)[\s\n]+\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*(?:[\n]+|(?:\\n)+)$</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_password_pam_remember_control_flag">required</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_time_service_set_maxpoll">16</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_multiple_time_servers">time.example.ca,time2.example.ca,time.chu.nrc.ca</xccdf:set-value>
+    <xccdf:set-value idref="xccdf_org.ssgproject.content_value_var_rekey_limit_size">1G</xccdf:set-value>
+  </xccdf:Profile>
+</xccdf:Tailoring>

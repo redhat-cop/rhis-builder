@@ -1,0 +1,53 @@
+---
+# prerequisites
+repository_ids:
+  - rhel-8-for-x86_64-baseos-rpms
+  - rhel-8-for-x86_64-appstream-rpms
+  - rhel-8-for-x86_64-supplementary-rpms
+  - satellite-client-6-for-rhel-8-x86_64-rpms
+
+async_timeout: 14400
+async_delay: 15
+
+# idm configuration
+ipa_admin_password: "{{ ipa_admin_password_vault }}"
+ipaserver_ip_addresses: "192.168.140.5"
+ipa_server_domain: "example.ca"
+ipa_server_realm: "EXAMPLE.CA"
+ipaserver_hostname: "idm.example.ca"
+ipaserver_no_host_dns: true
+ipaserver_mem_check: false
+
+ipaserver_install_packages: true
+ipaserver_setup_firewalld: true
+
+ipaserver_setup_adtrust: false
+ipaserver_setup_kra: true
+ipaserver_setup_dns: true
+
+ipaserver_auto_reverse: true
+ipaserver_forewarders:
+  - "8.8.8.8"
+ipaserver_forward_policy: "first"
+ipaserver_external_ca: false
+
+makehomedir: true
+sshtrustdns: true
+
+additional_users:
+- { login: "sat_admin", first: "Sat", last: "Admin" }
+- { login: "sat_org_admin", first: "Org", last: "Admin" }
+- { login: "site_admin", first: "Site", last: "Admin" }
+- { login: "comply_mgr", first: "Comply", last: "Mgr" }
+- { login: "comply_aud", first: "Comply", last: "Aud" }
+- { login: "pfy_opertator", first: "PFY", last: "Operator" }
+- { login: "bofh", first: "B", last: "OperatorFH" }
+- { login: "content_mgr", first: "Content", last: "Mgr" }
+additional_group_users:
+- { group: "satgroup-administrator", user: "sat_admin", "poc_admin" }
+- { group: "satgroup-org-administrator", user: "sat_org_admin", "poc_admin" }
+- { group: "satgroup-site-administrator", user: "site_admin", "poc_admin" }
+- { group: "satgroup-compliance-manager", user: "comply_mgr", "poc_admin" }
+- { group: "satgroup-compliance-auditor", user: "comply_aud", "poc_admin" }
+- { group: "satgroup-operator", user: "pfy_operator", "bofh" }
+- { group: "satgroup-content-manager", user: "content_mgr", "poc_admin" }

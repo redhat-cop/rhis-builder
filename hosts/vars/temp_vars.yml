@@ -1,0 +1,23 @@
+controller_host: "{{ aap_default_controller_fqdn }}"
+controller_username: "{{ aap_admin_username_vault }}"
+controller_password: "{{ aap_admin_password_vault }}"
+aap_validate_certs: false
+
+
+workflow_templates:
+  - name: "DevLCE_ContentDeliveryPipeline"
+    description: "SOE content delivery pipeline for the Development Lifecycle"
+    organization: "Default"
+    state: present
+    workflow_nodes:
+      - identifier: "Pipeline1Node101"
+        unified_job_template:
+          name: "ACM1PublishContent"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes: []
+          failure_nodes: []
+          always_nodes: []
+          credentials: []

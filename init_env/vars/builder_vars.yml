@@ -1,0 +1,64 @@
+---
+# create a builder_vault.yml file to contain your vaulted variables
+# vaulted variables are named the same as their non-vaulted variable with _vault appended
+# e.g. secret_password and secret_password_vault
+
+# create an offline token at https://access.redhat.com/management/api
+# store it in builder_vault.yml
+offline_token: "{{ offline_token_vault }}"
+auth_url: "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
+build_url: "https://console.redhat.com/api/image-builder/v1/compose"
+build_status_url: "https://console.redhat.com/api/image-builder/v1/composes/"
+
+azure_tenant_id: "{{ azure_tenant_id_vault }}"
+azure_subscription_id: "{{ azure_subscription_id_vault }}"
+azure_resource_group: "az_canada_central_rg"
+
+# This can be set to true to not build the image, if you have one you are satisfied with
+skip_imagebuilder_build: false
+
+image_definition_file: "request-base-image.json"
+# Setting this value dynamically
+# Controlled by rhisbuilder_bootstrap_target in users rhisbuilder_vault.yml file
+# imagebuilder_image_type: "vsphere"
+imagebuilder_include_filesystem: true
+
+# type             extension 
+# vsphere          vmdk
+# aws              ami
+# image-installer  iso
+# guest-image      qcow2
+# azure            vhd
+# gcp              img
+# edge-commit      
+# edge-installer   iso
+
+# you can use the API url to pull a current list of available distributions 
+# they must match what is supported for Satellite and Identity Management. RHEL 8.7 works for both.
+builder_distribution: "rhel-88"
+
+# what we will call the image and where we put it
+image_file_directory: "/tmp"
+builder_image_name: "builder_main"
+image_extension: "vmdk"
+image_file_name: "{{ builder_image_name }}.{{ image_extension }}"
+image_file_path: "{{ image_file_directory }}/{{ image_file_name }}"
+
+# Image Builder Template information
+# your Red Hat Identification info
+org_number: "{{ org_number_vault }}"
+activation_key: "{{ activation_key_vault }}"
+
+# Image definition volume sizes
+# this image disk layout will meet most compliance standards 
+image_template: "template.request-base-image.json.j2"
+slash_size: 10737418240
+home_size: 1073741824
+var_size: 2147483648
+tmp_size: 1073741824
+var_tmp_size: 1073741824
+var_log_size: 1073741824
+var_log_audit_size: 1073741824
+
+azure_upload_request: '"type": "azure", "options": { "tenant_id": "{{ azure_tenant_id }}", "subscription_id": "{{ azure_subscription_id }}", "resource_group": "az_canada_central_rg" }'
+vsphere_upload_request: '"type": "aws.s3", "options": {}'

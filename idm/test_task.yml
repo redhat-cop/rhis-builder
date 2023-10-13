@@ -1,0 +1,15 @@
+---
+- name: "Test Task"
+  hosts: idm_primary
+  become: true
+  vars_files:
+  - vars/idm_vault.yml
+  - vars/idm_vars.yml
+
+  tasks:
+
+  - name: "Test the task file"
+    ansible.builtin.include_tasks: "roles/idm/tasks/ensure_fp_realm_dns_update.yml"
+    loop: "{{ dns_update_zones }}"
+    loop_control:
+      loop_var: zone

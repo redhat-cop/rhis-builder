@@ -1,0 +1,7 @@
+---
+- name: Configure the mandatory compute resources.
+  include_tasks: ensure_compute_resource.yml
+  loop: "{{ compute_resources_mandatory }}"
+  loop_control:
+    loop_var: cr
+  when: "compute_resources_mandatory is defined"

@@ -1,0 +1,40 @@
+---
+# This is a challenge in terminology that is not helped by the Satellite UI
+# What we are actually doing is enabling a repository set associated with a Product
+# There can be multiple repositories for a set based on release version and architecture
+# History has made this muddy as Red Hat actually breaks the architectures in separate Products...
+# sort of... 
+# sometimes...
+
+# Anyway, the varible file defines the repository sets and calls them repos_mandatory or repos_optional 
+# which both use this play to enable them 
+# We handle custom products differently.
+# called with loop_var repo
+
+- name: "Enabling repo {{ repo.name }}"
+  redhat.satellite.repository_set:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    organization: "{{ satellite_initial_organization }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ repo.name | default(omit)  }}"
+    product: "{{ repo.product | default(omit)  }}"
+    repositories:
+    - releasever: "{{ repo.releasever | default(omit) }}"
+      basearch: "{{ repo.basearch | default(omit) }}"
+    state: enabled
+  when: repo.releasever is defined or repo.basearch is defined
+
+- name: "Enabling repo {{ repo.name }}"
+  redhat.satellite.repository_set:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    organization: "{{ satellite_initial_organization }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ repo.name | default(omit)  }}"
+    product: "{{ repo.product | default(omit)  }}"
+    all_repositories: true
+    state: enabled
+  when: repo.releasever is not defined

@@ -1,0 +1,16 @@
+---
+- name: "Test Task"
+  hosts: build_control
+  become: true
+  vars_files:
+  - ../vars/common_vars.yml
+  - ../vars/common_vault.yml
+  - ../vars/hub_vault.yml
+  - ../vars/hub_vars.yml
+  - ../vars/controller_vars.yml
+  - ../vars/controller_vault.yml
+
+  tasks:
+
+  - name: "Fix Firewall"
+    ansible.builtin.include_tasks: "../hub/tasks/fix_firewall.yml"

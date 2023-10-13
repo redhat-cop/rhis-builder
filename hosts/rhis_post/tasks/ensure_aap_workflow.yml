@@ -1,0 +1,42 @@
+---
+# Ensure the workflow exists and then add the nodes
+
+- name: "Ensure that workflow {{ workflow.name }} is {{ workflow.state }}"
+  ansible.controller.workflow_job_template:
+    controller_host: "{{ controller_host }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    allow_simultaneous: "{{ workflow.allow_simultaneous | default(omit) }}"
+    ask_inventory_on_launch: "{{ workflow.ask_inventory_on_launch | default(omit) }}"
+    ask_labels_on_launch: "{{ workflow.ask_labels_on_launch | default(omit) }}"
+    ask_limits_on_launch: "{{ workflow.ask_limits_on_launch | default(omit) }}"
+    ask_scm_branch_on_launch: "{{ workflow.ask_scm_branch_on_launch | default(omit) }}"
+    ask_skip_tags_on_launch: "{{ workflow.ask_skip_tags_on_launch | default(omit) }}"
+    ask_tags_on_launch: "{{ workflow.ask_tags_on_launch | default(omit) }}"
+    ask_variables_on_launch: "{{ workflow.ask_variables_on_launch | default(omit) }}"
+    description: "{{ workflow.description | default(omit) }}"
+    destroy_current_nodes: "{{ workflow.destroy_current_nodes | default(omit) }}"
+    extra_vars: "{{ workflow.extra_vars | default(omit) }}"
+    inventory: "{{ workflow.inventory | default(omit) }}"
+    job_tags: "{{ workflow.job_tags | default(omit) }}"
+    labels: "{{ workflow.labels | default(omit) }}"
+    limit: "{{ workflow.limit | default(omit) }}"
+    name: "{{ workflow.name }}"
+    new_name: "{{ workflow.new_name | default(omit) }}"
+    organization: "{{ workflow.organization | default('Default') }}"
+    scm_branch: "{{ workflow.scm_branch | default(omit) }}"
+    skip_tags: "{{ workflow.skip_tags | default(omit) }}"
+    state: "{{ workflow.state | default('present') }}"
+    survey_enabled: "{{ workflow.survey_enabled | default(omit) }}"
+    survey_spec: "{{ workflow.survey_spec | default(omit) }}"
+    validate_certs: "{{ aap_validate_certs }}"
+    verbosity: "{{ workflow.verbosity | default(omit) }}"
+    webhook_credential: "{{ workflow.webhook_credential | default(omit) }}"
+    webhook_service: "{{ workflow.webhook_service | default(omit) }}"
+    workflow_nodes: "{{ workflow.workflow_nodes | default(omit) }}"
+
+#- name: "Add the workflow nodes to the workflow"
+#  ansible.builtin.include_tasks: "ensure_aap_workflow_node.yml"
+#  loop: "{{ workflow.workflow_nodes }}"
+#  loop_control:
+#    loop_var: node

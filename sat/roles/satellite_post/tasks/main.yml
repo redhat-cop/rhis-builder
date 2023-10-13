@@ -1,0 +1,371 @@
+---
+# This is the entry point for the foreman_post role tasks
+# As this is a role for the configuration of a complex single system, this is a necessarily long and involved file.
+# Please take the time to read the documentation especially around the variables that you should set (and those you might wish to leave alone!)
+# Content Configuration
+# - configure hammer
+# - download and install a Red Hat manifest to access content.
+# - configure Red Hat repositories.
+# - configure content credentials
+# - configure any custom products e.g. MSSQL Server
+# - synchronize the content
+# - create the life cycle environments
+# - create the content views
+# - create the composite content views
+# - create the sync plans
+# - attach the sync plans to content
+# - configure Activation Keys
+# Provisioning Configuration
+# - configure OS media
+# - configure partition tables templates
+# - configure job templates
+# - configure provisioning templates
+# - configure template synchronization
+# - configure OSs
+# - download ansible roles for SCAP
+# - configure OSCAP content
+# - configure OSCAP tailoring files
+# - configure OSCAP policy
+# - configure Network Domains
+# - configure Kerberos REALMs
+# - configure Subnets
+# - configure PXE provisioning defaults for baremetal discovery
+# - configure discovery rules
+# - configure schedules
+# - configure global parameters
+# - configure anything else
+# - configure hostgroups
+# - add admin users - cloud connector, ansible
+
+
+- import_tasks: "{{ role_path }}/tasks/configure_hammer.yml"
+  tags:
+    - tags_mandatory
+    - tags_basic_config
+    - tags_configure_hammer
+
+- import_tasks: "{{ role_path }}/tasks/create_manifest.yml"
+  tags:
+    - tags_mandatory
+    - tags_basic_config
+    - tags_manifest
+
+- import_tasks: "{{ role_path }}/tasks/fetch_manifest.yml"
+  tags:
+    - tags_mandatory
+    - tags_basic_config
+    - tags_manifest
+
+- import_tasks: "{{ role_path }}/tasks/upload_manifest.yml"
+  tags:
+    - tags_mandatory
+    - tags_basic_config
+    - tags_manifest
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_repositories.yml"
+  tags:
+    - tags_mandatory
+    - tags_content_config
+    - tags_redhat_repos
+    - tags_repositories
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_repositories.yml"
+  tags:
+    - tags_optional
+    - tags_content_config
+    - tags_redhat_repos
+    - tags_repositories
+
+- import_tasks: "{{ role_path }}/tasks/configure_custom_products.yml"
+  tags:
+    - tags_mandatory
+    - tags_content_config
+    - custom_repos
+    - tags_repositories
+
+- import_tasks: "{{ role_path }}/tasks/start_synchronization.yml"
+  tags:
+    - tags_mandatory
+    - tags_content_config
+    - tags_sync
+
+- import_tasks: "{{ role_path }}/tasks/configure_lifecycle_environments.yml"
+  tags:
+    - tags_mandatory
+    - tags_content_config
+    - tags_lifecycle_environments
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_sync_plans.yml"
+  tags:
+    - tags_mandatory
+    - tags_content_config
+    - sync_plans
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_sync_plans.yml"
+  tags:
+    - tags_optional
+    - tags_content_config
+    - tags_sync_plans
+
+- import_tasks: "{{ role_path }}/tasks/attach_sync_plans.yml"
+  tags:
+    - tags_mandatory
+    - tags_content_config
+    - tags_sync_plans
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_cvs.yml"
+  tags:
+    - tags_mandatory
+    - tags_content_config
+    - tags_content_views
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_cvs.yml"
+  tags:
+    - tags_optional
+    - tags_content_config
+    - tags_content_views
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_ccvs.yml"
+  tags:
+    - tags_mandatory
+    - tags_content_config
+    - tags_composite_content_views
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_ccvs.yml"
+  tags:
+    - tags_optional
+    - tags_content_config
+    - tags_composite_content_views
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_media.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_media
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_media.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_media
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_ptables.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_ptables
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_ptables.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_ptables
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_prov_templates.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_prov_templates
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_prov_templates.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_prov_templates
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_oss.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_os
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_oss.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_os
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_aks.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_activation_keys
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_aks.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_activation_keys
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_domains.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_network
+    - tags_domains
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_domains.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_network
+    - tags_domains
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_realms.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_network
+    - tags_realms
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_realms.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_network
+    - tags_realms
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_subnets.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_network
+    - tags_subnets
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_subnets.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_network
+    - tags_subnets
+
+- import_tasks: "{{ role_path }}/tasks/build_pxe_defaults.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_discovery
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_compute_resources.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_compute_resources
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_compute_resources.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_compute_resources
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_compute_profiles.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_compute_profiles
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_compute_profiles.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_compute_profiles
+
+- import_tasks: "{{ role_path }}/tasks/configure_virtwho.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_virt_who
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_git_repos.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_clone_git_repos
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_git_repos.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_clone_git_repos
+
+- import_tasks: "{{ role_path }}/tasks/ensure_import_roles.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_ansible_import_roles
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_scap_content.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_scap_contents
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_scap_content.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_scap_contents
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_scap_tailoring_files.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_scap_tailoring_files
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_scap_tailoring_files.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_scap_tailoring_files
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_hostgroups.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_host_groups
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_hostgroups.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_host_groups
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_scap_policies.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_scap_policies
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_scap_policies.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_scap_policies
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_discovery_rules.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_discovery_rules
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_discovery_rules.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_discovery_rules
+
+- import_tasks: "{{ role_path }}/tasks/configure_mandatory_global_parameters.yml"
+  tags:
+    - tags_mandatory
+    - tags_provisioning_config
+    - tags_global_parameters
+
+- import_tasks: "{{ role_path }}/tasks/configure_optional_global_parameters.yml"
+  tags:
+    - tags_optional
+    - tags_provisioning_config
+    - tags_global_parameters
+
+- import_tasks: "{{ role_path }}/tasks/configure_general_settings.yml"
+  tags:
+    - tags_general_settings
+# End of Satellite Configuration

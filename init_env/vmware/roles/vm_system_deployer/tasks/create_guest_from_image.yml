@@ -1,0 +1,127 @@
+---
+# As these are bootstrap systems 
+# and there is no real DNS for our environment yet
+# eventually these get added to IdM
+- name: "Ensure the guest address is in hosts file for {{ guest_fqdn }}"
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    search_string: "{{ guest_ip }}"
+    line: "{{ guest_ip }} {{ guest_fqdn }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: "Create the vm {{ guest_fqdn }} - powered off"
+  community.vmware.vmware_guest:
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    annotation: "Build for labbuilder"
+    cluster: "{{ vcenter_cluster }}"
+    datacenter: "{{ vcenter_datacenter }}"
+    datastore: "{{ vcenter_datastore }}"
+    folder: "/{{ vcenter_datacenter }}/vm"
+    hostname: "{{ vcenter_hostname }}"
+    name: "{{ guest_fqdn }}"
+    guest_id: "rhel8_64Guest"
+    advanced_settings:
+      - key: "guestinfo.metadata"
+        value: "{{ guest_cloud_init_metadata }}"
+      - key: "guestinfo.metadata.encoding"
+        value: "gzip+base64"
+      - key: "guestinfo.userdata"
+        value: "{{ guest_cloud_init_userdata }}"
+      - key: "guestinfo.userdata.encoding"
+        value: "gzip+base64"
+    hardware:
+      hotadd_cpu: "{{ guest_hot_cpu_add }}"
+      hotadd_memory: "{{ guest_hot_memory_add }}"
+      memory_mb: "{{ guest_memory_mb }}"
+      num_cpu_cores_per_socket: "{{ guest_cpu_cores_per_socket }}"
+      num_cpus: "{{ guest_vcpu_total }}"
+    networks:
+      - name: "{{ vcenter_network }}"
+        connected: true
+        gateway: "{{ guest_gateway }}"
+        netmask: "{{ guest_netmask }}"
+        ip: "{{ guest_ip }}"
+        start_connected: true
+        device_type: "{{ guest_network_device_type }}"
+        type: "{{ guest_network_config_type }}"
+    state: "powered-off"
+    validate_certs: "{{ vcenter_validate_certs }}"
+  tags:
+    - build
+
+# if the file extension is not vmdk, govc will not properly convert the image automagically
+- name: "Copy the image to the folder for guest  {{ guest_fqdn }} "
+  ansible.builtin.shell: |
+    export GOVC_USERNAME={{ vcenter_username }}
+    export GOVC_PASSWORD={{ vcenter_password }}
+    export GOVC_DATACENTER={{ vcenter_datacenter }}
+    export GOVC_INSECURE={{ vcenter_skip_certs }}
+    export GOVC_DATASTORE={{ vcenter_datastore }}
+    export GOVC_URL=https://{{ vcenter_hostname }}
+    /usr/bin/govc datastore.cp {{ vcenter_base_folder_path }}/{{ image_file_name }} {{ guest_fqdn }}/{{ builder_image_name}}.{{ image_extension }}
+  tags:
+    - build
+
+- name: "Add boot disk to the vm  {{ guest_fqdn }} - powered off"
+  community.vmware.vmware_guest_disk:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    datacenter: "{{ vcenter_datacenter }}"
+    name: "{{ guest_fqdn }}"
+    disk:
+      - scsi_controller: 0
+        unit_number: 0
+        scsi_type: "paravirtual"
+        filename: "[{{ vcenter_datastore }}] {{ guest_fqdn }}/{{ builder_image_name}}.{{ image_extension }}"
+        size_gb: "{{ guest_rootdisk_size_gb }}"
+    validate_certs: "{{ vcenter_validate_certs }}"
+  tags:
+    - build
+
+- name: "Power on the vm  {{ guest_fqdn }} "
+  community.vmware.vmware_guest_powerstate:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    name: "{{ guest_fqdn }}"
+    state: "powered-on"
+    validate_certs: "{{ vcenter_validate_certs }}"
+  register: deploy
+  tags:
+    - build
+
+- name: "Wait for {{ guest_fqdn }} to allow ssh"
+  block:
+    - name: "Waiting for power up"
+      ansible.builtin.wait_for:
+        port: 22
+        host: "{{ guest_fqdn }}"
+        search_regex: OpenSSH
+        sleep: 5
+        delay: 60
+        timeout: 300
+
+  rescue:
+    - name: " {{ guest_fqdn }} is unresponsive -- rebooting"
+      community.vmware.vmware_guest_powerstate:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        name: "{{ guest_fqdn }}"
+        state: "reboot-guest"
+        validate_certs: "{{ vcenter_validate_certs }}"
+
+    - name: "Waiting {{ guest_fqdn }} to reboot"
+      ansible.builtin.wait_for:
+        port: 22
+        host: "{{ guest_fqdn }}"
+        search_regex: OpenSSH
+        sleep: 5
+        delay: 60
+        timeout: 600
+  tags:
+    - build

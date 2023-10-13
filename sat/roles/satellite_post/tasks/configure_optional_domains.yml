@@ -1,0 +1,7 @@
+---
+- name: "Configure the optional domains"
+  include_tasks: "create_domain.yml"
+  loop: "{{ domains_optional }}"
+  loop_control:
+    loop_var: domain
+  when: "domains_optional is defined"

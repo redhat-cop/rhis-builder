@@ -1,0 +1,20 @@
+---
+- name: "Extract the archive file"
+  ansible.builtin.unarchive:
+    src: "{{ controllers[0].aap_destination_dir }}/{{ controllers[0].aap_bundle_file }}"
+    dest: "{{ controllers[0].aap_destination_dir }}"
+    remote_src: true
+  delegate_to: "{{ controllers[0].fqdn }}"
+
+- name: "Discover the extracted directory"
+  ansible.builtin.find:
+    paths: "{{ controllers[0].aap_destination_dir }}"
+    pattern: "*platform-setup-bundle*"
+    file_type: "directory"
+  register: result
+  delegate_to: "{{ controllers[0].fqdn }}"
+
+- name: "Assign the directory name"
+  ansible.builtin.set_fact:
+    aap_installer_inventory_dir: "{{ result.files[0].path }}"
+  delegate_to: "{{ controllers[0].fqdn }}"

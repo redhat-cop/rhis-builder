@@ -1,0 +1,68 @@
+---
+- name: "Configure the storage"
+  block:
+    - name: "Ensure the new disk is in the VG"
+      community.general.lvg:
+        vg: "rootvg"
+        pvs: "{{ pv_list }}"
+        pvresize: true
+        state: "present"
+      tags:
+        - build
+
+    - name: "Expand /var volume and filesystem"
+      community.general.lvol:
+        vg: "rootvg"
+        lv: "varlv"
+        size: "{{ var_size_gb }}"
+        resizefs: true
+      tags:
+        - build
+
+    - name: "Expand /var/log volume and filesystem"
+      community.general.lvol:
+        vg: "rootvg"
+        lv: "var_loglv"
+        size: "{{ var_log_size_gb }}"
+        resizefs: true
+      tags:
+        - build
+
+    - name: "Expand /var/log/audit volume and filesystem"
+      community.general.lvol:
+        vg: "rootvg"
+        lv: "var_log_auditlv"
+        size: "{{ var_log_audit_size_gb }}"
+        resizefs: true
+      tags:
+        - build
+
+    - name: "Expand /var/tmp volume and filesystem"
+      community.general.lvol:
+        vg: "rootvg"
+        lv: "var_tmplv"
+        size: "{{ var_tmp_size_gb }}"
+        resizefs: true
+      tags:
+        - build
+
+    - name: "Expand /tmp volume and filesystem"
+      community.general.lvol:
+        vg: "rootvg"
+        lv: "tmplv"
+        size: "{{ tmp_size_gb }}"
+        resizefs: true
+      tags:
+        - build
+
+    - name: "Expand /home volume and filesystem"
+      community.general.lvol:
+        vg: "rootvg"
+        lv: "homelv"
+        size: "{{ home_size_gb }}"
+        resizefs: true
+      tags:
+        - build
+  
+  #delegate_to: "{{ fqdn }}"
+  #become: true

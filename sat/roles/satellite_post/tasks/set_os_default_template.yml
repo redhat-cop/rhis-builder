@@ -1,0 +1,11 @@
+# This task associates a default template with an OS for a given template type
+- name: "Assigning {{ dt.template_kind }} Template {{ dt.name }} to {{ os.description | default('unknown') }}"
+  redhat.satellite.os_default_template:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    operatingsystem: "{{ os.description }}"
+    template_kind: "{{ dt.template_kind }}"
+    provisioning_template: "{{ dt.name }}"
+    state: present

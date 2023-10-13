@@ -1,0 +1,9 @@
+---
+# This playbook configures the mandatory hostgroups 
+#
+- name: "Create the mandatory hostgroups"
+  include_tasks: create_hostgroup.yml
+  loop: "{{ hostgroups_mandatory }}"
+  loop_control:
+    loop_var: hg
+  when: "hostgroups_mandatory is defined"

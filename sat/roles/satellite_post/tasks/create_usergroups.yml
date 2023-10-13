@@ -1,0 +1,22 @@
+---
+# This play will create the POC specific usergroups in Satellite 
+# and map them to our external IdM groups. 
+#
+# WARNING: THIS IS CURRENTLY A KLUDGE AS THE SATELLITE API DOES NOT EXPOSE
+# EXTERNAL AUTH_SOURCES VIA THE API
+# 
+# Please see https://bugzilla.redhat.com/show_bug.cgi?id=1336236
+# 
+# satgroup-administrator will map to the Satellite admins group and administrator (all privileges) role
+# satgroup-compliance-auditor will need to view OSCAP Policy and Reports maps to Compliance Viewer
+# satgroup-compliance-manager will need to view, edit and upload OSCAP Policy and view Reports - maps to Compliance Viewer
+# satgroup-content-manager will need to manage subscriptions, repositories, products, content views, life cycles, errata, and containers
+# satgroup-org-administrator maps to Manager role
+# satgroup-site-administrator maps to Site Manager role
+# satgroup-sub-manager needs to see Red Hat Subscriptions and Manifests
+#
+# satgroup-operator - combines a number of roles - BootStrap_User, Remote Execution User, Task Manager, Edit Hosts, Discovery Manager, Viewer
+# For the POC we only need to create the Operator Role
+
+
+

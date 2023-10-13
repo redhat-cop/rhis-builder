@@ -1,0 +1,25 @@
+---
+# Build the ansible execution environments.
+
+- name: "Ensure that ansible-builder and podman are installed"
+  ansible.builtin.package:
+    name:
+      - ansible-builder
+      - podman
+    state: present
+  delegate_to: "{{ hubs[0].fqdn }}"
+
+- name: "Log in to registry.redhat.io"
+  containers.podman.podman_login:
+    username: "{{ redhat_registry_username }}"
+    password: "{{ redhat_registry_password }}"
+    registry: "{{ redhat_container_registry_url }}"
+  no_log: true
+  delegate_to: "{{ hubs[0].fqdn }}"
+
+- name: "Build the execution environments"
+  ansible.builtin.include_tasks: "ensure_aap_ee.yml"
+  loop: "{{ exec_envs }}"
+  loop_control:
+    loop_var: ee
+  

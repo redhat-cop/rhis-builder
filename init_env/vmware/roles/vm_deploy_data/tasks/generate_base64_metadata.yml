@@ -1,0 +1,10 @@
+---
+# This set of tasks generates base64 encoded data variables for the instances
+
+- name: "Capture the output of the encoding process"
+  ansible.builtin.shell: gzip -c9 < {{ item.name }}_metadata.yml | base64
+  register: result
+
+- name: "Assign it to the variable"
+  ansible.builtin.set_fact: 
+    instance_data: "{{ instance_data | rejectattr('name', 'equalto', item.name) | list + [ item | combine({ 'cloud_init_metadata': result.stdout })] }}" 

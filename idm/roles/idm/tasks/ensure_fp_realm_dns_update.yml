@@ -1,0 +1,13 @@
+---
+# ensure that the foreman-proxy realm user can update forward and reverse records in the domain
+# 
+# append the foreman_proxy_BIND_update_policy to zone
+
+- name: "Append the foreman_proxy_BIND_update_policy to forward lookup zones"
+  redhat.rhel_idm.ipadnszone:
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    name: "{{ zone.name }}"
+    update_policy: "{{ zone.foreman_proxy_BIND_update_policy }}"
+    state: enabled
+
+  

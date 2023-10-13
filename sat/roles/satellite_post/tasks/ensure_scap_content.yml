@@ -1,0 +1,18 @@
+---
+- name: "Copy the scap file to target"
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/{{ scap.scap_file }}"
+    dest: "{{ scap.scap_file }}"
+  when: scap.scap_file is defined
+
+- name: "Ensure the scap content is loaded"
+  redhat.satellite.scap_content:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    title: "{{ scap.title }}"
+    scap_file: "{{ scap.scap_file | default(omit) }}"
+    locations: "{{ scap.locations | default(omit) }}"
+    organizations: "{{ scap.organizations | default(omit) }}"
+    update_title: "{{ scap.updated_title | default(omit) }}"

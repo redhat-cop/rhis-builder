@@ -1,0 +1,79 @@
+---
+# This play generates a minimal RHEL image of a particular image type and version
+# using the imagebuilder service on console.redhat.com
+# for use as the build machines (idm primary and satellite primary)
+
+- name: "Retrieve an access token"
+  ansible.builtin.include_tasks: retrieve_composer_access_token.yml
+
+- name: "Setting imagebuilder_image_type to vmware bootstrap target"
+  ansible.builtin.set_fact: 
+    imagebuilder_image_type: "vsphere"
+  when: rhisbuilder_bootstrap_target == "vmware"
+
+- name: "Setting imagebuilder_image_type to aws bootstrap target"
+  ansible.builtin.set_fact: 
+    imagebuilder_image_type: "aws"
+  when: rhisbuilder_bootstrap_target == "aws"
+
+- name: "Create the build configuration from template"
+  ansible.builtin.template:
+    src: "template.request-base-image.json.j2"
+    dest: "{{ image_file_directory }}/{{ image_definition_file }}"
+    mode: 0644
+
+- name: "Create the image from the configuration"
+  ansible.builtin.uri:
+    url: "{{ build_url }}"
+    method: "POST"
+    headers:
+      Authorization: "Bearer {{ access_token }}"
+      Content-Type: "application/json"
+    body: "{{ lookup('ansible.builtin.file', '{{ image_file_directory }}/{{ image_definition_file }}') }}"
+    body_format: json
+    status_code: 201
+    validate_certs: true
+    return_content: true
+  register: compose_result
+
+- name: "Assert success"
+  ansible.builtin.assert:
+    that:
+      - compose_result.failed == false
+      - compose_result.json.id is defined
+
+- name: "Watch for finished image compose"
+  ansible.builtin.include_tasks:
+    file: compose_wait.yml
+
+- name: "Assert that the build was successful"
+  ansible.builtin.assert:
+    that:
+      - compose_status.json.image_status.status == "success"
+
+- name: "Vsphere image-specific handling block"
+  when: imagebuilder_image_type == "vsphere"
+  block:
+    - name: "Assert that the build can be downloaded"
+      ansible.builtin.assert:
+        that:
+          - compose_status.json.image_status.upload_status.options.url is defined
+
+    - name: "Download the finished image"
+      ansible.builtin.get_url:
+        url: "{{ compose_status.json.image_status.upload_status.options.url }}"
+        dest: "{{ image_file_path }}"
+        mode: 0644
+
+- name: "AWS image-specific handling block"
+  when: imagebuilder_image_type == "aws"
+  block:
+    - name: "Assert that the build uploaded to AWS"
+      ansible.builtin.assert:
+        that:
+          - compose_status.json.image_status.upload_status.options.ami is defined
+          - compose_status.json.image_status.upload_status.status == "success"
+
+    - name: "Retrieve AMI name from AWS imagebuild"
+      ansible.builtin.set_fact:
+        imagebuilder_ami: "{{ compose_status.json.image_status.upload_status.options.ami }}"

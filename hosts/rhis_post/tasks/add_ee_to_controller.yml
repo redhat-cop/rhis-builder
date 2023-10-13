@@ -1,0 +1,15 @@
+---
+# Add EE to controller
+
+- name: "Ensure the EEs are registered on the controller"
+  ansible.controller.execution_environment:
+    controller_host: "{{ active_controller }}"
+    controller_username: "{{ aap_admin_username }}"
+    controller_password: "{{ aap_admin_password }}"
+    validate_certs: "{{ aap_validate_certs }}"
+    name: "{{ ee.name }}"
+    image: "{{ ee.image }}"
+    pull: "{{ ee.pull | default(omit) }}"
+    organization: "{{ ee.organization | default(omit) }}"
+    description: "{{ ee.description | default(omit) }}"
+    credential: "{{ ee.credential | default(omit) }}"

@@ -1,0 +1,82 @@
+---
+# Create you idm_metadata.yml and idm_userdata.yml files to configure your vm via cloud-init
+
+# NOTE: Copying to the target folder takes time as the system flatens the image by default
+# Some enterprising individual will figure out a way to speed this up, but as we intend to use this process only once, we aren't worrying about it
+baseimage_password: "{{ baseimage_password_vault }}"
+
+instance_data:
+  - name: "idm_primary"
+    inventory_groups: 
+      - idm_primary
+    instance_id: "idm"
+    local_hostname: "idm"
+    remoteuser: "{{ rhisbuilder_default_user }}"
+    iface: "eth0"
+    network_config_type: "static"
+    network_device_type: "vmxnet3"
+    ip: "192.168.140.5"
+    prefix: "22"
+    network: "192.168.140.0"
+    broadcast: "192.168.143.255"
+    netmask: "255.255.252.0"
+    gateway: "192.168.140.1"
+    fqdn: "idm.example.ca"
+    dns: "8.8.8.8"
+    bootstrap_partner_fqdn: "sat.example.ca"
+    bootstrap_partner_ip: "192.168.140.12"
+    activationkey: "{{ idm_activationkey_vault }}"
+    rhsm_org: "{{ idm_rhsm_org_vault }}"
+    rootdisk_size_gb: "150"
+    cpu_cores_per_socket: 1
+    vcpu_total: 1  #must be a multiple of cpu_cores_per_socket e.g. for 2 sockets with 2 cores each set to: 4
+    memory_mb: 8192
+    hot_cpu_add: true
+    hot_memory_add: true
+
+  - name: "sat_primary"
+    inventory_groups: 
+      - sat_primary
+    instance_id: "sat"
+    local_hostname: "sat"
+    remoteuser: "{{ rhisbuilder_default_user }}"
+    iface: "eth0"
+    network_config_type: "static"
+    network_device_type: "vmxnet3"
+    ip: "192.168.140.12"
+    prefix: "22"
+    netmask: "255.255.252.0"
+    network: "192.168.140.0"
+    broadcast: "192.168.143.255"
+    gateway: "192.168.140.1"
+    fqdn: "sat.example.ca"
+    dns: "8.8.8.8"
+    bootstrap_partner_fqdn: "idm.example.ca"
+    bootstrap_partner_ip: "192.168.140.5"
+    activationkey: "{{ sat_activationkey_vault }}"
+    rhsm_org: "{{ sat_rhsm_org_vault }}"
+    rootdisk_size_gb: "{{ sat_rootdisk_size_gb }}"
+    cpu_cores_per_socket: 2
+    vcpu_total: 4 #must be a multiple of cpu_cores_per_socket e.g. for 2 sockets with 2 cores each set to: 4
+    memory_mb: 30720
+    hot_cpu_add: true
+    hot_memory_add: true
+    additional_disks:
+      - name: "sat_content"
+        disk_size_mb: 524288
+        disk_scsi_controller: 0
+        disk_unit_number: 1
+        disk_type: "thick"
+        disk_scsi_type: "paravirtual"
+        disk_mode: "persistent"
+    volumes:
+      pv_list:
+        - "/dev/sda3" 
+        - "/dev/sdb"
+      var_size_gb: "300G"
+      var_log_size_gb: "4G"
+      var_log_audit_size_gb: "4G"
+      var_tmp_size_gb: "4G"
+      tmp_size_gb: "4G"
+      home_size_gb: "20G"
+

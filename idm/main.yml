@@ -1,0 +1,16 @@
+---
+# Set up the prerequisites, install idm, configure idm
+# our idm role encapsulates ipaserver and post configuration
+- name: "Build the idm primary"
+  hosts: idm_primary
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/idm_vars.yml"
+    - "~/rhisbuilder_vault.yml"    
+
+  tasks:
+
+    - name: "Apply role idm"
+      ansible.builtin.include_role:
+        name: idm

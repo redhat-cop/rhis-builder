@@ -1,0 +1,25 @@
+---
+# This task creates an individual provisioning template from specified paramters
+# Call this task with loop_var: pt
+- name: Apply any ansible templating defined in the configuration template
+  ansible.builtin.template:
+    src: "{{ pt.path }}"
+    dest: "{{ pt.path }}.out"
+
+- name: "Create the Provisioning Template from file"
+  redhat.satellite.provisioning_template:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    file_name: "{{ pt.path }}.out"
+    state: present
+    organizations:
+      - "{{ satellite_initial_organization }}"
+    locations:
+      - "{{ satellite_initial_location }}"
+
+- name: "Remove the temporary file"
+  ansible.builtin.file:
+    path: "{{ pt.path }}.out"
+    state: absent

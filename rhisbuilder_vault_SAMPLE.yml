@@ -1,0 +1,184 @@
+---
+# This is the private vault file for your rhisbuilder secrets
+# This file is required to be in the root of the home directory of the executing user
+# i.e. ~/rhisbuilder_vault.yml
+# 
+# Use this file to define all secrets in the project
+# Use rhisbuilder_local.yml to define non-secret location dependent variables
+# see: SAMPLE_rhisbuilder_local.yml
+# All other secrets are defined in their respective vars folders
+
+# whether we are building AAP servers from images or with Satellite once Satellite is provisioned.
+# false means Satellite will build the AAP - best for metal and vmware deploys
+build_aap_from_image: false
+
+# What platform we are going to bootstrap from i.e. where we build the initial IdM Server and Satellite Server
+# one of vmware, aws
+# TODO - support metal, google, azure
+rhisbuilder_bootstrap_target: "vmware"
+
+# The user under which site.yml launches - this sets the default user to allow sudo access
+rhisbuilder_default_user: "ansiblerunner"
+
+#####################################
+# Phase 1 - init_env secrets
+#####################################
+# These are technically no longer secrets as the no longer contain organization identifying data.
+automation_hub_url_vault: "https://console.redhat.com/api/automation-hub/content/published/"
+automation_hub_auth_url_vault: "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
+
+# Red Hat Hybrid Cloud Console tokens
+# one for automation hub
+# one for imagebuilder
+# see: https://console.redhat.com/ansible/automation-hub/token
+automation_hub_token_vault: "eyJhbGc... big long string ...JLcfbNzK80nQZ8oWyZkLPIK7ihy4"
+offline_token_vault: "eyJhbGciOiJIUz... big long string ...hNWjvxR1KPn8XehS6pTCsNeg2FLbT8t6eQFLqK9cFgY"
+
+# Red Hat Hybrid Cloud Console Organization and Activation Key
+# These are used for registering your boostrap systems
+# 
+default_org_number_vault: 4242424242             # a number without quotes listed on the Activation Key page
+default_activation_key_vault: "build_rhis"       # a string - the name of the activation key
+
+# Aliases
+org_number_vault: "{{ default_org_number_vault }}"
+activation_key_vault: "{{ default_activation_key_vault }}"
+
+#Default password for cloud-init when deploying
+baseimage_password_vault: "SecretWITHNOSpecialChars"
+
+
+# Setting up defaults to be used everywhere in our process
+# These defaults are fine for development or testing
+# For productiond deployments, set each password below individually
+default_environment_username_vault: "ansiblerunner"
+default_environment_password_vault: "$ecret-WITH-$pecial(harS"
+
+# Satellite administrator
+satellite_username_vault: "admin"
+satellite_password_vault: "{{ default_environment_password_vault }}"
+
+# Identity Management Administrator
+realm_admin_username_vault: "admin"
+realm_admin_password_vault: "{{ default_environment_password_vault }}"
+
+# The general secrets for Idm and Satellite images (built into image to register with CDN on first boot)
+# Override defaults here as necessary
+idm_activationkey_vault: "{{ default_activation_key_vault }}"
+sat_activationkey_vault: "{{ default_activation_key_vault }}"
+
+idm_rhsm_org_vault: "{{ default_org_number_vault }}"
+sat_rhsm_org_vault: "{{ default_org_number_vault }}"
+
+
+# Secrets used for bootstrapping on VMware
+vcenter_username_vault: "Administrator@VSPHERE.LOCAL"
+vcenter_password_vault: "{{ default_environment_password_vault }}"
+
+# Secrets used for bootstrapping on Azure (currently unsupported)
+azure_tenant_id_vault: ""
+azure_subscription_id_vault: ""
+
+
+#####################################
+# Phase 2 - IdM Intaller Role Secrets 
+#####################################
+# variable names required by the role
+# (the Satellite Pre role uses these to install the IdM client)
+ipa_admin_principal_vault: "admin"
+ipa_admin_password_vault: "{{ default_environment_password_vault }}"
+ipa_dm_password_vault: "{{ default_environment_password_vault }}"   # the directory server manager password
+
+
+#####################################
+# Phase 3 - Satellite Install secrets
+#####################################
+sat_ssl_rsa_key_pass_vault: "{{ default_environment_password_vault }}"
+sat_inital_admin_username_vault: "admin"
+sat_inital_admin_password_vault: "{{ default_environment_password_vault }}"
+
+
+# Satellite Manifest creation secrets
+# These are required to create/pull the manifests for both Satellite and AAP Controller
+# These are extremely sensitive. DO NOT PUBLISH
+cdn_username_vault: "user@example.ca"
+cdn_password_vault: "^CDN^PA$$Wo4D"
+cdn_account_number_vault: "{{ default_org_number_vault }}"
+satellite_manifest_zip_vault: "~/satellite_manifest.zip"
+
+# Satellite Remote Execution ssh user and keys
+# allows you to predefine the ssh keys for Satellite remote execution
+remote_execution_ssh_keys_vault: "{{ lookup('file', '/home/ansiblerunner/.ssh/id_rsa.pub') }}"
+remote_execution_ssh_user_vault: "ansiblerunner"
+
+# Satellite Compute Resource secrets
+# It is strongly suggested that you use a service account here
+# see: https://access.redhat.com/solutions/1339483
+vcenter_service_username_vault: "Administrator@VSPHERE.LOCAL"
+vcenter_service_password_vault: "{{ default_environment_password_vault }}"
+
+# Satellite virt_who_config Secrets - different than above!
+# It is strongly suggested that you use a service account here
+# see: https://access.redhat.com/solutions/495683
+# more: https://access.redhat.com/articles/1553923
+# for virtwho to access vcenter
+vcenter_virtwho_username_vault: "{{ vcenter_service_username_vault }}"
+vcenter_virtwho_password_vault: "{{ default_environment_password_vault }}"
+
+# for virtwho to update satellite
+# permissions to update satellite with discovered vms and hypervisors
+satellite_virtwho_username_vault: "{{ sat_inital_admin_username_vault }}"
+satellite_virtwho_password_vault: "{{ default_environment_password_vault }}"
+
+
+############################################
+# Phase 4 - Controller, Hub and Host Secrets
+############################################
+# Credentials for registry.redhat.io
+aap_default_controller_fqdn: "controller1.example.ca"
+aap_default_hub_fqdn: "hub1.example.ca"
+
+aap_cdn_username_vault: "{{ cdn_username_vault }}"
+aap_cdn_password_vault: "{{ cdn_password_vault }}"
+aap_cdn_account_number_vault: "{{ cdn_account_number_vault }}"
+aap_controller_manifest_zip_vault: "/tmp/rhis_aap_manifest.zip"
+
+# AAP controller and hub inventory file template secrets
+aap_controller_ssl_rsa_key_pass_vault: "FourRandomWordsWork"
+aap_admin_username_vault: "admin"
+aap_admin_password_vault: "{{ default_environment_password_vault }}"
+aap_pg_password_vault: "FiveRandomWordsAreBetter"
+aap_auth_ldap_bind_dn_vault: "uid=ldap-lookup,cn=users,cn=accounts,{{ aap_ldap_domain_map }}"
+aap_auth_ldap_bind_password_vault: "{{ default_environment_password_vault }}"
+redhat_registry_username_vault: "6856506|rhisbuilder"
+redhat_registry_password_vault: "eyJhbGciOiJSUzUxMiJ9... big long string ...wmDz-i71LdKfVC1Wu7AoG8xsEUxD01A"
+redhat_automation_hub_token_vault: "eyJhbGciOiJIUzI1N... big long string ..._aVq6E8rOFNI557O8Vc3xCQM2o"
+
+aap_hub_ssl_rsa_key_pass_vault: "SixRandomWordsCanGetExcessive"
+aap_registry_username_vault: "{{ cdn_username_vault }}"
+aap_registry_password_vault: "{{ cdn_password_vault }}"
+aap_hub_admin_password_vault: "{{ default_environment_password_vault }}"
+aap_hub_pg_password_vault: "SevenRandomWordsIsReallyPushingIt"
+aap_hub_ldap_bind_password_vault: "{{ default_environment_password_vault }}"
+
+private_hub_username_vault: "admin"
+private_hub_password_vault: "{{ default_environment_password_vault }}"
+
+containerhost_registry_vault: "registry.redhat.io"
+containerhost_registry_username_vault: "{{ cdn_username_vault }}"
+containerhost_registry_password_vault: "{{ cdn_password_vault }}"
+
+# When building the execution environment, we pull the ca.crt from a host
+# registered to the idm server... the private automation hub.
+
+a_random_secret: "NowJustStopItWillYou_EnoughAlready"
+
+#####################################
+# RHISPost Secrets
+#####################################
+# Used to pull and push to github as necessary for demo projects
+github_demo_username_vault: "user@example.ca"
+github_demo_gpat_vault: "ghp_withalongrandomstringof$tU!!"
+
+aap_idm_machine_username_vault: "poc_admin"
+aap_idm_machine_password_vault: "redhat1!"

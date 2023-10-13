@@ -1,0 +1,31 @@
+---
+# This task creates the aap project from the list
+
+- name: "Ensure that project {{ project.name }} is {{ project.state }}"
+  ansible.controller.project:
+    controller_host: "{{ controller_host }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    credential: "{{ project.credential }}"
+    default_environment: "{{ project.default_environment | default(omit) }}"
+    description: "{{ project.description | default(omit) }}"
+    local_path: "{{ project.local_path | default(omit) }}"
+    name: "{{ project.name }}"
+    new_name: "{{ project.new_name | default(omit) }}"
+    organization: "{{ project.organization | default('Default') }}"
+    scm_branch: "{{ project.scm_branch | default(omit) }}"
+    scm_clean: "{{ project.scm_clean | default(omit) }}"
+    scm_delete_on_update: "{{ project.scm_delete_on_update | default(omit) }}"
+    scm_refspec: "{{ project.scm_refspec | default(omit) }}"
+    scm_track_submodules: "{{ project.scm_track_submodules | default(omit) }}"
+    scm_type: "{{ project.scm_type }}"
+    scm_update_cache_timeout: "{{ project.scm_update_cache_timeout | default(omit) }}"
+    scm_update_on_launch: "{{ project.scm_update_on_launch | default(omit) }}"
+    scm_url: "{{ project.scm_url | default(omit) }}"
+    state: "{{ project.state | default(present) }}"
+    timeout: "{{ project.timeout | default(omit) }}"
+    update_project: "{{ project.update_project | default(omit) }}"
+    validate_certs: "{{ aap_validate_certs }}"
+    wait: "{{ project.wait | default(omit) }}"
+
+

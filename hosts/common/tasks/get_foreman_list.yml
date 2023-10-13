@@ -1,0 +1,24 @@
+---
+# This task retrieves a list of items and the details for each item
+
+- name: Get search results from Satellite
+  redhat.satellite.resource_info:
+    username: "{{ gfl_sat_username }}"
+    password: "{{ gfl_sat_password }}"
+    server_url: "{{ gfl_sat_server_url }}"
+    organization: "{{ gfl_sat_organization | default(omit) }}"
+    params: "{{ gfl_sat_params | default(omit) }}"
+    resource: "{{ gfl_sat_resource }}"
+    search: "{{ gfl_sat_search_string }}"
+    full_details: true 
+    validate_certs: "{{ gfl_sat_validate_certs }}"
+  register: results 
+
+- set_fact:
+    gfl_list: "{{ results.resources | json_query('[*].name') }}"
+
+- set_fact:
+    gfl_resources: "{{ results.resources }}"
+  
+
+

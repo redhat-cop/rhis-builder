@@ -1,0 +1,30 @@
+---
+- name: "Reconfigure Satellite storage"
+  hosts: sat_primary
+  become: true
+  gather_facts: true
+
+  vars_files:
+    - "../vars/builder_vars.yml"
+    - "../vars/instance_bootstrap_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+  
+  tasks:
+      - name: "Set the remote user for satellite storage config"
+        ansible.builtin.set_fact:
+          ansible_user: "{{ instance_data | selectattr('name', 'equalto', 'sat_primary') | map(attribute='remoteuser') | first }}"
+ 
+
+      - name: "Reconfigure the satellite primary volumes"
+        ansible.builtin.include_tasks: "tasks/reconfigure_satellite_storage_config.yml"
+        vars:
+          fqdn: "{{ instance_data | selectattr('name', 'equalto', 'sat_primary') | map(attribute='fqdn') | first }}"
+          pv_list: "{{ instance_data | selectattr('name', 'equalto', 'sat_primary') | map(attribute='volumes.pv_list') | first }}"
+          var_size_gb: "{{ instance_data | selectattr('name', 'equalto', 'sat_primary') | map(attribute='volumes.var_size_gb') | first }}"
+          var_log_size_gb: "{{ instance_data | selectattr('name', 'equalto', 'sat_primary') | map(attribute='volumes.var_log_size_gb') | first }}"
+          var_log_audit_size_gb: "{{ instance_data | selectattr('name', 'equalto', 'sat_primary') | map(attribute='volumes.var_log_audit_size_gb') | first }}"
+          var_tmp_size_gb: "{{ instance_data | selectattr('name', 'equalto', 'sat_primary') | map(attribute='volumes.var_tmp_size_gb') | first }}"
+          tmp_size_gb: "{{ instance_data | selectattr('name', 'equalto', 'sat_primary') | map(attribute='volumes.tmp_size_gb') | first }}"
+          home_size_gb: "{{ instance_data | selectattr('name', 'equalto', 'sat_primary') | map(attribute='volumes.home_size_gb') | first }}"
+        tags:
+          - reconfigure_satellite_volumes

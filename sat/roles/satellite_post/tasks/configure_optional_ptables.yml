@@ -1,0 +1,9 @@
+---
+# This task configures the optional partition tables
+
+- name: Create the optional partition tables defined
+  include_tasks: create_ptable.yml
+  loop: "{{ ptables_optional }}"
+  loop_control:
+    loop_var: ptable
+  when: "ptables_optional is defined"

@@ -1,0 +1,9 @@
+---
+# This tasks creates the inventories
+
+- name: "Add the inventories to the controller"
+  ansible.builtin.include_tasks: "ensure_aap_inventory.yml"
+  loop: "{{ inventories }}"
+  loop_control:
+    loop_var: inventory
+  

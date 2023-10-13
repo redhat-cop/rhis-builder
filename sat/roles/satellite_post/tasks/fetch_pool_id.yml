@@ -1,0 +1,21 @@
+---
+# Get a pool id for a requested subscription based on search criteria
+# Trying to develop a better search for activation_keys
+- name: "If the sub doesn't define a pool id, find it"
+  block:
+    - name: "Fetch the first pool id that matches our search"
+      redhat.satellite.subscription_info:
+        username: "{{ satellite_admin_username }}"
+        password: "{{ satellite_admin_password }}"
+        server_url: "{{ satellite_url }}"
+        organization: "{{ satellite_initial_organization }}"
+        validate_certs: "{{ satellite_validate_certs }}"
+        search: "{{ search }}"
+      register: result
+
+    - debug:
+        var: result.subscriptions[0].cp_id
+
+    - set_fact:
+        sub: "{{ sub | combine({'pool_id': result.subscriptions[0].cp_id}) }}"
+  when: sub.pool_id is not defined

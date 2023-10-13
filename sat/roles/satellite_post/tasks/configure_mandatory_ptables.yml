@@ -1,0 +1,9 @@
+---
+# This task configures the mandatory partition tables
+- name: Create the mandatory partition tables defined
+  include_tasks: create_ptable.yml
+  loop: "{{ ptables_mandatory }}"
+  loop_control:
+    loop_var: ptable
+  when: "ptables_mandatory is defined"
+

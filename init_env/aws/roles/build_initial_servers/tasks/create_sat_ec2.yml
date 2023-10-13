@@ -1,0 +1,36 @@
+---
+- name: provision satellite server
+  amazon.aws.ec2_instance:
+    name: "{{ ec2_name_prefix }}-satellite"
+    network:
+      assign_public_ip: true
+    key_name: "{{ ec2_name_prefix }}-key"
+    security_group: "{{ ec2_security_group }}"
+    instance_type: "{{ ec2_info['satellite'].instance_type }}"
+    image_id: "{{ sat_ami.image_id | default(imagebuilder_ami) }}"
+    region: "{{ ec2_region }}"
+    state: running
+    filters:
+      instance-state-name: running
+      "tag:avp_satellite": "{{ ec2_name_prefix }}-satellite"
+    tags:
+      avp_satellite: "{{ ec2_name_prefix }}-satellite"
+      avp: "{{ ec2_name_prefix }}"
+      uuid: "{{ ec2_name_prefix }}"
+      guid: "{{ ec2_name_prefix }}"
+      AWS_USERNAME: "{{ aws_user }}"
+      owner: "{{ aws_user }}"
+      Info: "AWS_USERNAME that provisioned this-> {{ aws_user }}"
+      short_name: "sat"
+      username: "{{ ec2_info['rhel'].username }}"
+    wait: "{{ ec2_wait }}"
+    vpc_subnet_id: "{{ ec2_vpc_subnet_id }}"
+    volumes:
+      - device_name: /dev/sda1
+        ebs:
+          volume_type: "{{ ec2_info['satellite'].disk_volume_type }}"
+          volume_size: "{{ ec2_info['satellite'].disk_space }}"
+          iops: "{{ ec2_info['satellite'].disk_iops }}"
+          throughput: "{{ ec2_info['satellite'].disk_throughput }}"
+          delete_on_termination: true
+    ebs_optimized: "{{ ebs_optimized_capable | default(false) }}"

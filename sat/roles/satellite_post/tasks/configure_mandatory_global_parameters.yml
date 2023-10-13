@@ -1,0 +1,8 @@
+---
+# Mandatory parameters ensure lab usecases behave appropriately
+# Optional parameters can be added for your usecases
+- name: "Configuring the mandatory global parameters"
+  include_tasks: ensure_global_parameter.yml
+  loop: "{{ global_parameters_mandatory }}"
+  loop_control:
+    loop_var: gp

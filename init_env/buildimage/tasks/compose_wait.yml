@@ -1,0 +1,43 @@
+---
+- name: "Retrieve a new access token"
+  ansible.builtin.include_tasks: retrieve_composer_access_token.yml
+
+- name: "Wait for console build to complete"
+  block:
+    - name: "Set or increment retry count"
+      ansible.builtin.set_fact:
+        compose_retry_count: "{{ 0 if compose_retry_count is undefined else compose_retry_count|int + 1 }}"
+
+    - name: "Watch for finished image compose"
+      ansible.builtin.uri:
+        url: "{{ build_status_url }}{{ compose_result.json.id }}"
+        method: "GET"
+        headers:
+          Authorization: "Bearer {{ access_token }}"
+          Content-Type: "application/json"
+        validate_certs: true
+        return_content: true
+      register: compose_status
+      until:
+        - compose_status.json is defined
+        - compose_status.json.image_status.status != "building"
+        - compose_status.json.image_status.status != "pending"
+      retries: 60
+      delay: 10
+
+    - name: "Finished build"
+      ansible.builtin.set_fact:
+        composer_done: true
+  rescue:
+    - name: "Retry count exceeded, time to fail"
+      ansible.builtin.fail:
+        msg: "Maximum retry count exceeded, have tried {{ compose_retry_count }} times"
+      when: compose_retry_count|int == 4
+
+    - name: "Still waiting..."
+      ansible.builtin.debug:
+        msg: "Still waiting, retry count {{ compose_retry_count }} of 4, retrying..."
+
+    - name: "Retry"
+      ansible.builtin.include_tasks: compose_wait.yml
+

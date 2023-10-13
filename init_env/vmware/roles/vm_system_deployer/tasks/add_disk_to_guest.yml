@@ -1,0 +1,19 @@
+---
+- name: "Add additional disk to the vm  {{ guest_fqdn }} - powered off"
+  community.vmware.vmware_guest_disk:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    datacenter: "{{ vcenter_datacenter }}"
+    name: "{{ guest_fqdn }}"
+    disk:
+      - size_mb: "{{ disk_size_mb }}"
+        scsi_controller: "{{ scsi_controller }}"
+        unit_number: "{{ unit_number }}"
+        type: "{{ type }}"
+        scsi_type: "{{ scsi_type }}"
+        disk_mode: "{{ disk_mode }}"
+        state: "present"
+    validate_certs: "{{ vcenter_validate_certs }}"
+  tags:
+    - build

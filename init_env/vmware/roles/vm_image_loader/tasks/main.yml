@@ -1,0 +1,12 @@
+---
+- name: "Upload the image to Datastore"
+  community.vmware.vsphere_copy:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    src: "{{ image_file_path }}"
+    datacenter: "{{ vcenter_datacenter }}"
+    datastore: "{{ vcenter_datastore }}"
+    path: "{{ vcenter_base_folder_path }}/{{ image_file_name }}"
+    validate_certs: "{{ vcenter_validate_certs }}"
+  

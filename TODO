@@ -1,0 +1,49 @@
+TODO:
+
+# 2023-10-10
+
+# IdM Items:
+
+# Satellite Items:
+### Finish build out of Content Views for Test Cases re: JBoss content views
+### Finish build out of Hostgroups for sample builds including JBoss, LAMP, Wordpress and compliance profiles
+### Finish policy module
+### Add policy variables 
+### Add policy tasks
+### Test policies
+
+
+# AAP Items
+
+# Template the Satellite Execution Environment container
+# built the container
+# register the container to the hub
+# create the execution environment on the controller
+# load the import for ACM
+# test the ACM pipeline
+# load the import for VMware modules
+# test the VMware modules
+# load the callback test modules
+# test the callbacks
+
+
+# Build the tang server
+# test a NBDE build of a host
+
+# Build an IdM replica
+
+# Create the Azure Compute Resource
+# Create an image on console. and load it to Azure
+# Build a system in Azure
+# Deploy a capsule
+# Deploy an IdM replica
+
+# Create the AWS Compute Resource
+# Create an image on console. and load it to AWS
+# Build a system in AWS
+# Deploy a capsule
+# Deploy an IdM replica
+
+
+# Back Burner
+# figure out why vim and wget cause issues during install when specified as custom packages - modularity??

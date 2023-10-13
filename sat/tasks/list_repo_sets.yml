@@ -1,0 +1,20 @@
+- name: "Find repository set by label."
+  redhat.satellite.resource_info:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    organization: "{{ satellite_initial_organization }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    resource: repository_sets
+    search: 'name ~ "Red Hat Satellite Client 6"'
+    full_details: true
+  register: result
+
+- debug:
+    var: result
+
+- debug:
+    var: item
+  loop: "{{ result | community.general.json_query(query) }}"
+  vars:
+    query: "repository_sets[*].{product: product.name, name: name, label: label}"

@@ -1,0 +1,20 @@
+---
+# variables controlling environment initialization
+# control the target platform for first 2 nodes
+bootstrap_allowable_values:
+  - "vmware"
+  - "aws"
+
+ansible_cfg_log_path: '~/lab_builder_ansible.log'
+ansible_cfg_vault_password_path: '~/.ansible/vault.txt'
+ansible_cfg_collections_path: '~/.ansible/collections/ansible_collections:/usr/share/ansible/collections/ansible_collections'
+ansible_cfg_patch_collection_dir: '~/.ansible/collections/ansible_collections'
+
+automation_hub_url: '{{ automation_hub_url_vault }}'
+automation_hub_token: '{{ automation_hub_token_vault }}'
+
+init_env_collection_install: true
+init_env_collection_install_force: false
+
+# special_collection_installs:
+#   - 'redhat-satellite-3.9.0-dev.tar.gz'

@@ -1,0 +1,54 @@
+---
+- name: "Expand /var volume and filesystem"
+  community.general.lvol:
+    vg: "rootvg"
+    lv: "varlv"
+    size: "{{ sat_var_size_gb }}"
+    resizefs: true
+  tags:
+    - build
+
+- name: "Expand /var/log volume and filesystem"
+  community.general.lvol:
+    vg: "rootvg"
+    lv: "var_loglv"
+    size: "{{ sat_var_log_size_gb }}"
+    resizefs: true
+  tags:
+    - build
+
+- name: "Expand /var/log/audit volume and filesystem"
+  community.general.lvol:
+    vg: "rootvg"
+    lv: "var_log_auditlv"
+    size: "{{ sat_var_log_audit_size_gb }}"
+    resizefs: true
+  tags:
+    - build
+
+- name: "Expand /var/tmp volume and filesystem"
+  community.general.lvol:
+    vg: "rootvg"
+    lv: "var_tmplv"
+    size: "{{ sat_var_tmp_size_gb }}"
+    resizefs: true
+  tags:
+    - build
+
+- name: "Expand /tmp volume and filesystem"
+  community.general.lvol:
+    vg: "rootvg"
+    lv: "tmplv"
+    size: "{{ sat_tmp_size_gb }}"
+    resizefs: true
+  tags:
+    - build
+
+- name: "Expand /home volume and filesystem"
+  community.general.lvol:
+    vg: "rootvg"
+    lv: "homelv"
+    size: "{{ sat_home_size_gb }}"
+    resizefs: true
+  tags:
+    - build

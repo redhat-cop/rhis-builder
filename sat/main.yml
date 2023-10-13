@@ -1,0 +1,38 @@
+---
+- name: "Build the satellite primary"
+  hosts: sat_primary
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/satellite_pre_vars.yml"
+    - "vars/satellite_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+    - name: "Dynamically include variables"
+      ansible.builtin.include_vars:
+        file: "{{ item }}"
+      loop:
+        - "vars/satellite_provisioning_vars_{{ rhisbuilder_bootstrap_target }}.yml"
+        - "~/rhisbuilder_vault.yml"
+
+    - name: "Apply role of satellite_pre to {{ ansible_fqdn }}"
+      ansible.builtin.include_role:
+        name: satellite_pre
+      tags:
+        - tags_phase_3
+        - tags_satellite_pre
+
+    - name: "Apply role of satellite to {{ ansible_fqdn }}"
+      ansible.builtin.include_role:
+        name: satellite
+      tags:
+        - tags_phase_3
+        - tags_satellite_install
+
+    - name: "Apply satellite_post role to target"
+      ansible.builtin.include_role:
+        name: satellite_post
+      tags:
+        - tags_phase_3
+        - tags_satellite_post

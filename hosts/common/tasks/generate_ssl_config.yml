@@ -1,0 +1,136 @@
+---
+# Create the SSL key, cert, and certmonger tracking for host
+- name: "Create a secure directory"
+  ansible.builtin.file:
+    path: "{{ ssl_certs_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0600
+  delegate_to: "{{ host.fqdn }}"
+
+- name: "Set target service name"
+  set_fact: 
+    target_service: "{{ crt_service_type }}/{{ host.fqdn }}"
+
+- name: "Ensure target service is present"
+  community.general.ipa_service:
+    name: "{{ target_service }}"
+    state: present
+    ipa_host: "{{ ipa_server_fqdn }}"
+    ipa_user: "{{ ipa_admin_principal }}"
+    ipa_pass: "{{ ipa_admin_password }}"
+  delegate_to: "{{ host.fqdn }}"
+
+- name: "Check for an existing certificate file"
+  ansible.builtin.stat:
+    path: "{{ host.ssl_cert_path }}"
+  register: cert_exists
+  delegate_to: "{{ host.fqdn }}"
+
+- name: "Cert exists and regen requested - stop tracking and clean up"
+  block:
+
+  - name: "Read existing cert"
+    ansible.builtin.shell: "sed -n 2,$(expr $(wc -l < {{ host.ssl_cert_path }}) - 1)p {{ host.ssl_cert_path }}"
+    register: cert
+    delegate_to: "{{ host.fqdn }}"
+
+  - name: "Get cert serial number"
+    ansible.builtin.shell: "echo '{{ ipa_admin_password }}' | kinit {{ ipa_admin_principal }}; ipa cert-find --certificate='{{ cert.stdout }}' | grep 'Serial number:' | cut -c18-"
+    register: serial_num
+    delegate_to: "{{ host.fqdn }}"
+
+  - name: "Stop tracking cert with certmonger"
+    ansible.builtin.shell: "echo '{{ ipa_admin_password }}' | kinit {{ ipa_admin_principal }}; ipa-getcert stop-tracking -k {{ host.ssl_key_path }} -f {{ host.ssl_cert_path }} -i {{ host.fqdn }}"
+    ignore_errors: true
+    delegate_to: "{{ host.fqdn }}"
+
+  - name: "Remove the old cert from the service"
+    ansible.builtin.shell: "echo '{{ ipa_admin_password }}' | kinit {{ ipa_admin_principal }}; ipa service-remove-cert {{ target_service }} --certificate='{{ cert.stdout }}'"
+    ignore_errors: true
+    delegate_to: "{{ host.fqdn }}"
+
+  - name: "Revoke the old cert with reason 6 - certificateHold - an admin can completely revoke it later"
+    ansible.builtin.shell: "echo '{{ ipa_admin_password }}' | kinit {{ ipa_admin_principal }}; ipa cert-revoke {{ serial_num.stdout_lines.1 }} --revocation-reason=6"
+    ignore_errors: true
+    delegate_to: "{{ host.fqdn }}"
+
+  - name: "Cert exists, rename old cert .revoked"
+    ansible.builtin.copy:
+      src: "{{ host.ssl_cert_path }}"
+      dest: "{{ host.ssl_cert_path }}.revoked"
+      remote_src: yes
+    delegate_to: "{{ host.fqdn }}"
+
+  when: cert_exists.stat.exists and crt_force_regen
+
+- name: Generating New Certificate
+  block:
+
+  - name: Generate configuration files
+    ansible.builtin.lineinfile: 
+      path: "{{ passfile }}"
+      state: present
+      create: true
+      line: "{{ ssl_rsa_key_pass }}"
+      owner: root
+      mode: 0740
+    delegate_to: "{{ host.fqdn }}"
+
+  - ansible.builtin.command: "openssl genrsa -{{ ssl_private_key_cipher }} -out {{ host.ssl_private_key_pem_path }} -passout file:/{{ passfile }} {{ ssl_private_key_size }}"
+    delegate_to: "{{ host.fqdn }}"
+
+  - ansible.builtin.command: "openssl rsa -in {{ host.ssl_private_key_pem_path }} -out {{ host.ssl_key_path }} -passin file:/{{ passfile }}"
+    delegate_to: "{{ host.fqdn }}"
+
+  - name: Create request
+    ansible.builtin.command: "openssl req -new -key {{ host.ssl_key_path }} -out {{ host.ssl_csr_path }} -subj \"/C={{ csr_countryName }}/ST={{ csr_stateOrProvinceName }}/L={{ csr_localityName }}/O={{ csr_organizationName }}/OU={{ csr_organizationUnitName }}/CN={{ host.fqdn }}/subjectAltName=DNS.1={{ host.fqdn }}\""
+    delegate_to: "{{ host.fqdn }}"
+
+  - name: Generate the certificate for the service
+    ansible.builtin.shell: "echo '{{ ipa_admin_password }}' | kinit {{ ipa_admin_principal }}; ipa cert-request --add --principal={{ target_service }} {{ host.ssl_csr_path }} --certificate-out={{ host.ssl_cert_path }}"
+    delegate_to: "{{ host.fqdn }}"
+
+
+  - name: Ensure that certmonger starts-tracking the new certificate for autorenewals
+    ansible.builtin.shell: "echo '{{ ipa_admin_password }}' | kinit {{ ipa_admin_principal }}; ipa-getcert start-tracking -k {{ host.ssl_key_path }} -f {{ host.ssl_cert_path }} -I {{ host.fqdn }}"
+    delegate_to: "{{ host.fqdn }}"
+
+  when: cert_exists.stat.exists == false or crt_force_regen == true
+
+- name: Generate the certificate hash
+  ansible.builtin.shell: "openssl x509 -noout -modulus -in {{ host.ssl_cert_path }} | openssl md5"
+  register: cert_hash
+  delegate_to: "{{ host.fqdn }}"
+
+- name: Generate the key hash
+  ansible.builtin.shell: "openssl rsa -noout -modulus -in  {{ host.ssl_key_path }} | openssl md5"
+  register: key_hash
+  delegate_to: "{{ host.fqdn }}"
+
+- name: Verify the files
+  ansible.builtin.assert:
+    that: cert_hash.stdout == key_hash.stdout
+  delegate_to: "{{ host.fqdn }}"
+
+- name: Pausing
+  ansible.builtin.wait_for:
+    timeout: 60
+  delegate_to: localhost
+
+- name: Check the certifcate against our CA
+  ansible.builtin.command: "openssl verify --CAfile {{ ipa_server_ca_path }} {{ host.ssl_cert_path }}"
+  register: result
+  delegate_to: "{{ host.fqdn }}"
+
+- name: Verify the result
+  ansible.builtin.assert:
+    that: "'OK' in result.stdout"
+  delegate_to: "{{ host.fqdn }}"
+
+- name: Cleanup
+  ansible.builtin.file:
+    path: "{{ passfile }}"
+    state: absent
+  delegate_to: "{{ host.fqdn }}"

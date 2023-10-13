@@ -1,0 +1,32 @@
+---
+# This is the labbuilder entry point
+# You need to have visited all the component directories and set up the variables 
+# in order for this play to run successfully. 
+# Please see the README.md file in this directory
+
+- name: "Phase 1 - initialize the environment with 2 machines"
+  ansible.builtin.import_playbook: ./init_env/main.yml
+  tags:
+  - tags_phase_1
+
+- name: "Phase 2 - install and configure idm primary"
+  ansible.builtin.import_playbook: ./idm/main.yml
+  tags:
+  - tags_phase_2
+
+- name: "Phase 2a - Reconfigure infrastructure to use IDM DNS"
+  ansible.builtin.import_playbook: ./init_env/aws/configure_idm_dns.yml
+  tags:
+  - tags_phase_2
+  - tags_phase_2a
+  when: rhisbuilder_bootstrap_target == "aws"
+
+- name: "Phase 3 - install and configure satellite primary"
+  ansible.builtin.import_playbook: ./sat/main.yml
+  tags:
+  - tags_phase_3
+
+- name: "Phase 4 - bootstrap ansible controller and other nodes"
+  ansible.builtin.import_playbook: ./hosts/main.yml
+  tags:
+  - tags_phase_4

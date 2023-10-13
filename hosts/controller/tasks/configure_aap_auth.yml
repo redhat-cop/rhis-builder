@@ -1,0 +1,10 @@
+---
+# configure authentication for our controller instance
+# the authentication settings will be part of the general settings for the server
+# it will be a complete settings section vs. a name:value pair
+
+- name: "Configure the authentication server settngs"
+  ansible.builtin.include_tasks: "../../common/tasks/ensure_aap_setting.yml"
+  loop: "{{ aap_settings }}"
+  loop_control:
+    loop_var: aap_setting

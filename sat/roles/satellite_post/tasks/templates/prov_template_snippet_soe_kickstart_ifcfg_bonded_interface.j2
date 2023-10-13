@@ -1,0 +1,21 @@
+<%#
+name: soe_kickstart_ifcfg_bonded_interface
+model: ProvisioningTemplate
+snippet: true
+model: ProvisioningTemplate
+kind: snippet
+description: |
+  Generates the ifcfg configuration file for interface attached to a bond.
+  This is typically used by other templates and snippets that pass interface
+  object to be configured. It is not expected to be used directly.
+-%>
+<%= snippet('soe_kickstart_ifcfg_generic_interface', :variables => {
+                  :interface => @interface,
+                  :subnet => @subnet,
+                  :subnet6 => @subnet6,
+                  :dhcp => @dhcp }) -%>
+<%-   if ( @host.operatingsystem.family == 'Redhat' && @host.operatingsystem.major.to_i <= 7 ) -%>
+<%=     "NM_CONTROLLED=no" %>
+<%-   end -%>
+MASTER=<%= @bond_identifier %>
+SLAVE=yes

@@ -1,0 +1,25 @@
+---
+# Delete the host
+
+- name: "Delete the host if it exists and we are rebuilding"
+  redhat.satellite.host:
+    username: "{{ satellite_service_acct_username }}"
+    password: "{{ satellite_service_acct_password }}"
+    server_url: "{{ satellite_server_url }}"
+    organization: "{{ host.organization }}"
+    location: "{{ host.location }}"
+    name: "{{ host.fqdn }}"
+    state: absent
+    validate_certs: "{{ satellite_validate_certs }}"
+  when:
+    - host_exists == true
+    - delete_host == true
+
+- name: "wait for host to be deleted"
+  ansible.builtin.wait_for:
+    host: "{{ host.fqdn }}"
+    timeout: 600
+    sleep: 90
+    port: 22
+    state: stopped
+  connection: local

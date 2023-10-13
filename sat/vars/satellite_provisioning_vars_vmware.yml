@@ -1,0 +1,272 @@
+---
+subnets_mandatory:
+  - name: "Public"
+    description: "Front side for client apps "
+    network_type: "IPv4"
+    network: 192.168.140.0
+    prefix: 22
+    mask: 255.255.252.0
+    gateway: 192.168.140.1
+    dns_primary: 192.168.140.5
+    dns_secondary: 192.168.140.5
+    ipam: "Internal DB"
+    from_ip: 192.168.140.101
+    to_ip: 192.168.140.254
+    boot_mode: "Static"
+    discovery_capsule: "{{ satellite_fqdn }}"
+    tftp_capsule: "{{ satellite_fqdn }}"
+    dns_capsule: "{{ satellite_fqdn }}"
+    template_capsule: "{{ satellite_fqdn }}"
+    domains:
+      - "{{ satellite_domain }}"
+    locations:
+      - "{{ satellite_initial_location }}"
+    organizations:
+      - "{{ satellite_initial_organization }}"
+
+# subnets_optional:
+
+vcenter_service_username: "{{ vcenter_service_username_vault }}"
+vcenter_service_password: "{{ vcenter_service_password_vault }}"
+
+compute_resources_mandatory:
+  - name: "VMware_Lab"
+    provider: "vmware"
+    description: "Lab VCenter Server"
+    locations: "{{ satellite_initial_location }}"
+    organizations: "{{ satellite_initial_organization }}"
+    provider_params:
+      caching_enabled: true
+      datacenter: "example.ca"
+      url: "192.168.140.30"
+      user: "{{ vcenter_service_username }}"
+      password: "{{ vcenter_service_password }}"
+
+
+# compute_resources_optional:
+
+# setup_virtwho
+vcenter_virtwho_username: "{{ vcenter_virtwho_username_vault }}"
+vcenter_virtwho_password: "{{ vcenter_virtwho_password_vault }}"
+satellite_virtwho_username: "{{ satellite_virtwho_username_vault }}"
+satellite_virtwho_password: "{{ satellite_virtwho_password_vault }}"
+
+virtwho_configs_mandatory:
+  - foreman_virt_who_configure_config:
+      name: "VMware"
+      hypervisor_type: "esx"
+      hypervisor_server: "192.168.140.30"
+      hypervisor_username: "{{ vcenter_virtwho_username }}"
+      hypervisor_password: "{{ vcenter_virtwho_password }}"
+      hypervisor_id: "hostname"
+      interval: "120"
+      filtering_mode: 0
+      satellite_url: "sat.example.ca"
+      organization_id: 1
+
+# compute_profiles
+compute_profiles_mandatory:
+  - name: "SOE_Small"
+    compute_attributes:
+      - compute_resource: "VMware_Lab"
+        vm_attrs:
+          cpus: 1
+          corespersocket: 1
+          memory_mb: 4096
+          cluster: "NUCLab"
+          resource_pool: "Resources"
+          path: "/Datacenters/example.ca/vm"
+          guest_id: "rhel8_64Guest"
+          hardware_version: "Default"
+          memoryHotAddEnabled: true
+          cpuHotAddEnabled: true
+          add_cdrom: false
+          boot_order:
+            - "network"
+            - "disk"
+          scsi_controllers:
+            - type: ParaVirtualSCSIController
+              key: 1000
+          volumes_attributes:
+            0:
+              thin: true
+              name: "Hard disk"
+              mode: "persistent"
+              controller_key: 1000
+              datastore: "NASAEX_VMS"
+              size_gb: 65
+          interfaces_attributes:
+            0:
+              type: "VirtualVmxnet3"
+              network: "VM Network"
+
+  - name: "SOE_Medium"
+    compute_attributes:
+      - compute_resource: "VMware_Lab"
+        vm_attrs:
+          cpus: 2
+          corespersocket: 1
+          memory_mb: 8192
+          cluster: "NUCLab"
+          resource_pool: "Resources"
+          path: "/Datacenters/example.ca/vm"
+          guest_id: "rhel8_64Guest"
+          hardware_version: "Default"
+          memoryHotAddEnabled: true
+          cpuHotAddEnabled: true
+          add_cdrom: false
+          boot_order:
+            - "network"
+            - "disk"
+          scsi_controllers:
+            - type: ParaVirtualSCSIController
+              key: 1000
+          volumes_attributes:
+            0:
+              thin: true
+              name: "Hard disk"
+              mode: "persistent"
+              controller_key: 1000
+              datastore: "NASAEX_VMS"
+              size_gb: 100
+          interfaces_attributes:
+            0:
+              type: "VirtualVmxnet3"
+              network: "VM Network"
+
+  - name: "SOE_Large"
+    compute_attributes:
+      - compute_resource: "VMware_Lab"
+        vm_attrs:
+          cpus: 4
+          corespersocket: 1
+          memory_mb: 8192
+          cluster: "NUCLab"
+          resource_pool: "Resources"
+          path: "/Datacenters/example.ca/vm"
+          guest_id: "rhel8_64Guest"
+          hardware_version: "Default"
+          memoryHotAddEnabled: true
+          cpuHotAddEnabled: true
+          add_cdrom: false
+          boot_order:
+            - "network"
+            - "disk"
+          scsi_controllers:
+            - type: ParaVirtualSCSIController
+              key: 1000
+          volumes_attributes:
+            0:
+              thin: true
+              name: "Hard disk"
+              mode: "persistent"
+              controller_key: 1000
+              datastore: "NASAEX_VMS"
+              size_gb: 100
+          interfaces_attributes:
+            0:
+              type: "VirtualVmxnet3"
+              network: "VM Network"
+
+hostgroups_mandatory:
+  - name: "RHEL8base"
+    description: "RHEL 8 SOE base hostgroup"
+    activation_keys: "SOE_RHEL8"
+    ansible_roles:
+      - theforeman.foreman_scap_client
+    architecture: "x86_64"
+    compute_profile: "SOE_Medium"
+    compute_resource: "VMware_Lab"
+    content_source: "sat.example.ca"
+    content_view: "SOE_RHEL8"
+    domain: "{{ satellite_domain }}"
+    lifecycle_environment: "Development"
+    kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+    locations: "{{ satellite_initial_location }}"
+    organization: "{{ satellite_initial_organization }}"
+    openscap_capsule: "{{ satellite_fqdn }}"
+    operatingsystem: "RHEL 8.8"
+    ptable: "RHEL_Server_CIS1"
+    pxe_loader: "PXELinux BIOS"
+    realm: "{{ satellite_domain | upper }}"
+    subnet: "Public"
+    root_pass: "{{ satellite_admin_password }}"
+
+  - name: "RHEL8_JBoss"
+    parent: "RHEL8base"
+    description: "RHEL 8 SOE for JBoss"
+    content_view: "SOE_JBoss"
+    ansible_roles:
+      - theforeman.foreman_scap_client
+    ptable: "RHEL_Server_Compliance"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "RHEL8_LAMP"
+    parent: "RHEL8base"
+    description: "RHEL 8 SOE for LAMP stack"
+    content_view: "SOE_RHEL8"
+    ansible_roles:
+      - theforeman.foreman_scap_client
+    ptable: "RHEL_Server_Compliance"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "RHEL8_WordPress"
+    parent: "RHEL8base"
+    description: "RHEL 8 SOE for WordPress"
+    content_view: "SOE_RHEL8EPEL"
+    ansible_roles:
+      - theforeman.foreman_scap_client
+    ptable: "RHEL_Server_Compliance"
+    organization: "{{ satellite_initial_organization }}"
+
+hostgroups_optional:
+  - name: "RHEL9base"
+    description: "RHEL 9 SOE base hostgroup"
+    activation_keys: "SOE_RHEL9"
+    ansible_roles:
+      - theforeman.foreman_scap_client
+    architecture: "x86_64"
+    compute_profile: "SOE_Medium"
+    compute_resource: "VMware_Lab"
+    content_source: "{{ satellite_fqdn }}"
+    content_view: "SOE_RHEL9"
+    domain: "{{ satellite_domain }}"
+    lifecycle_environment: "Development"
+    kickstart_repository: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS Kickstart 9.2"
+    locations: "{{ satellite_initial_location }}"
+    organization: "{{ satellite_initial_organization }}"
+    openscap_capsule: "{{ satellite_fqdn }}"
+    operatingsystem: "RHEL 9.2"
+    ptable: "RHEL_Server_CIS1"
+    pxe_loader: "PXELinux BIOS"
+    realm: "{{ satellite_domain | upper }}"
+    subnet: "Public"
+    root_pass: "{{ satellite_admin_password }}"
+
+  - name: "RHEL8_CIS2"
+    parent: "RHEL8base"
+    description: "RHEL 8 SOE for CIS Server 2 compliance template"
+    ansible_roles:
+      - theforeman.foreman_scap_client
+      - ansible-role-rhel8-cis
+    ptable: "RHEL_Server_Compliance"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "RHEL9_CIS2"
+    parent: "RHEL9base"
+    description: "RHEL 9 SOE for CIS Server 2 compliance template"
+    ansible_roles:
+      - theforeman.foreman_scap_client
+      - ansible-role-rhel9-cis
+    ptable: "RHEL_Server_Compliance"
+    organization: "{{ satellite_initial_organization }}"
+
+discovery_rules_mandatory:
+  - name: "3nic_host"
+    enabled: false
+    state: present
+    organizations: "{{ satellite_initial_organization }}"
+    locations: "{{ satellite_initial_location }}"
+    search: 'disk_count = 2 and memory > 32000 and facts.interfaces ~ "*,*,*,*"'
+    priority: 20
+    hostgroup: "RHEL9base/RHEL9_CIS2"

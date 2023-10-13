@@ -1,0 +1,26 @@
+---
+# VMware reconfiguration
+- name: "Reconfiguration to use IDM as DNS server"
+  hosts: build_control
+  connection: local
+  gather_facts: true
+  become: false
+  vars_files:
+    - '~/rhisbuilder_vault.yml'
+  
+  tasks:
+
+    - name: "Get provisioners interface"
+      ansible.builtin.set_fact:
+        connection_name: "System enp0s25"
+
+    - name: "Reconfigure Provisioner"
+      redhat.rhel_system_roles.network:
+      vars:
+        network_connections:
+          - name: "{{ connection_name }}"
+            type: "ethernet"
+            ip:
+              dns:
+                - "{{ instance_data | selectattr('name', 'equalto', 'idm_primary') | map(attribute='ip') | first }}"
+          

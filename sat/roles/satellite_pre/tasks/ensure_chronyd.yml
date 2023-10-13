@@ -1,0 +1,25 @@
+---
+# Ensure that chronyd is installed and that time is synchronized.
+- name: "Install chrony for accurate time keeping"
+  ansible.builtin.dnf:
+    name: chrony
+    state: present
+
+- name: "Configure 2 time servers"
+  ansible.builtin.template:
+    src: "chrony.j2"
+    dest: "/etc/chrony.conf"
+
+- name: "Start the chronyd service with default settings"
+  ansible.builtin.service:
+    name: chronyd
+    state: restarted
+    enabled: true
+
+- name: "Ensure the time is synchronized"
+  ansible.builtin.command: "chronyc makestep"
+
+- name: "Install the SOS Report package"
+  ansible.builtin.dnf:
+    name: sos
+    state: present

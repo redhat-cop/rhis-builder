@@ -1,0 +1,15 @@
+---
+# This playbook configures the mandatory configuration templates 
+# NOTE: If you are providing templates that will be used with
+# ansible downstream, ensure the downstream ansible is properly 
+# encapsulated. This also applies to any foreman templating 
+# that may be incompatible with anisble template parsing,
+# these occurences should be rare.
+
+- name: Create the mandatory configuration templates
+  include_tasks: create_prov_template.yml
+  loop: "{{ prov_templates_mandatory }}"
+  loop_control:
+    loop_var: pt
+  when: "prov_templates_mandatory is defined"
+

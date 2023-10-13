@@ -1,0 +1,4 @@
+---
+- name: "Apply the IdM Replica role to {{ ansible_fqdn }}"
+  ansible.builtin.include_roles:
+    - redhat.rhel_idm.ipareplica

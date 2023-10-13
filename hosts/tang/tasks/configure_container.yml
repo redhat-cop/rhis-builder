@@ -1,0 +1,41 @@
+---
+# Configure the container to be launched by systemd
+
+- name: "Configure the firewall ports"
+  ansible.posix.firewalld:
+    service: "{{ item.service | default(omit) }}"
+    port: "{{ item.port | default(omit) }}"
+    permanent: "{{ item.permanent | default(true) }}"
+    state: "{{ item.state | default (enabled) }}"
+  loop: "{{ container.firewall }}"
+
+# e.g. semanage port -a -t tangd_port_t -p tcp 8080
+- name: "Configure SELinux ports"
+  community.general.seport:
+    ports: "{{ item.ports }}"
+    proto: "{{ item.protocol }}"
+    setype: "{{ item.setype }}"
+    state: "{{ item.state }}"
+  loop: "{{ container.selinux_ports }}"
+
+- name: "Install dependencies"
+  ansible.builtin.dnf:
+    name: "{{ container.dependencies }}"
+    state: present
+
+- name: "Configure the container"
+  containers.podman.podman_container:
+    name: "{{ container.name }}"
+    image: "{{ container.image }}"
+    command: "{{ container.command | default(omit) }}"
+    state: "{{ container.state }}"
+    publish: "{{ container.publish | default(omit) }}" 
+    volume: "{{ container.volume | default(omit) }}"
+    generate_systemd: "{{ container.generate_systemd | default(omit) }}"
+
+
+- name: "Start the service"
+  ansible.builtin.service:
+    name: "{{ container.generate_systemd.container_prefix }}-{{ container.name }}.service"
+    state: started
+

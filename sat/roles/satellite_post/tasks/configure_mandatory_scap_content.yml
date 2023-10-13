@@ -1,0 +1,7 @@
+---
+- name: "Enable the mandatory scap content"
+  include_tasks: ensure_scap_content.yml
+  loop: "{{ scap_content_mandatory }}"
+  loop_control:
+    loop_var: scap
+  when: scap_content_mandatory is defined

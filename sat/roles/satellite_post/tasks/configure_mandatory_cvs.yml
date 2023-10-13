@@ -1,0 +1,25 @@
+---
+# This play will configure the mandatory Content Views for the lab.
+# Create expects the cv loop variable
+- name: Creating the specified content views
+  include_tasks: create_cv.yml
+  loop: "{{ cvs_mandatory }}"
+  loop_control:
+    loop_var: cv
+  tags:
+    - tags_content_management
+    - tags_content_views
+    - tags_mandatory
+    - tags_mandatory_content_views
+
+# Publish requires the cv loop variable.
+- name: Publish the specified content views
+  include_tasks: publish_cv_version.yml
+  loop: "{{ cvs_mandatory }}"
+  loop_control:
+    loop_var: cv
+  tags:
+    - tags_content_management
+    - tags_content_views
+    - tags_mandatory
+    - tags_mandatory_content_views

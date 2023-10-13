@@ -1,0 +1,14 @@
+---
+vcenter_domain: "example.ca"
+vcenter_hostname: "vcenter.example.ca"
+vcenter_ip: "192.168.0.30"
+vcenter_username: "{{ vcenter_username_vault }}"
+vcenter_password: "{{ vcenter_password_vault }}"
+vcenter_datacenter: "{{ vcenter_domain }}"
+vcenter_cluster: "vm_cluster"
+vcenter_datastore: "vm_image_datastore"
+vcenter_system_datastore: "vcenter_datastore"
+vcenter_base_folder_path: "base"
+vcenter_resource_pool: "/{{ vcenter_datacenter }}/host/{{ vcenter_cluster }}/Resources"
+vcenter_network: "VM Network"
+vcenter_validate_certs: false

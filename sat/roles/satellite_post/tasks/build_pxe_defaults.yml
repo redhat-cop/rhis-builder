@@ -1,0 +1,15 @@
+---
+# have foreman build configure the default pxe templates and menus to 
+# ensure we boot to the foreman discovery image
+
+- name: Create the default pxe configuration
+  ansible.builtin.command: "hammer template build-pxe-default"
+
+# ensure the discovery image gets booted on timeout
+- name: Modify the menu default for Foreman Discovery
+  lineinfile:
+    path: "/var/lib/tftpboot/pxelinux.cfg/default"
+    state: present
+    line: "ONTIMEOUT discovery"
+    regex: "ONTIMEOUT local"
+

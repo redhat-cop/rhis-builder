@@ -1,0 +1,7 @@
+---
+- name: "Enable the mandatory repository sets"
+  include_tasks: enable_repository.yml
+  loop: "{{ repos_mandatory }}"
+  loop_control:
+    loop_var: repo
+  when: repos_mandatory is defined

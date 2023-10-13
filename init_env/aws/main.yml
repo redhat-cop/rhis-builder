@@ -1,0 +1,113 @@
+---
+# AWS specific initialization starts here
+- name: "AWS specific initialization"
+  hosts: build_control
+  connection: local
+  become: false
+  vars_files:
+    - "vars/aws_vars.yml"
+    - "~/rhisbuilder_vault.yml"    
+  vars:
+    ec2_wait: true
+
+  tasks:
+    - name: collection final check
+      block:
+        - name: run AWS check setup if using AWS
+          ansible.builtin.include_role:
+            name: roles/aws_check_setup
+
+      rescue:
+        - name: Error with setup
+          fail:
+            msg: The provisioner has failed during initial check_setup, please scroll up to see exact error.
+
+    - name: Provision network stuff
+      ansible.builtin.include_role:
+        name: roles/manage_ec2_infra
+
+    - name: Build idm and satellite VMs
+      ansible.builtin.include_role:
+        name: roles/build_initial_servers
+
+      # This also provides idm_instance and sat_instance facts
+    - name: Build inventory for subsequent plays
+      ansible.builtin.include_role:
+        name: roles/build_bootstrap_inventory
+
+    - name: Manage DNS entries
+      ansible.builtin.include_role:
+        name: roles/manage_route53_dns
+      when: manage_public_dns
+
+    - name: Wait for EC2 servers to be available
+      ansible.builtin.wait_for:
+        host: "{{ item }}"
+        port: 22
+      loop:
+        - "{{ idm_instance['public_ip_address'] }}"
+        - "{{ sat_instance['public_ip_address'] }}"
+        - "{{ aap_instance['public_ip_address'] }}"
+        - "{{ hub_instance['public_ip_address'] }}"
+
+- name: Post-provisioning tasks
+  hosts: aws_nodes
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/aws_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+  vars:
+    idm_info: "{{ hostvars['localhost']['idm_instance'] }}"
+    sat_info: "{{ hostvars['localhost']['sat_instance'] }}"
+    aap_info: "{{ hostvars['localhost']['aap_instance'] }}"
+    hub_info: "{{ hostvars['localhost']['hub_instance'] }}"
+  tasks:
+    - name: Set facts
+      ansible.builtin.set_fact:
+        idm_ip: "{{ idm_info.private_ip_address }}"
+        ipaserver_ip_addresses: "{{ idm_info.private_ip_address }}"
+        ipaclient_configure_dns_resolver: false
+
+    - name: 'Ensure hostname-setting can persist (thanks, cloud-init)'
+      ansible.builtin.lineinfile:
+        path: '/etc/cloud/cloud.cfg'
+        regexp: '^\s*preserve_hostname:'
+        line: 'preserve_hostname: true'
+
+    - name: Set hostnames
+      ansible.builtin.hostname:
+        name: '{{ short_hostname }}.{{ ipa_server_domain }}'
+
+    - name: Set /etc/hosts
+      ansible.builtin.copy:
+        content: |
+          127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+          ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+          {{ idm_info.private_ip_address }}       idm.{{ ipa_server_domain }} idm
+          {{ sat_info.private_ip_address }}       sat.{{ ipa_server_domain }} sat satellite
+          {{ aap_info.private_ip_address }}       aap.{{ ipa_server_domain }} aap tower
+          {{ hub_info.private_ip_address }}       hub.{{ ipa_server_domain }} hub
+        dest: /etc/hosts
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Expand EBS disks
+      ansible.builtin.include_role:
+        name: roles/expand_imagebuilder_rootvg
+      when: imagebuilder_include_filesystem
+
+- name: Configure Satellite storage
+  hosts: sat_primary
+  become: true
+  gather_facts: true
+  vars_files:
+    - vars/sat_vars.yml
+    - "~/rhisbuilder_vault.yml"
+  tasks:
+    - name: "Configure satellite storage"
+      ansible.builtin.include_role:
+        name: roles/expand_satellite_storage
+      when: imagebuilder_include_filesystem

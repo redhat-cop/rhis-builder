@@ -1,0 +1,7 @@
+---
+- name: "Configure the optional compute profiles"
+  include_tasks: ensure_compute_profile.yml
+  loop: "{{ compute_profiles_optional }}"
+  loop_control:
+    loop_var: cpr
+  when: "compute_profiles_optional is defined"

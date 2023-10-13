@@ -1,0 +1,41 @@
+---
+# Add standard sudo rules for the POC
+- name: "Add the realm-admin sudo rule"
+  redhat.rhel_idm.ipasudorule:
+    name: "realm-admin"
+    description: "Control sudo access on all servers for admins"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    cmdcategory: all
+    hostcategory: all
+    group:
+    - admins
+ 
+
+- name: "Add the sat-admin sudo rule"
+  redhat.rhel_idm.ipasudorule:
+    name: "sat-admin"
+    description: "Control sudo access on Satellite Servers and Capsules"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    cmdcategory: all
+    hostgroup:
+    - sat-servers
+    group:
+    - satgroup-administrator
+    - satgroup-org-administrator
+    - satgroup-site-administrator
+    - satgroup-operator
+
+- name: "Add the aap-admin sudo rule"
+  redhat.rhel_idm.ipasudorule:
+    name: "aap-admin"
+    description: "Control sudo access on Ansible Tower Servers"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    cmdcategory: all
+    hostgroup:
+    - aap-servers
+    group:
+    - aapgroup-administrator
+    - aapgroup-operator

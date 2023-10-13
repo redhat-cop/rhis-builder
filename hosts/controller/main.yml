@@ -1,0 +1,33 @@
+---
+# Deploy ansible on the automation controller
+- name: "Generate SSL certificates for the controllers"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/common/tasks/generate_ssl_config.yml"
+  loop: "{{ controllers }}"
+  loop_control:
+    loop_var: host
+  
+- name: "Fetch latest AAP installer"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/controller/tasks/download_content.yml"
+
+- name: "Extract installer"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/controller/tasks/extract_aap_installer.yml"
+
+- name: "Template install config"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/controller/tasks/generate_installer_template.yml"
+  
+- name: "Launch installer"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/controller/tasks/launch_installer.yml"
+
+- name: "Local configuration tasks"
+  block:
+
+    - name: "Download the subscriptions manifest"
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/controller/tasks/fetch_manifest.yml"
+  
+    - name: "Add the subscriptions to the controller"
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/controller/tasks/add_aap_manifest.yml"
+  
+    - name: "Configure controller authentication"
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/controller/tasks/configure_aap_auth.yml"
+      
+  delegate_to: localhost

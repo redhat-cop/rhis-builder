@@ -1,0 +1,8 @@
+---
+- name: "Configure the mandatory activation_keys"
+  include_tasks: "create_ak.yml"
+  loop: "{{ aks_mandatory }}"
+  loop_control:
+    loop_var: ak
+  when: "aks_mandatory is defined"
+

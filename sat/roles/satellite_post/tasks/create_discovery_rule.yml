@@ -1,0 +1,18 @@
+---
+# This task creates the discovery rule
+- name: 'Ensure Discovery Rule'
+  redhat.satellite.discovery_rule:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    organizations: "{{ drule.organizations | default(omit) }}"
+    locations: "{{ drule.locations | default(omit) }}"
+    name: "{{ drule.name }}"
+    search: "{{ drule.search | default(omit) }}"
+    hostgroup: "{{ drule.hostgroup | default(omit) }}"
+    hostname: "{{ drule.hostname_pattern | default(omit) }}"
+    max_count: "{{ drule.max_count | default(omit) }}"
+    priority: "{{ drule.priority | default(omit) }}"
+    enabled: "{{ drule.enabled | default(omit) }}"
+    state: "{{ drule.state | default(omit) }}"

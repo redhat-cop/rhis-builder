@@ -1,0 +1,72 @@
+---
+hub_firewalld_zone: "public"
+hub_firewalld_services: 
+  - http
+  - https
+
+hub_drop_zone: "drop"
+hub_drop_remove_ports:
+  - "80/tcp"
+  - "443/tcp"
+
+ssl_certs_dir: "/etc/ipa/private"
+passfile: "{{ ssl_certs_dir }}/passfile"
+crt_service_type: "HTTP"
+crt_force_regen: true
+
+ssl_rsa_key_pass: "{{ aap_hub_ssl_rsa_key_pass_vault }}"
+ssl_private_key_cipher: "aes256"
+ssl_private_key_size: 4096 
+ssl_public_key_format: "PEM"
+csr_digest: "aes256"
+csr_organizationName: "{{ ansible_domain | upper }}"
+csr_organizationUnitName: "Lab"
+csr_localityName: "Hespeler"
+csr_stateOrProvinceName: "ON"
+csr_countryName: "CA"
+csr_emailAddress: "admin@{{ ansible_domain }}"
+ipa_server_ca_path: "/etc/ipa/ca.crt"
+
+hubs:
+  - fqdn: "ah1.example.ca"
+    inventory_groups:
+    - automation_hub
+    - vmware_host
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    hostgroup: "RHEL8base"
+    kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+    compute_resource: "{{ default_compute_resource }}"
+    compute_profile: "{{ default_compute_profile }}"
+    mac: "{{ default_vm_mac }}"
+    build_comment: "Deployed by Labbuilder2"
+    ssl_cert_path: "{{ ssl_certs_dir }}/controller1.example.ca.crt"
+    ssl_key_path: "{{ ssl_certs_dir }}/controller1.example.ca.key"
+    ssl_private_key_pem_path: "{{ ssl_certs_dir }}/controller1.example.ca.pem"
+    ssl_csr_path: "{{ ssl_certs_dir }}/controller1.example.ca.csr"
+    standalone: true
+    aap_file_repo_name: "Red Hat Ansible Automation Platform 2.3 for RHEL 8 x86_64 Files"
+    aap_product: "Red Hat Ansible Automation Platform"
+    aap_bundle_file: "ansible-automation-platform-setup-bundle-latest.tar.gz"
+    aap_installer_dir: "/root/ansible_installer"
+    aap_installer_host: true
+    aap_hub_admin_password: "{{ aap_hub_admin_password_vault }}"
+    aap_hub_pg_host: ""
+    aap_hub_pg_port: 5432
+    aap_hub_pg_database: "awx"
+    aap_hub_pg_username: "awx"
+    aap_hub_pg_password: "{{ aap_hub_pg_password_vault }}"
+    aap_hub_pg_sslmode: "prefer"
+    aap_registry_url: "registry.redhat.io"
+    aap_registry_username: "{{ aap_registry_username_vault }}"
+    aap_registry_password: "{{ aap_registry_password_vault }}"
+    aap_custom_ca_cert: "/etc/ipa/ca.crt"
+    aap_hub_server_ssl_cert: "/etc/ipa/private/ah1.example.ca.crt"
+    aap_hub_server_ssl_key: "/etc/ipa/private/ah1.example.ca.key"
+    aap_destination_dir: "/root/ansible_installer"
+    aap_hub_authentication_backend: "ldap"
+    aap_hub_ldap_server_uri: "ldap://idm.example.ca:389"
+    aap_hub_ldap_bind_dn: "uid=ldap-lookup,cn=users,cn=accounts,dc=example,dc=ca"
+    aap_hub_ldap_bind_password: "{{ aap_hub_ldap_bind_password_vault }}"
+    aap_hub_ldap_user_search_base_dn: "cn=users,cn=accounts,dc=example,dc=ca"
+    aap_hub_ldap_group_search_base_dn: "cn=groups,cn=accounts,dc=example,dc=ca"

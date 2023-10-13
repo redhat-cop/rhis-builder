@@ -1,0 +1,26 @@
+---
+# This task ensures an inventory source status
+
+- name: "Ensure the inventory {{ inventory.name }} is {{ inventory.state }}"
+  ansible.controller.inventory_source:
+    controller_host: "{{ controller_host }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    credential: "{{ inventory_source.credential }}"
+    description: "{{ inventory_source.description | default(omit) }}"
+    enabled_value: "{{ inventory_source.enabled_value | default(omit) }}"  #e.g. powered_on
+    enabled_var: "{{ inventory_source.enabled_var | default(omit) }}"      #e.g. status.power_state
+    execution_environment: "{{ inventory_source.execution_environment | default('Default') }}"
+    host_filter: "{{ inventory_source.host_filter | default(omit) }}"
+    inventory: "{{ inventory_source.inventory }}"
+    limit: "{{ inventory_source.limit | default(omit) }}"
+    name: "{{ inventory_source.name }}"
+    new_name: "{{ inventory_source.new_name | default(omit) }}"
+    organization: "{{ inventory.organization | default('Default') }}"
+    overwrite: "{{ inventory_source.overwrite | default(omit) }}"
+    overwrite_vars: "{{ inventory_source.overwrite_vars | default(omit) }}"
+    source: "{{ inventory_source.source }}"
+    state: "{{ inventory_source.state | default(present) }}"
+    update_on_launch: "{{ inventory_source.update_on_launch | default(omit) }}"
+    validate_certs: "{{ aap_validate_certs }}"
+    variables: "{{ inventory.variables | default(omit) }}"

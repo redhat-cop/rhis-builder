@@ -1,0 +1,31 @@
+---
+# generate the installer template and copy it to target
+# launch the installer
+- name: "Ensure the .ssh directory exists"
+  ansible.builtin.file:
+    path: "/root/.ssh/"
+    state: directory
+  delegate_to: "{{ controllers[0].fqdn }}"
+
+- name: "Copy the builder keys to the controller host"
+  ansible.builtin.copy:
+    src: "{{ builder_key_file }}"
+    dest: /root/.ssh/id_rsa
+    owner: root
+    group: root
+    mode: 0600
+  delegate_to: "{{ controllers[0].fqdn }}"
+
+- name: "Add the new key to authorize_keys"
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user_id }}"
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: "Launching installer"
+  debug:
+    msg: "Please be patient. This will take 10-30 minutes depending on the configuration."
+
+
+- name: "Run the AAP installer configuration"
+  ansible.builtin.command: "{{ aap_installer_inventory_dir }}/setup.sh"
+  delegate_to: "{{ controllers[0].fqdn }}"

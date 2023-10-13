@@ -1,0 +1,12 @@
+---
+- name: "Ensure the scap policy is mapped"
+  redhat.satellite.scap_tailoring_file:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ tailoring.name }}"
+    scap_file: "{{ tailoring.scap_file | defautl(omit) }}"
+    locations: "{{ tailoring.locations | default(omit) }}"
+    organizations: "{{ tailoring.organizations | default(omit) }}"
+    update_name: "{{ tailoring.updated_name | default(omit) }}"

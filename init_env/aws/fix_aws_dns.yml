@@ -1,0 +1,30 @@
+---
+# AWS specific initialization starts here
+- name: "Fix AWS DNS (needed on cold start)"
+  hosts: build_control
+  remote_user: localhost
+  connection: local
+  become: false
+  vars_files:
+    - '~/rhisbuilder_vault.yml'
+  tasks:
+    - name: "AWS inventory and DHCP option setting"
+      block:
+        - name: Include check code to setup variables
+          ansible.builtin.include_role:
+            name: roles/aws_check_setup
+          when: ec2_vpc_id is not defined
+
+        - name: Include setup code to populate VPC and other vars if not defined
+          ansible.builtin.include_role:
+            name: roles/manage_ec2_infra
+          when: ec2_vpc_id is not defined
+
+        - name: Build inventory for subsequent tasks
+          ansible.builtin.include_role:
+            name: roles/build_bootstrap_inventory
+
+        - name: Manage public DNS entries
+          ansible.builtin.include_role:
+            name: roles/manage_route53_dns
+          when: manage_public_dns

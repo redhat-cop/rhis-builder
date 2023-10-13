@@ -1,0 +1,18 @@
+---
+# This set of tasks checks if a given tang deployment
+# properly advertises and allows for encryption and decryption
+# This is the basic test
+# echo test | clevis encrypt tang '{"url":"http://localhost:8080"}' -y | clevis decrypt
+
+- name: "Define test value"
+  ansible.builtin.set_fact:
+    test_value: "OcelotPantherJaguarBarnCat"
+
+- name: "Test the target tang server"
+  ansible.builtin.shell: "echo {{ test_value }} | clevis encrypt tang '{\"url\":\"{{ ansible_fqdn }}:8080\"}' -y | clevis decrypt"
+  register: test_result
+
+- name: "Assert that our test value was encrypted/decrypted"
+  ansible.builtin.assert:
+    that: test_result.stdout == test_value
+

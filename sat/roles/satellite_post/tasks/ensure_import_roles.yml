@@ -1,0 +1,18 @@
+---
+# Tell Satellite to import the roles
+# 200 - returned when nothing needs updating
+# 201 - returned when something was added successfully
+# depending on your server and the number of roles importing, it can take a while
+- name: "Call the Satellite ansible import API"
+  ansible.builtin.uri:
+    url: "{{ satellite_url }}/ansible/api/ansible_roles/sync"
+    method: "PUT"
+    user: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    force_basic_auth: true
+    body: 
+      proxy_id: "{{ satellite_api_proxy_id_string }}"
+      role_names: "{{ ansible_roles_import_list | to_json() }}"
+    body_format: "json"
+    status_code: [200, 201]
+    timeout: 300

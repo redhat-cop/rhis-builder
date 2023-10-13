@@ -1,0 +1,7 @@
+---
+- name: "Enable the mandatory scap tailoring files"
+  include_tasks: ensure_scap_tailoring_file.yml
+  loop: "{{ scap_tailoring_files_mandatory }}"
+  loop_control:
+    loop_var: tailoring
+  when: scap_tailoring_files_mandatory is defined

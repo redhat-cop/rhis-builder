@@ -1,0 +1,48 @@
+---
+# VMware specific initialization begins here
+
+- name: "init_vmware"
+  hosts: build_control
+  connection: local
+  become: false
+  gather_facts: true
+
+  vars_files:
+    - "../vars/builder_vars.yml"
+    - "../vars/instance_bootstrap_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+
+    - name: "Build the vmware environment"
+      block:
+      - name: "Apply the vm_deploy_data role"
+        ansible.builtin.include_role:
+          name: vm_deploy_data
+        tags:
+          - vm_deploy_data_role
+
+      - name: "Configure image on vCenter"
+        ansible.builtin.include_role:
+          name: vm_image_loader
+        tags:
+          - vm_deploy_data_role
+
+      - name: "Initialize bootstrap servers"
+        ansible.builtin.include_role:
+          name: vm_system_deployer
+        loop: "{{ instance_data }}"
+        tags:
+          - vm_deploy_data_role
+
+      - name: "Add the bootstrap servers to inventory"
+        ansible.builtin.include_tasks: "tasks/add_host_to_inventory.yml"
+        loop: "{{ instance_data }}"
+        loop_control:
+          loop_var: host
+
+- name: "Reconfigure Satellite Storage"
+  ansible.builtin.import_playbook: satellite_storage.yml
+  tags: tags_reconfigure_satellite_storage
+
+

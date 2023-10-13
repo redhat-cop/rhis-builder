@@ -1,0 +1,129 @@
+<%#
+name: SOE Kickstart Default Finish
+snippet: false
+model: ProvisioningTemplate
+kind: finish
+oses:
+- AlmaLinux
+- CentOS
+- CentOS_Stream
+- Fedora
+- Rocky
+description: |
+  This Finish Template has been customized to support NBDE and Satellite 6.12
+  A finish template executed at the end of the image based provisioning
+  using the image without user data. Foreman connects to the VM over SSH
+  and runs the script rendered from this template. It is meant to be run
+  on RPM based distributons.
+
+  This template accepts the following parameters:
+  - bootloader-append: string (default="nofb quiet splash=quiet")
+  - force-puppet: boolean (default=false)
+  - skip-puppet-setup: boolean (default=false)
+  - use-ntp: boolean (default depends on OS release)
+  - ntp-server: string (default=undef)
+  - package_upgrade: boolean (default=true)
+  - salt_master: string (default=undef)
+  - enable-remote-execution-pull: boolean (default=false)
+-%>
+
+<%
+  rhel_compatible = @host.operatingsystem.family == 'Redhat' && @host.operatingsystem.name != 'Fedora'
+  os_major = @host.operatingsystem.major.to_i
+  puppet_enabled = !host_param_true?('skip-puppet-setup') && (host_puppet_server.present? || host_param_true?('force-puppet'))
+  salt_enabled = host_param('salt_master') ? true : false
+  chef_enabled = @host.respond_to?(:chef_proxy) && @host.chef_proxy
+%>
+
+<% if host_param_true?('disable-non-sat-repos') -%>
+  snippet('soe_disable_non_sat_repos')
+<% end -%>
+
+<%= snippet_if_exists(template_name + " custom pre") -%>
+
+# <% if @host.subnet.respond_to?(:dhcp_boot_mode?) -%>
+# <%= snippet 'soe_kickstart_networking_setup' %>
+# <% if (rhel_compatible && os_major >= 8) -%>
+# systemctl restart NetworkManager
+# <% else -%>
+# service network restart
+# <% end -%>
+# <% end -%>
+
+<% if @host.provision_method == 'image' && root_pass.present? -%>
+# Install the root password
+echo 'root:<%= root_pass -%>' | /usr/sbin/chpasswd -e
+<% end -%>
+
+hostnamectl set-hostname <%= @host.name %>
+
+<%= snippet 'yum_proxy' %>
+
+<%= snippet 'ntp' %>
+
+<% if rhel_compatible && host_param_true?('enable-epel') -%>
+<%= snippet 'epel' -%>
+<% end -%>
+
+<%= snippet 'redhat_register' %>
+
+<% if host_enc['parameters']['realm'] && @host.realm && (@host.realm.realm_type == 'FreeIPA' || @host.realm.realm_type == 'Red Hat Identity Management') -%>
+  <% if (rhel_compatible && os_major = 8) -%>
+    # yum module enable and yum module install to pull in the idm client
+    yum -y module enable idm:client
+  <% end -%>
+<%= snippet 'freeipa_register' %>
+<% end -%>
+
+<% unless host_param_false?('package_upgrade') -%>
+# update all the base packages from the updates repository
+if [ -f /usr/bin/dnf ]; then
+  dnf -y update
+else
+  yum -t -y update
+fi
+<% end -%>
+
+<%= snippet('remote_execution_ssh_keys') %>
+
+<% if plugin_present?('katello') && host_param_true?('enable-remote-execution-pull') -%>
+<%= save_to_file('/root/remote_execution_pull_setup.sh', snippet('remote_execution_pull_setup'), verbatim: true) %>
+chmod +x /root/remote_execution_pull_setup.sh
+/root/remote_execution_pull_setup.sh
+<% end -%>
+
+<%= snippet "blacklist_kernel_modules" %>
+
+<%= snippet_if_exists(template_name + " custom post") -%>
+<% if chef_enabled %>
+<%= snippet 'chef_client' %>
+<% end -%>
+
+<% if puppet_enabled %>
+<% if host_param_true?('enable-puppetlabs-repo') || host_param_true?('enable-official-puppet7-repo') || host_param_true?('enable-puppetlabs-puppet6-repo') || host_param_true?('enable-puppetlabs-puppet5-repo') -%>
+<%= snippet 'puppetlabs_repo' %>
+<% end -%>
+<%= snippet 'puppet_setup' %>
+<% end -%>
+
+<% if salt_enabled %>
+<%= snippet 'saltstack_setup' %>
+<% end -%>
+
+<% if host_param_true?('ansible_tower_provisioning') -%>
+<%= save_to_file('/root/ansible_provisioning_call.sh', snippet('ansible_tower_callback_script')) %>
+chmod +x /root/ansible_provisioning_call.sh
+/root/ansible_provisioning_call.sh
+<% end -%>
+
+# This is a image based deployment, we must reset master keys
+<% if host_param_true?('use_NBDE') %>
+  clevis luks pass -d /dev/sda2 -s 1 | cryptsetup reencrypt /dev/sda2
+<% end -%>
+
+
+sync
+
+<%= snippet 'schedule_reboot' -%>
+
+exit 0

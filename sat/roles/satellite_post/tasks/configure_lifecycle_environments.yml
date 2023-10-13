@@ -1,0 +1,15 @@
+---
+# This playbook creates the lifecycle environments defined in the 
+# variable file for the satellite-servers ansible group
+# Define the lifecycle_environments list, they will be created
+# in the initial organization specified 
+# The basic environments are Dev QA and Prod
+# keeping it simple.
+#
+
+- name: "Creating the specified environments"
+  include_tasks: create_lifecycle_environment.yml
+  loop: "{{ lifecycle_environments }}"
+  loop_control:
+    loop_var: lce
+  when: "lifecycle_environments is defined"

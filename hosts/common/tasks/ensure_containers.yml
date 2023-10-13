@@ -1,0 +1,20 @@
+---
+# ensure that container-tools exists and that we can get a particular base image
+
+- name: "Ensure container-tools is present"
+  ansible.builtin.package:
+    name: container-tools
+    state: present
+
+- name: "Fetch containers"
+  containers.podman.podman_image:
+    name: "{{ image.name }}"
+    tag: "{{ image.tag }}"
+    state: "present"
+    pull: true
+    username: "{{ image.reg_username }}"
+    password: "{{ image.reg_password }}"
+  loop: "{{ host.container_image_list }}"
+  loop_control:
+    loop_var: image
+

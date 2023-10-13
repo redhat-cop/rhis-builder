@@ -1,0 +1,11 @@
+---
+# This playbook configures the optional product repo sync plans
+# 
+#
+- name: Create the optional synchronization plans 
+  include_tasks: create_sync_plan.yml
+  loop: "{{ sync_plans_optional }}"
+  loop_control:
+    loop_var: sp
+  when: "sync_plans_optional is defined"
+

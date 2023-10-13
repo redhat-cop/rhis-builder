@@ -1,0 +1,152 @@
+---
+# This play will create the POC specific roles in Satellite that we need.
+#
+# satgroup-administrator will map to the Satellite admins group and administrator (all privileges) role
+# satgroup-compliance-auditor will need to view OSCAP Policy and Reports maps to Compliance Viewer
+# satgroup-compliance-manager will need to view, edit and upload OSCAP Policy and view Reports - maps to Compliance Viewer
+# satgroup-content-manager will need to manage subscriptions, repositories, products, content views, life cycles, errata, and containers
+# satgroup-org-administrator maps to Manager role
+# satgroup-site-administrator maps to Site Manager role
+# satgroup-sub-manager needs to see Red Hat Subscriptions and Manifests
+#
+# satgroup-operator - combines a number of roles - BootStrap_User, Remote Execution User, Task Manager, Edit Hosts, Discovery Manager, Viewer
+# For the POC we only need to create the Operator Role
+
+- name: Create the Operator role
+  command: hammer role create --name=Operator
+
+- name: Add the (Miscellaneous) Filter
+  command: hammer filter create --permissions view_statistics,view_tasks,view_search,view_cases,view_log_viewer --role Operator
+
+- name: Add the Architectures Filter
+  command: hammer filter create --permissions view_architectures --role Operator
+
+- name: Add the Audit Logs Filter
+  command: hammer filter create --permissions view_audit_logs --role Operator
+
+- name: Add the Compute Profiles Filter
+  command: hammer filter create --permissions view_compute_profiles --role Operator
+
+- name: Add the Compute Resources Filter
+  command: hammer filter create --permissions view_compute_resources,view_compute_resources_vms,edit_compute_resources_vms,power_compute_resources_vms,console_compute_resources_vms --role Operator
+
+- name: Add the Config Groups Filter
+  command: hammer filter create --permissions view_config_groups,edit_config_groups --role Operator
+
+- name: Add the Domains Filter
+  command: hammer filter create --permissions view_domains --role Operator
+
+- name: Add the Environments Filter
+  command: hammer filter create --permissions view_environments --role Operator
+
+- name: Add the Fact Filter
+  command: hammer filter create --permissions view_facts --role Operator
+
+- name: Add the Globals Filter
+  command: hammer filter create --permissions view_globals --role Operator
+
+- name: Add the HostGroups Filter
+  command: hammer filter create --permissions view_hostgroups --role Operator
+
+- name: Add the Hosts Filter
+  command: hammer filter create --permissions view_hosts,create_hosts,edit_hosts,destroy_hosts,build_hosts,power_hosts,console_hosts,puppetrun_hosts,view_discovered_hosts,submit_discovered_hosts,auto_provision_discovered_hosts,provision_discovered_hosts,edit_discovered_hosts,destroy_discovered_hosts --role Operator
+
+- name: Add the Images Filter
+  command: hammer filter create --permissions view_images --role Operator
+
+- name: Add the Locations Filter
+  command: hammer filter create --permissions view_locations --role Operator
+
+- name: Add the Medium Filter
+  command: hammer filter create --permissions view_media --role Operator
+
+- name: Add the Models Filter
+  command: hammer filter create --permissions view_models --role Operator
+
+- name: Add the Operating Systems Filter
+  command: hammer filter create --permissions view_operatingsystems --role Operator
+
+- name: Add the External Variables Filter (Puppet)
+  command: hammer filter create --permissions view_external_variables --role Operator
+
+- name: Add the Organizations Filter
+  command: hammer filter create --permissions view_organizations --role Operator
+
+- name: Add the Partition Tables Filter
+  command: hammer filter create --permissions view_ptables --role Operator
+
+- name: Add the Puppet Classes Filter
+  command: hammer filter create --permissions view_puppetclasses,edit_puppetclasses --role Operator
+
+- name: Add the REALMs Filter
+  command: hammer filter create --permissions view_realms --role Operator
+
+- name: Add the Reports Filter
+  command: hammer filter create --permissions view_reports --role Operator
+
+- name: Add the Subnets Filter
+  command: hammer filter create --permissions view_subnets --role Operator
+
+- name: Add the Trends Filter
+  command: hammer filter create --permissions view_trends --role Operator
+
+- name: Add the Containers Filter
+  command: hammer filter create --permissions view_containers,commit_containers,create_containers,destroy_containers --role Operator
+
+- name: Add the Registries Filter
+  command: hammer filter create --permissions view_registries --role Operator
+
+- name: Add the DiscoveryRules Filter
+  command: hammer filter create --permissions view_discovery_rules --role Operator
+
+- name: Add the Foreman Tasks Filter
+  command: hammer filter create --permissions view_foreman_tasks,edit_foreman_tasks --role Operator
+
+- name: Add the Activation Key Filter
+  command: hammer filter create --permissions view_activation_keys --role Operator
+
+- name: Add the Content Hosts Filter
+  command: hammer filter create --permissions view_content_hosts,create_content_hosts,edit_content_hosts,destroy_content_hosts --role Operator
+
+- name: Add the Content Views Filter
+  command: hammer filter create --permissions view_content_views --role Operator
+
+- name: Add the GPG Keys Filter
+  command: hammer filter create --permissions view_gpg_keys --role Operator
+
+- name: Add the Host Collections Filter
+  command: hammer filter create --permissions view_host_collections,create_host_collections,edit_host_collections,destroy_host_collections --role Operator
+
+- name: Add the Life Cycle Filter
+  command: hammer filter create --permissions view_lifecycle_environments --role Operator
+
+- name: Add the Products Filter
+  command: hammer filter create --permissions view_products --role Operator
+
+- name: Add the Provisioning Templates Filter
+  command: hammer filter create --permissions view_provisioning_templates,edit_provisioning_templates,deploy_provisioning_templates --role Operator
+
+- name: Add the Recurring Logics Filter
+  command: hammer filter create --permissions view_recurring_logics --role Operator
+
+- name: Add the Capsulte Content Filter
+  command: hammer filter create --permissions view_capsule_content --role Operator
+
+- name: Add the Config Reports Filter
+  command: hammer filter create --permissions view_config_reports --role Operator
+
+- name: Add the Job Templates Filter
+  command: hammer filter create --permissions view_job_templates,create_job_templates,edit_job_templates,destroy_job_templates,lock_job_templates --role Operator
+- name: Add the Job Invocation Filter
+  command: hammer filter create --permissions view_job_invocations,create_job_invocations --role Operator
+
+- name: Add the External Parameters Filter
+  command: hammer filter create --permissions view_external_parameters --role Operator
+
+- name: Add the Subscriptions Filter
+  command: hammer filter create --permissions view_subscriptions,attach_subscriptions,unattach_subscriptions --role Operator
+
+- name: Add the ARF (OpenSCAP) Reports Filter
+  command: hammer filter create --permissions view_arf_reports --role Operator
+
+

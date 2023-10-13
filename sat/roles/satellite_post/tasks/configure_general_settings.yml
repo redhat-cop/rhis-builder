@@ -1,0 +1,10 @@
+---
+# Configure the list of settings.
+
+- name: "Configure the general settings"
+  ansible.builtin.include_tasks: set_general_setting.yml
+  loop: "{{ general_settings }}"
+  loop_control:
+    loop_var: setting
+
+

@@ -1,0 +1,12 @@
+instance-id: {{ item.instance_id }}
+local-hostname: {{ item.local_hostname }}
+network-interfaces: |
+  iface {{ item.iface }} inet {{ item.network_config_type }}
+  address {{ item.ip }}
+  network {{ item.network }}
+  netmask {{ item.netmask }}
+  broadcast {{ item.broadcast }}
+  gateway {{ item.gateway }}
+hostname: {{ item.local_hostname }}
+fqdn: {{ item.fqdn }}
+prefer_fqdn_over_hostname: true

@@ -1,0 +1,43 @@
+---
+# This task is called to complete the definition
+# for the automatically created OS
+# name:RHEL
+# The only task required is to add the media to
+# the OS definition so that we can kickstart from it
+#
+# This is a key example of why we need configuration
+# analysis at the beginning of the code.
+# I would be pissed if I got 12 hours into a build and 
+# the code told me "Hey I'm bailing because you specified
+# an inconsistent parameter." Then again, RTFM...er, WTFM
+
+# After the initial run, if sub tasks are run, the special OS
+# becomes not so special, i.e. we will need to create it from 
+# scratch. So test to see if it exists, if yes, update it
+# else recreate it
+
+- set_fact:
+    os_exists: false
+
+- name: Does the RHEL auto-generated OS still exist
+  command: "hammer os info --title={{ sos.title | quote }}"
+  register: hammer_out
+  ignore_errors: true
+
+- set_fact:
+    os_exists: true
+  when: "hammer_out.stderr == ''"
+
+- name: Update the auto-generated Operating Systems if it still exists.
+  command: "hammer os update --name={{ sos.name }} --title={{ sos.title | quote }}  --media={{ sos.media | join(',') | quote }} --partition-tables={{ sos.ptables | join(',') | quote }}"
+  when: "os_exists == true"
+  
+
+- name: Re-create the auto-generated Operating System since it does not exist.
+  include_tasks: create_os.yml
+  loop: 
+    - "{{ sos }}"
+  loop_control:
+    loop_var: "os"
+  when: "os_exists == false"
+

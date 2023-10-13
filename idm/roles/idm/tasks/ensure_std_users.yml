@@ -1,0 +1,35 @@
+---
+# 
+- name: "Add defined users for RHIS demo environment"
+  redhat.rhel_idm.ipauser:
+    name: "{{ item.login }}"
+    givenname: "{{ item.first }}"
+    sn: "{{ item.last }}"
+    city: "{{ item.city | default(omit) }}"
+    displayname: "{{ item.first }} {{ item.last }}"
+    departmentnumber: "{{ item.departmentnumber | default(omit) }}"
+    email: "{{ item.email | default(omit) }}"
+    employeenumber: "{{ item.employeenumber | default(omit) }}"
+    employeetype: "{{ item.employeetype | default (omit) }}"
+    title: "{{ item.title | default(omit) }}"
+    userstate: "{{ item.userstate | default(omit) }}"
+    password: "{{ default_password | default(omit) }}"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+  loop: "{{ idm_users }}"
+
+- name: "Add defined users for RHIS demo environment to groups"
+  redhat.rhel_idm.ipagroup:
+    name: "{{ item.group }}"
+    user: "{{ item.user }}"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+  loop: "{{ idm_group_users }}"
+
+- name: "Add basic POC groups to groups"
+  redhat.rhel_idm.ipagroup:
+    name: "{{ item.group }}"
+    group: "{{ item.value }}"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+  loop: "{{ idm_group_groups }}"

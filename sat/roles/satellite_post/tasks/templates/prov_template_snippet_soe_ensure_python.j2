@@ -1,0 +1,14 @@
+<%#
+name: soe_ensure_python
+snippet: true
+model: ProvisioningTemplate
+organizations:
+- Default Organization
+-%>
+<% if @host.operatingsystem.family == 'Redhat' && @host.operatingsystem.major.to_i == 8 %>
+yum -y module reset python36
+yum -y module enable python36:3.6
+yum -y module install python36:3.6/common
+<% else %>
+yum -y install python3
+<% end %>

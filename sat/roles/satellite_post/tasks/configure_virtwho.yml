@@ -1,0 +1,9 @@
+---
+- name: "Configure virtwho"
+  include_tasks: ensure_virtwho_config.yml
+  loop: "{{ virtwho_configs_mandatory }}"
+  loop_control:
+    loop_var: "vw"
+  when: "virtwho_configs_mandatory is defined"
+
+

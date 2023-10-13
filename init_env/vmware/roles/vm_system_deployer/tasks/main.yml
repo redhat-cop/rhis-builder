@@ -1,0 +1,47 @@
+---
+- name: "Creating server {{ item.fqdn }}"
+  ansible.builtin.include_tasks: create_guest_from_image.yml
+  vars:
+    guest_ip: "{{ item.ip }}"
+    guest_fqdn: "{{ item.fqdn }}"
+    guest_gateway: "{{ item.gateway }}"
+    guest_netmask: "{{ item.netmask }}"
+    guest_cloud_init_metadata: "{{ item.cloud_init_metadata }}"
+    guest_cloud_init_userdata: "{{ item.cloud_init_userdata }}"
+    guest_cpu_cores_per_socket: "{{item.cpu_cores_per_socket }}"
+    guest_vcpu_total: "{{ item.vcpu_total }}"
+    guest_memory_mb: "{{ item.memory_mb }}"
+    guest_network_device_type: "{{ item.network_device_type }}"
+    guest_network_config_type: "{{ item.network_config_type }}"
+    guest_hot_cpu_add: "{{ item.hot_cpu_add }}"
+    guest_hot_memory_add: "{{ item.hot_memory_add }}"
+    guest_rootdisk_size_gb: "{{ item.rootdisk_size_gb }}"
+  tags:
+    - create_instance
+
+- name: "Add additional disks to the server for server {{ item.fqdn }}"
+  ansible.builtin.include_tasks: add_disk_to_guest.yml
+  vars:
+    guest_ip: "{{ item.ip }}"
+    guest_fqdn: "{{ item.fqdn }}"
+    disk_size_mb: "{{ disk.disk_size_mb }}"
+    scsi_controller: "{{ disk.disk_scsi_controller }}"
+    unit_number: "{{ disk.disk_unit_number }}"
+    type: "{{ disk.disk_type }}"
+    scsi_type: "{{ disk.disk_scsi_type }}"
+    disk_mode: "{{ disk.disk_mode }}"
+  loop: "{{ item.additional_disks }}"
+  loop_control:
+    loop_var: disk
+  when: 
+    - item.additional_disks is defined
+    - item.additional_disks | length > 0
+  tags:
+    - additional_disks
+
+- name: "Add server {{ item.fqdn }} to inventory groups"
+  ansible.builtin.include_tasks: add_bootstrap_host_to_inventory.yml
+  vars:
+    guest_fqdn: "{{ item.fqdn }}"
+    inventory_groups: "{{ item.inventory_groups }}"
+

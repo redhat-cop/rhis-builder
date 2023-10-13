@@ -1,0 +1,17 @@
+ 
+---
+# This playbook configures the optional repositories outlined in the
+# sat_vars.yml file  
+#
+# NOTE: Use the repos_optional section to add content to your lab. 
+#       
+# NOTE: you are responsible for ensuring that any required repositories
+#       outlined in your variable file are also enabled by the manifest
+#       specified in the variable file. If not, this play will fail on missing repos
+
+- name: "Enable the optional repository sets"
+  include_tasks: enable_repository.yml
+  loop: "{{ repos_optional }}"
+  loop_control:
+    loop_var: repo
+  when: "repos_optional is defined"

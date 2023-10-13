@@ -1,0 +1,7 @@
+---
+# Install the container tools on the host
+- name: "Ensure container tools meta package is installed"
+  ansible.builtin.dnf:
+    name: "@container-management"
+    state: present
+

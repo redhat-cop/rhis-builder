@@ -1,0 +1,15 @@
+- name: "Ensure the compute profile state - {{cpr.name}}"
+  redhat.satellite.compute_profile:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ cpr.name }}"
+    updated_name: "{{ cpr.updated_name | default(omit) }}"
+    state: "{{ cpr.state | default(omit) }}"
+    compute_attributes: "{{ cpr.compute_attributes | default(omit) }}"
+
+# you can change the name of the compute profile by simply passing name and updated_name
+- name: "Wait on API background refresh"
+  ansible.builtin.wait_for:
+    timeout: 15

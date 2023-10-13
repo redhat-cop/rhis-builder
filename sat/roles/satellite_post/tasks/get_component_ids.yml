@@ -1,0 +1,20 @@
+--- 
+# This play gets the name of a content view and appends
+# the content view version id to a list using the ID of the 
+# latest version. 
+
+- name: Get the list of content-view versions for the component content view as yaml
+  command: "hammer --output=yaml content-view version list --organization={{ ccv.org | quote }} --content-view={{ ccvc | quote }}"
+  register: result
+
+- name: The most recent version is the first listed. Append the ID to the list.
+  set_fact:
+    ccvv_ids: "{{ ccvv_ids }}, {{ (result.stdout | from_yaml).0.ID }}"
+  when: "ccvv_ids != ''"
+
+- set_fact:
+    ccvv_ids: "{{ (result.stdout | from_yaml).0.ID }}"
+  when: "ccvv_ids == ''"
+
+# - debug:
+#     msg: "{{ ccvv_ids }}"

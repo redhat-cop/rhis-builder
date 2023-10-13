@@ -1,0 +1,9 @@
+---
+# This tasks creates the templates
+
+- name: "Add the templates to the controller"
+  ansible.builtin.include_tasks: "ensure_aap_template.yml"
+  loop: "{{ templates }}"
+  loop_control:
+    loop_var: template
+

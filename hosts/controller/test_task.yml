@@ -1,0 +1,17 @@
+---
+- name: "Test Task"
+  hosts: build_control
+  become: true
+  vars_files:
+  - "../vars/common_vars.yml"
+  - "../vars/common_vault.yml"
+  - "../vars/controller_vault.yml"
+  - "../vars/controller_vars.yml"
+  - "~/rhisbuilder_vault.yml"
+
+  tasks:
+
+  - name: "Configure controller authentication"
+    ansible.builtin.include_tasks: "../controller/tasks/{{ task_name }}.yml"
+    vars:
+      active_controller: "{{ controllers[0].fqdn }}"

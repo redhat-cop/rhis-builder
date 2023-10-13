@@ -1,0 +1,38 @@
+---
+- name: "Get block device layout from lsblk"
+  ansible.builtin.command: |-
+    lsblk -s -J
+  register: lsblk_info
+
+- name: "Read the JSON from lsblk_info"
+  ansible.builtin.set_fact:
+    lsblk_devtree: '{{ lsblk_info.stdout | from_json }}'
+
+- name: "Find our volume group using the root logical volume name"
+  ansible.builtin.set_fact:
+    lsblk_vgtree: "{{ lsblk_devtree['blockdevices'] | selectattr('name', '==', rootvg_rootlvname) | first }}"
+
+- name: "Determine block devices of interest"
+  ansible.builtin.set_fact:
+    rootvg_pv_blockdev: "{{ lsblk_vgtree['children'][0]['name'] }}"
+    rootvg_blockdev: "{{ lsblk_vgtree['children'][0]['children'][0]['name'] }}"
+
+- name: "Re-arrange GPT - imagebuilder image leaves backup in the wrong place on disk"
+  ansible.builtin.command: |
+    sgdisk -e /dev/{{ rootvg_blockdev }}
+    partprobe
+
+- name: "Resize lvm partition {{ rootvg_blockdev_partition }} to fill disk {{ rootvg_blockdev }}"
+  community.general.parted:
+    device: '/dev/{{ rootvg_blockdev }}'
+    number: '{{ rootvg_blockdev_partition }}'
+    label: 'gpt'
+    state: present
+    part_end: "100%"
+    resize: true
+
+- name: "pvresize the physical volume for volume group {{ rootvg_name }}"
+  community.general.lvg:
+    vg: '{{ rootvg_name }}'
+    pvs: '/dev/{{ rootvg_pv_blockdev }}'
+    pvresize: true

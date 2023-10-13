@@ -1,0 +1,53 @@
+---
+# This module downloads content from the Satellite
+# hammer --output json repository info /
+#        --name "Red Hat Ansible Automation Platform 2.3 for RHEL 8 x86_64 Files" / 
+#        --product "Red Hat Ansible Automation Platform" /
+#        --organization "Default Organization" /
+#        --fields "Published At"
+
+- name: "Get the file repository info"
+  redhat.satellite.repository_info:
+      username: "{{ satellite_admin_username }}"
+      password: "{{ satellite_admin_password }}"
+      server_url: "{{ satellite_url }}"
+      organization: "example"
+      validate_certs: "{{ satellite_validate_certs }}"
+      name: "{{ hubs[0].aap_file_repo_name }}"
+      product: "{{ hubs[0].aap_product }}"
+  register: result
+
+- name: "Determine the base url"
+  ansible.builtin.set_fact:
+    software_baseurl: "{{ result.repository.full_path }}"
+
+- name: "Get the name of the bundle file"
+  redhat.satellite.resource_info:
+      username: "{{ satellite_admin_username }}"
+      password: "{{ satellite_admin_password }}"
+      server_url: "{{ satellite_url }}"
+      organization: "example"
+      validate_certs: "{{ satellite_validate_certs }}"
+      resource: file_units
+      search: "name ~ platform-setup-bundle"
+  register: files
+
+- name: "Set the path for the download"
+  ansible.builtin.set_fact:
+    download_path: "{{ software_baseurl }}/{{ files.resources[0].name }}"
+
+- name: "Ensure the destination directory exists"
+  ansible.builtin.file:
+    path: "{{ hubs[0].aap_destination_dir }}"
+    state: directory
+  delegate_to: "{{ hubs[0].fqdn }}"
+
+- name: "Clean up any failed downloads"
+  ansible.builtin.file:
+    path: "{{ hubs[0].aap_destination_dir }}/{{ hubs[0].aap_bundle_file }}"
+    state: absent
+  delegate_to: "{{ hubs[0].fqdn }}"
+
+- name: "Download the file {{ controllers[0].aap_bundle_file }}"
+  ansible.builtin.command: "curl -k -o {{ hubs[0].aap_destination_dir }}/{{ hubs[0].aap_bundle_file }} {{ download_path }}"
+  delegate_to: "{{ hubs[0].fqdn }}"

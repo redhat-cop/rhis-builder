@@ -1,0 +1,11 @@
+---
+# Add the manifest from the CDN to the controller
+- name: "Upload the manifest to the Controller"
+  ansible.controller.license:
+    controller_host: "controller1.example.ca"
+    controller_username: "admin"
+    controller_password: "#Legend2013"
+    manifest: "/tmp/rhis_aap_manifest.zip"
+    force: true
+    validate_certs: "false"
+  

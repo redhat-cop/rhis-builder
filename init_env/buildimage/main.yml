@@ -1,0 +1,16 @@
+---
+- name: "buildimage"
+  hosts: build_control
+  connection: local
+  become: false
+  gather_facts: false
+  vars_files:
+    - "../vars/builder_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+    - name: "Get the imagebuilder image"
+      ansible.builtin.include_tasks: tasks/buildimage.yml
+      when: not skip_imagebuilder_build
+      tags:
+        - buildimage

@@ -1,0 +1,14 @@
+---
+# Current templating with installer causes space trailing the password
+# using our own templating to resolve the matter
+
+:foreman:
+  # Credentials. You'll be asked for the interactively if you leave them blank here
+  :username: 'admin'
+  :password: {{ satellite_admin_password | trim | quote }}
+
+  # Check API documentation cache status on each request
+  :refresh_cache: false
+
+  # API request timeout in seconds, set -1 for infinity
+  :request_timeout: 120

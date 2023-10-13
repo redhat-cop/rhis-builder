@@ -1,0 +1,28 @@
+---
+# This task ensures the OS state
+
+- name: "Ensure existence of Operating System - {{ os.description }}"
+  redhat.satellite.operatingsystem:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ os.name }}"
+    description: "{{ os.description }}"
+    family: "{{ os.family }}"
+    major: "{{ os.major }}"
+    minor: "{{ os.minor }}"
+    media: "{{ os.media | default(omit) }}"
+    password_hash: "{{ os.password_hash }}"
+    parameters: "{{ os.parameters | default(omit) }}"
+    provisioning_templates: "{{ os.provisioning_templates | default(omit) }}"
+    ptables: "{{ os.ptables | default(omit) }}"
+    release_name: "{{ os.release_name | default(omit) }}"
+    state: "{{ os.state | default(omit) }}"
+
+- name: "Set the default tempplates"
+  ansible.builtin.include_tasks: "set_os_default_template.yml"
+  loop: "{{ os.default_templates }}"
+  loop_control:
+    loop_var: "dt"
+  when: "os.default_templates is defined"

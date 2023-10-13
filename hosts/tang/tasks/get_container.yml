@@ -1,0 +1,13 @@
+- name: "Login to the registry {{ container.registry }}"
+  containers.podman.podman_login:
+    registry: "{{ container.registry }}"
+    username: "{{ container.registry_username }}"
+    password: "{{ container.registry_password }}"
+
+- name: "Pull image {{ container.name }} to host"
+  containers.podman.podman_image:
+    name: "{{ container.registry }}/{{ container.image }}"
+    tag: "{{ container.tag | default(omit) }}"
+    force: "{{ container.force | default(omit) }}"
+    pull: true
+    state: present

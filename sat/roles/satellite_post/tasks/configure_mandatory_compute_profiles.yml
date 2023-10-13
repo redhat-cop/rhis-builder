@@ -1,0 +1,7 @@
+---
+- name: "Configure the mandatory compute profiles"
+  include_tasks: ensure_compute_profile.yml
+  loop: "{{ compute_profiles_mandatory }}"
+  loop_control:
+    loop_var: cpr
+  when: "compute_profiles_mandatory is defined"

@@ -1,0 +1,9 @@
+---
+# This tasks creates the projects
+
+- name: "Add the projects to the controller"
+  ansible.builtin.include_tasks: "ensure_aap_project.yml"
+  loop: "{{ projects }}"
+  loop_control:
+    loop_var: project
+  

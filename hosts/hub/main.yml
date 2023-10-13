@@ -1,0 +1,22 @@
+---
+# Deploy the automation hub
+- name: "Generate SSL certificates for the hubs"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/common/tasks/generate_ssl_config.yml"
+  loop: "{{ hubs }}"
+  loop_control:
+    loop_var: host
+
+- name: "Fetch latest AAP installer"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/hub/tasks/download_content.yml"
+
+- name: "Extract installer"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/hub/tasks/extract_aap_installer.yml"
+
+- name: "Template install config"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/hub/tasks/generate_installer_template.yml"
+  
+- name: "Launch installer"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/hub/tasks/launch_installer.yml"
+
+- name: "Fix default firewall ports"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/hub/tasks/fix_firewall.yml"

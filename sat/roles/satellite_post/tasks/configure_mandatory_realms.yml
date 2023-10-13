@@ -1,0 +1,7 @@
+---
+- name: "Configure the mandatory realms"
+  include_tasks: "create_realm.yml"
+  loop: "{{ realms_mandatory }}"
+  loop_control:
+    loop_var: realm
+  when: "realms_mandatory is defined"

@@ -1,0 +1,15 @@
+- name: Clean up any exiting manifest
+  ansible.builtin.file:
+    path: "{{ aap_manifest_destiny }}"
+    state: absent
+
+- name: Download the specified manifest
+  redhat.satellite.redhat_manifest:
+    portal: "{{ aap_manifest_portal_url }}"
+    username: "{{ aap_manifest_cdn_username }}"
+    password: "{{ aap_manifest_cdn_password }}"
+    validate_certs: "{{ aap_manifest_validate_certs }}"
+    name: "{{ aap_manifest_name }}"
+    path: "{{ aap_manifest_destiny }}"
+
+    

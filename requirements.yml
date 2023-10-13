@@ -1,0 +1,18 @@
+---
+# These are the collections required by the builder
+collections:
+
+- ansible.controller
+- ansible.netcommon
+- ansible.posix
+- ansible.utils
+- azure.azcollection
+- community.general
+- community.vmware
+- community.aws
+- containers.podman
+- redhat.rhel_idm
+- redhat.rhel_system_roles
+- redhat.satellite
+- redhat.satellite_operations
+- redhat.redhat_csp_download

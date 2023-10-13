@@ -1,0 +1,20 @@
+---
+#  Add the repository to the custom product
+#
+
+- name: "Add repository {{ cpr.name }}"
+  redhat.satellite.repository:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    organization: "{{ satellite_initial_organization }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ cpr.name }}"
+    description: "{{ cpr.description | default(omit) }}"
+    content_type: "{{ cpr.content_type }}"
+    product: "{{ cp.name }}"
+    url: "{{ cpr.url }}"
+    mirror_on_sync: "{{ cpr.mirror_on_sync | default(omit) }}"
+    download_policy: "{{ cpr.download_policy | default(omit)  }}"
+    state: present
+

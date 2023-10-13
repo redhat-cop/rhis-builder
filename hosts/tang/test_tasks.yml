@@ -1,0 +1,19 @@
+---
+- name: "Build tang server(s) if needed"
+  hosts: container_host
+  become: true
+  gather_facts: true
+  vars_files:
+    - "../vars/common_vars.yml"
+    - "../vars/tang_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+  
+    - name: "Build the container servers for tang and others"
+      ansible.builtin.include_tasks: main.yml
+      tags:
+        - tags_phase_4
+        - tags_nbde
+        - tags_tang
+

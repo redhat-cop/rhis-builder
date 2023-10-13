@@ -1,0 +1,40 @@
+<%#
+name: SOE Kickstart Default PXELinux
+snippet: false
+model: ProvisioningTemplate
+kind: PXELinux
+oses:
+- CentOS
+- CentOS_Streams_8
+- CentOS_Stream
+- Fedora
+- RedHat
+- RHEL8
+-%>
+# This file was deployed via '<%= template_name %>' template
+<%
+  rhel_compatible = @host.operatingsystem.family == 'Redhat' && @host.operatingsystem.name != 'Fedora'
+  os_major = @host.operatingsystem.major.to_i
+  os_minor = @host.operatingsystem.minor.to_i
+  timeout = host_param('loader_timeout').to_i * 10
+  timeout = 100 if timeout.nil? || timeout <= 0
+-%>
+DEFAULT menu
+MENU TITLE Booting into OS installer (ESC to stop)
+TIMEOUT <%= timeout %>
+ONTIMEOUT installer
+
+LABEL installer
+  MENU LABEL <%= template_name %>
+  KERNEL <%= @kernel %>
+  APPEND initrd=<%= @initrd %> inst.ks=<%= foreman_url('provision') %> <%= pxe_kernel_options %> <%= snippet("kickstart_kernel_options").strip %>
+<%
+  # workaround for EL 8.3: https://projects.theforeman.org/issues/31452
+  unless rhel_compatible && os_major == 8 && os_minor == 3
+-%>
+  IPAPPEND 2
+<%
+  end
+-%>
+
+<%= snippet_if_exists(template_name + " custom menu") %>

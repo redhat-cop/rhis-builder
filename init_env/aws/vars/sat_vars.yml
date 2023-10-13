@@ -1,0 +1,8 @@
+---
+sat_rootdisk_size_gb: "400"
+sat_var_size_gb: "300G"
+sat_var_log_size_gb: "4G"
+sat_var_log_audit_size_gb: "4G"
+sat_var_tmp_size_gb: "4G"
+sat_tmp_size_gb: "4G"
+sat_home_size_gb: "20G"

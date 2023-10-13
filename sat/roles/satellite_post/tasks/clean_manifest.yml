@@ -1,0 +1,12 @@
+---
+# We don't have an easy way to clean up a manifest
+# Added issue to foreman-ansible-modules
+
+- name: Delete any existing manifest
+  redhat.satellite.redhat_manifest:
+    portal: "{{ manifest_portal_url }}"
+    username: "{{ manifest_cdn_username }}"
+    password: "{{ manifest_cdn_password }}"
+    validate_certs: "{{ manifest_validate_certs }}"
+    name: "{{ manifest_name }}"
+    state: absent

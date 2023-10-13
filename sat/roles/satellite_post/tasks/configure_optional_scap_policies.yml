@@ -1,0 +1,7 @@
+---
+- name: "Enable the optional scap policies"
+  include_tasks: ensure_scap_policy.yml
+  loop: "{{ scap_policies_optional }}"
+  loop_control:
+    loop_var: tailoring
+  when: scap_policies_optional is defined

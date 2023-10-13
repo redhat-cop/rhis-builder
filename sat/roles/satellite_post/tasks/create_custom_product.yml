@@ -1,0 +1,21 @@
+---
+# This play will generate the required repositories for the custom products if any.
+#
+ 
+- name: "Create custom product {{ cp.name }}"
+  redhat.satellite.product:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    organization: "{{ satellite_initial_organization }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ cp.name }}"
+    state: present
+
+
+- name: "Create the Repositories required for the custom product."
+  include_tasks: add_custom_product_repo.yml
+  loop: "{{ cp.repositories }}"
+  loop_control: 
+    loop_var: cpr
+  when: "cp.repositories is defined"

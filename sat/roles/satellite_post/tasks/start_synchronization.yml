@@ -1,0 +1,77 @@
+---
+- name: "Sync unless skip_sync == true"
+  when: skip_sync == false
+  block:
+    - name: "Set or increment retry count"
+      ansible.builtin.set_fact:
+        sync_retry_count: "{{ 0 if sync_retry_count is undefined else sync_retry_count|int + 1 }}"
+
+    - name: "Get the unique list of mandatory products"
+      set_fact:
+        products_to_sync: "{{ repos_mandatory | map(attribute='product') | list | unique }}"
+
+    - debug:
+        var: products_to_sync
+
+    - name: "Sync the mandatory products with the CDN"
+      redhat.satellite.repository_sync:
+        username: "{{ satellite_admin_username }}"
+        password: "{{ satellite_admin_password }}"
+        server_url: "{{ satellite_url }}"
+        organization: "{{ satellite_initial_organization }}"
+        validate_certs: "{{ satellite_validate_certs }}"
+        product: "{{ item }}"
+      loop: "{{ products_to_sync }}"
+      async: "{{ async_timeout }}"
+      poll: "{{ async_delay }}"
+      register: async_update
+
+    - name: "Get the unique list of optional products"
+      set_fact:
+        products_to_sync: "{{ repos_optional | map(attribute='product') | list | unique }}"
+
+    - name: "Sync the optional products"
+      redhat.satellite.repository_sync:
+        username: "{{ satellite_admin_username }}"
+        password: "{{ satellite_admin_password }}"
+        server_url: "{{ satellite_url }}"
+        organization: "{{ satellite_initial_organization }}"
+        validate_certs: "{{ satellite_validate_certs }}"
+        product: "{{ item }}"
+      loop: "{{ products_to_sync }}"
+      async: "{{ async_timeout }}"
+      poll: "{{ async_delay }}"
+      register: async_update
+
+    - name: "Get the unique list of custom products"
+      set_fact:
+        products_to_sync: "{{ custom_products | map(attribute='name') | list | unique }}"
+
+    - name: "Sync the custom products"
+      redhat.satellite.repository_sync:
+        username: "{{ satellite_admin_username }}"
+        password: "{{ satellite_admin_password }}"
+        server_url: "{{ satellite_url }}"
+        organization: "{{ satellite_initial_organization }}"
+        validate_certs: "{{ satellite_validate_certs }}"
+        product: "{{ item }}"
+      loop: "{{ products_to_sync }}"
+      async: "{{ async_timeout }}"
+      poll: "{{ async_delay }}"
+      register: async_update
+
+  rescue:
+    - name: "Retry count exceeded, failing"
+      ansible.builtin.fail:
+        msg: "Maximum retry count exceeded, have tried {{ sync_retry_count }} times"
+      when: sync_retry_count|int == 4
+
+    - name: "Retrying"
+      ansible.builtin.debug:
+        msg: "Retrying, retry count {{ sync_retry_count }} of 4..."
+
+    - name: "Retry"
+      ansible.builtin.include_tasks: start_synchronization.yml
+
+  tags:
+  - tags_start_sync

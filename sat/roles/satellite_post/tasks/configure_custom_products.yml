@@ -1,0 +1,15 @@
+---
+# This play configures custom products that you have defined.
+# Custom products are stuff like Fedora, MSSQL Server, Debian, or whatever 
+# that aren't covered by the Satellite Manifest. If you are building 
+# a foreman based environment rather than a Satellite environment, this is where
+# all of your content gets defined
+#
+#
+- name: "Creating the specified custom products."
+  include_tasks: create_custom_product.yml
+  loop: "{{ custom_products }}"
+  loop_control:
+    loop_var: cp
+  when: "{{ custom_products is defined }}"
+

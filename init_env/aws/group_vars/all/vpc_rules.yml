@@ -1,0 +1,120 @@
+---
+vpc_ports:
+  - proto: 47
+    to_port: -1
+    from_port: -1
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 443
+    from_port: 443
+    cidr_ip: 0.0.0.0/0
+  - proto: icmp
+    to_port: -1
+    from_port: -1
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 80
+    from_port: 80
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 22
+    from_port: 22
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 3389
+    from_port: 3389
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 8000
+    from_port: 8000
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 8080
+    from_port: 8080
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 8088
+    from_port: 8088
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 8089
+    from_port: 8089
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 8443
+    from_port: 8443
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 830
+    from_port: 830
+    cidr_ip: 0.0.0.0/0
+  - proto: tcp
+    to_port: 5986
+    from_port: 5986
+    cidr_ip: 0.0.0.0/0
+    rule_desc: WinRM
+  - proto: udp
+    to_port: 514
+    from_port: 514
+    cidr_ip: 0.0.0.0/0
+    rule_desc: WinRM
+  - proto: tcp
+    to_port: 5432
+    from_port: 5432
+    cidr_ip: 172.16.0.0/14
+    rule_desc: Cluster option DB port
+  - proto: tcp
+    to_port: 27199
+    from_port: 27199
+    cidr_ip: 0.0.0.0/0
+    rule_desc: receptor
+  - proto: tcp
+    to_port: 53
+    from_port: 53
+    cidr_ip: 0.0.0.0/0
+    rule_desc: DNS - tcp
+  - proto: udp
+    to_port: 53
+    from_port: 53
+    cidr_ip: 0.0.0.0/0
+    rule_desc: DNS - udp
+  - proto: udp
+    to_port: 123
+    from_port: 123
+    cidr_ip: 0.0.0.0/0
+    rule_desc: NTP
+  - proto: tcp
+    to_port: 389
+    from_port: 389
+    cidr_ip: 0.0.0.0/0
+    rule_desc: LDAP
+  - proto: tcp
+    to_port: 636
+    from_port: 636
+    cidr_ip: 0.0.0.0/0
+    rule_desc: LDAPS
+  - proto: tcp
+    to_port: 88
+    from_port: 88
+    cidr_ip: 0.0.0.0/0
+    rule_desc: Kerberos for IDM
+  - proto: udp
+    to_port: 88
+    from_port: 88
+    cidr_ip: 0.0.0.0/0
+    rule_desc: Kerberos for IDM
+  - proto: tcp
+    to_port: 464
+    from_port: 464
+    cidr_ip: 0.0.0.0/0
+    rule_desc: Kerberos kadmind for IDM
+  - proto: udp
+    to_port: 464
+    from_port: 464
+    cidr_ip: 0.0.0.0/0
+    rule_desc: Kerberos kadmind for IDM
+  - proto: tcp
+    to_port: 749
+    from_port: 749
+    cidr_ip: 0.0.0.0/0
+    rule_desc: Kerberos kadmind for IDM

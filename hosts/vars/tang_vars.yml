@@ -1,0 +1,77 @@
+containerhosts:
+  - fqdn: "containerhost1.example.ca"
+    inventory_groups:
+      - container_host
+      - vmware_host
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    hostgroup: "RHEL8base"
+    kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+    compute_resource: "{{ default_compute_resource }}"
+    compute_profile: "{{ default_compute_profile }}"
+    mac: "{{ default_vm_mac }}"
+    build_comment: "Deployed by Labbuilder2"
+
+  - fqdn: "containerhost2.example.ca"
+    inventory_groups:
+      - container_host
+      - vmware_host
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    hostgroup: "RHEL8base"
+    kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+    compute_resource: "{{ default_compute_resource }}"
+    compute_profile: "{{ default_compute_profile }}"
+    mac: "{{ default_vm_mac }}"
+    build_comment: "Deployed by Labbuilder2"
+
+containerhost_registry: "{{ containerhost_registry_vault }}"
+containerhost_registry_username: "{{ containerhost_registry_username_vault }}"
+containerhost_registry_password: "{{ containerhost_registry_password_vault }}"
+
+containers:
+  - name: "tang"
+    image: "rhel8/tang"
+    id: "tang"
+    tag: "latest"
+    registry: "{{ containerhost_registry }}"
+    registry_username: "{{ containerhost_registry_username }}"
+    registry_password: "{{ containerhost_registry_password }}"
+    force: false
+    validate_certs: true
+    dependencies:
+      - clevis  #testing the service
+    detach: true
+    firewall:
+      - port: "8080/tcp"
+        zone: "public"
+        state: enabled
+    generate_systemd:
+      path: "/usr/lib/systemd/system/"
+      restart_policy: "on-failure"
+      time: 120
+      names: true
+      container_prefix: "rhis"
+      wants: "network-online.target"
+    publish:
+      - "8080:8080"
+    selinux_ports:
+      - ports: 8080
+        protocol: "tcp"
+        setype: "tangd_port_t"
+        state: present
+    state: started
+    systemd: true
+    volume: 
+      - "tang-keys:/var/db/tang"
+    
+#  - name: "rhis-discovery"
+#    image: "discovery/discovery-server-rhel8"
+#    id: "discovery"
+#    tag: "latest"
+#    registry: "{{ containerhost_registry }}"
+#    registry_username: "{{ containerhost_registry_username }}"
+#    registry_password: "{{ containerhost_registry_password }}"
+#    force: false
+#    validate_certs: true
+#    state: started

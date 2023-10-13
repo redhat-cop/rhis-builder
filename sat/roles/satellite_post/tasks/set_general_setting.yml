@@ -1,0 +1,11 @@
+---
+# set a Satellite general setting to a particular value.
+
+- name: "Configuring setting - {{ setting.name }}"
+  redhat.satellite.setting:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ setting.name }}"
+    value: "{{ setting.value }}"

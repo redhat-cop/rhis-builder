@@ -1,0 +1,23 @@
+---
+# generate the installer template and copy it to target
+# if we are deploying a larger config, we will not run the hub installer as it gets managed from here
+# launch the installer
+- name: "Template the AAP installer configuration"
+  ansible.builtin.template:
+    src: ../templates/standalone_controller_inventory.j2
+    dest: /tmp/aap_inventory
+  when: "controllers[0].standalone == true"
+
+- name: "Template the AAP installer configuration"
+  ansible.builtin.template:
+    src: ../templates/ansible_inventory.j2
+    dest: /tmp/aap_inventory
+  when: "controllers[0].standalone == false"
+
+- name: "Copy the AAP installer configuration to installer node"
+  ansible.builtin.copy:
+    src: /tmp/aap_inventory
+    dest: "{{ aap_installer_inventory_dir }}/inventory"
+    remote_src: true
+
+  

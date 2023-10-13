@@ -1,0 +1,26 @@
+{
+  "image_name": "{{ builder_image_name }}",
+  "distribution": "{{ builder_distribution }}",
+  "customizations": {
+    "packages": [
+      "firewalld",
+      "gdisk",
+      "git-all"
+    ],
+    {% if imagebuilder_include_filesystem -%}{%- include "imagebuilder_filesystem.j2" -%}{%- endif %}
+    "subscription": {
+      "base-url": "https://cdn.redhat.com/",
+      "insights": false,
+      "server-url": "subscription.rhsm.redhat.com",
+      "organization": {{ org_number }},
+      "activation-key": "{{ activation_key }}"
+    },
+  },
+  "image_requests": [
+    {
+      "image_type": "{{ imagebuilder_image_type }}",
+      "architecture": "x86_64",
+      "upload_request": { {% if imagebuilder_image_type == 'vsphere' -%}{{ vsphere_upload_request }}{%-  elif imagebuilder_image_type == 'azure' -%}{%- include "azure_upload_request.j2" -%}{%- elif imagebuilder_image_type == 'aws' -%}{%- include "aws_upload_request.j2" -%}{%-  endif %} }
+    }
+  ]
+}

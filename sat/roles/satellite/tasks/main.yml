@@ -1,0 +1,17 @@
+---
+# We now call the satellite_operations.installer role to run the installer
+#- name: "Check to see if Satellite is already configured"
+#  ansible.builtin.service_facts:
+#  register: service_facts
+
+- ansible.builtin.include_role:
+    name: "redhat.satellite_operations.installer"
+  vars:
+    satellite_installer_scenario: "satellite"
+    satellite_installer_options: "{{ sat_installer_options }}"
+    satellite_installer_verbose: "{{ sat_installer_verbose }}"
+#  when:
+#    - "'foreman.service' in ansible_facts['services']"
+#    - "ansible_facts['services']['foreman.service']['state'] != 'running'"
+#    - "skip_satellite_installed is defined"
+#    - "not skip_satellite_installer"

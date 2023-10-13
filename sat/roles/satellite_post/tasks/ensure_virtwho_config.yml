@@ -1,0 +1,105 @@
+---
+# Create and deploy a virtwho configuration
+# using the foreman_virtwho_config api
+# in order to be idempotent we need to 
+# determine if the virt-who configuration exists already
+# if it doesn't
+#   create it
+# if it does
+#   fetch it
+#   compare the values
+#   if we find a value that is changed
+#     update the config
+#   if we don't
+#     no-op
+# This needs to be a RFE on foreman-ansible-modules
+# For now, if it already exists, skip
+
+- set_fact:
+    json_data: "{{ vw | to_json }}"
+
+- name: "Does the vm configuration exist"
+  ansible.builtin.uri:
+    url: "https://{{ ansible_fqdn }}/foreman_virt_who_configure/api/v2/configs"
+    method: "GET"
+    body_format: "json"
+    user: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    force_basic_auth: "true"
+    body: "{{ json_data }}" 
+    status_code: 200
+  register: result
+
+- ansible.builtin.set_fact:
+    vw_config_names: "{{ result.json.results | selectattr('name') | map(attribute='name') | list }}"
+
+- ansible.builtin.set_fact:
+    config_exists: false
+
+- ansible.builtin.set_fact:
+    config_exists: true
+  when: vw.foreman_virt_who_configure_config.name in vw_config_names
+
+# #Highlander #ThereCanBeOnlyOne
+- ansible.builtin.set_fact:
+    config_id: "{{ result.json.results | selectattr('name', 'equalto', vw.foreman_virt_who_configure_config.name ) | map(attribute='id') | first }}"
+  when: config_exists == true
+
+
+- name: "Create the new configuration in Satellite"
+  block:
+    - name: "Create the new configuration in Satellite for {{ vw.foreman_virt_who_configure_config.name }}"
+      ansible.builtin.uri:
+        url: "https://{{ ansible_fqdn }}/foreman_virt_who_configure/api/v2/configs"
+        method: "POST"
+        body_format: "json"
+        user: "{{ satellite_admin_username }}"
+        password: "{{ satellite_admin_password }}"
+        force_basic_auth: "true"
+        body: "{{ json_data }}" 
+        status_code: 201
+      register: result
+  
+    - ansible.builtin.set_fact:
+        config_id: "{{ result.json.id }}"
+
+  when: config_exists == false
+
+
+- name: "Update the existing configuration in Satellite for existing config_id"
+  block:
+    - name: "Update the existing configuration in Satellite for {{ vw.foreman_virt_who_configure_config.name }}"
+      ansible.builtin.uri:
+        url: "https://{{ ansible_fqdn }}/foreman_virt_who_configure/api/v2/configs/{{ config_id }}/"
+        method: "PUT"
+        user: "{{ satellite_admin_username }}"
+        password: "{{ satellite_admin_password }}"
+        force_basic_auth: "true"
+        body_format: "json"
+        body: "{{ json_data }}"
+        status_code: 200
+      register: result
+
+    - ansible.builtin.set_fact:
+        config_id: "{{ result.json.id }}"
+
+  when: config_exists == true
+
+- debug:
+    var: config_id
+
+- name: "Retrieve the deployment config"
+  ansible.builtin.uri:
+    url: "https://{{ ansible_fqdn }}/foreman_virt_who_configure/api/v2/configs/{{ config_id }}/deploy_script/"
+    method: "GET"
+    user: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    force_basic_auth: "true"
+  register: result
+
+- name: "Deploy on Satellite"
+  ansible.builtin.shell: "{{ result.json.virt_who_config_script }}"
+  register: result
+
+- debug:
+    msg: "{{ result.stdout.split('\n') }}"

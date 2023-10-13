@@ -1,0 +1,30 @@
+    "filesystem": [
+      {
+        "min_size": {{ slash_size }},
+        "mountpoint": "/"
+      },
+      {
+        "min_size": {{ home_size }},
+        "mountpoint": "/home"
+      },
+      {
+        "min_size": {{ tmp_size }},
+        "mountpoint": "/tmp"
+      },
+      {
+        "min_size": {{ var_size }},
+        "mountpoint": "/var"
+      },
+      {
+        "min_size": {{ var_tmp_size }},
+        "mountpoint": "/var/tmp"
+      },
+      {
+        "min_size": {{ var_log_size }},
+        "mountpoint": "/var/log"
+      },
+      {
+        "min_size": {{ var_log_audit_size }},
+        "mountpoint": "/var/log/audit"
+      }
+    ],

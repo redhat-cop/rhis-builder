@@ -1,0 +1,35 @@
+---
+- name: "Ensure that firewalld is installed"
+  ansible.builtin.dnf:
+    name: firewalld
+    state: present
+
+- name: "Ensure that iptables is not running or configured"
+  ansible.builtin.systemd:
+    name: iptables
+    state: stopped
+    enabled: false
+    masked: true
+  ignore_errors: true
+
+- name: "Ensure that the Firewalld service is enabled and running"
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: true
+    masked: false
+
+- name: "Configure Firewalld services and ports for Satellite"
+  ansible.builtin.include_role:
+    name: "redhat.rhel_system_roles.firewall"
+  vars:
+    firewall:
+      - { set_default_zone: "{{ sat_firewalld_zone }}", state: enabled }
+      - { interface: eth0, zone: "{{ sat_firewalld_zone }}", state: enabled }
+      - { service: "RH-Satellite-6",
+          port: ["5646/tcp","8888/tcp","8889/tcp","5671/tcp","5671/udp"],
+          permanent: true,
+          state: present }
+      - { service: "{{ sat_firewalld_services }}",
+          permanent: true,
+          state: enabled }

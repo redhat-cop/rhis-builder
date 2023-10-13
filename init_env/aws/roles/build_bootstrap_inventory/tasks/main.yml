@@ -1,0 +1,112 @@
+---
+- name: grab instance ids to tag idm
+  amazon.aws.ec2_instance_info:
+    region: "{{ ec2_region }}"
+    filters:
+      instance-state-name: running
+      "tag:avp_idm": "{{ ec2_name_prefix }}-idm"
+  register: idm_instance_info
+
+- name: display idm_instance_info
+  ansible.builtin.debug:
+    msg: "{{ idm_instance_info }}"
+
+- name: Add idm host to inventory
+  ansible.builtin.add_host:
+    groups:
+      - 'idm_primary'
+      - 'aws_nodes'
+    hostname: idm
+    ansible_ssh_host: '{{ idm_instance_info.instances[0].public_dns_name }}'
+    ansible_ssh_private_key_file: '{{ playbook_dir }}/{{ ec2_name_prefix }}/{{ ec2_name_prefix }}-private.pem'
+    ansible_user: '{{ aws_ansible_user | default("ec2-user") }}'
+    ansible_remote_tmp: "{{ aws_remote_tmp | default('/home/ec2-user/.ansible/tmp') }}"
+    short_hostname: 'idm'
+    fqdn: 'idm.{{ ipa_server_domain }}'
+
+- name: grab instance ids to tag each satellite
+  amazon.aws.ec2_instance_info:
+    region: "{{ ec2_region }}"
+    filters:
+      instance-state-name: running
+      "tag:avp_satellite": "{{ ec2_name_prefix }}-satellite"
+  register: sat_instance_info
+
+- name: display sat_instance_info
+  ansible.builtin.debug:
+    msg: "{{ sat_instance_info }}"
+
+- name: Add sat host to inventory
+  ansible.builtin.add_host:
+    groups:
+      - 'sat_primary'
+      - 'aws_nodes'
+    hostname: sat
+    ansible_ssh_host: '{{ sat_instance_info.instances[0].public_dns_name }}'
+    ansible_ssh_private_key_file: '{{ playbook_dir }}/{{ ec2_name_prefix }}/{{ ec2_name_prefix }}-private.pem'
+    ansible_user: '{{ aws_ansible_user | default("ec2-user") }}'
+    #ansible_remote_tmp: '{{ aws_remote_tmp | default("/home/ec2-user/.ansible/tmp") }}'
+    ansible_remote_tmp: "{{ aws_remote_tmp | default('/home/ec2-user/.ansible/tmp') }}"
+    short_hostname: 'sat'
+    fqdn: 'sat.{{ ipa_server_domain }}'
+
+- name: grab instance ids to tag each aap
+  amazon.aws.ec2_instance_info:
+    region: "{{ ec2_region }}"
+    filters:
+      instance-state-name: running
+      "tag:avp_aap": "{{ ec2_name_prefix }}-aap"
+  register: aap_instance_info
+
+- name: display aap_instance_info
+  ansible.builtin.debug:
+    msg: "{{ aap_instance_info }}"
+
+- name: Add aap host to inventory
+  ansible.builtin.add_host:
+    groups:
+      - 'aap_controllers'
+      - 'aws_nodes'
+    hostname: aap
+    ansible_ssh_host: '{{ aap_instance_info.instances[0].public_dns_name }}'
+    ansible_ssh_private_key_file: '{{ playbook_dir }}/{{ ec2_name_prefix }}/{{ ec2_name_prefix }}-private.pem'
+    ansible_user: '{{ aws_ansible_user | default("ec2-user") }}'
+    #ansible_remote_tmp: '{{ aws_remote_tmp | default("/home/ec2-user/.ansible/tmp") }}'
+    ansible_remote_tmp: "{{ aws_remote_tmp | default('/home/ec2-user/.ansible/tmp') }}"
+    short_hostname: 'aap'
+    fqdn: 'aap.{{ ipa_server_domain }}'
+
+- name: grab instance ids to tag each hub
+  amazon.aws.ec2_instance_info:
+    region: "{{ ec2_region }}"
+    filters:
+      instance-state-name: running
+      "tag:avp_hub": "{{ ec2_name_prefix }}-hub"
+  register: hub_instance_info
+
+- name: display hub_instance_info
+  ansible.builtin.debug:
+    msg: "{{ hub_instance_info }}"
+
+- name: Add hub host to inventory
+  ansible.builtin.add_host:
+    groups:
+      - 'automation_hub'
+      - 'aws_nodes'
+    hostname: hub
+    ansible_ssh_host: '{{ aap_instance_info.instances[0].public_dns_name }}'
+    ansible_ssh_private_key_file: '{{ playbook_dir }}/{{ ec2_name_prefix }}/{{ ec2_name_prefix }}-private.pem'
+    ansible_user: '{{ aws_ansible_user | default("ec2-user") }}'
+    #ansible_remote_tmp: '{{ aws_remote_tmp | default("/home/ec2-user/.ansible/tmp") }}'
+    ansible_remote_tmp: "{{ aws_remote_tmp | default('/home/ec2-user/.ansible/tmp') }}"
+    short_hostname: 'hub'
+    fqdn: 'hub.{{ ipa_server_domain }}'
+
+- name: Save facts for later
+  ansible.builtin.set_fact:
+    idm_instance: '{{ idm_instance_info.instances | first }}'
+    sat_instance: '{{ sat_instance_info.instances | first }}'
+    aap_instance: '{{ aap_instance_info.instances | first }}'
+    hub_instance: '{{ hub_instance_info.instances | first }}'
+    subnet_id: '{{ ec2_vpc_subnet_id }}'
+    sg_id: '{{ create_sg.group_id }}'

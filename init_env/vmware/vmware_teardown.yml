@@ -1,0 +1,58 @@
+---
+# VMware specific initialization begins here
+- name: "Unregister rhis Env"
+  hosts: all:!build_control
+  become: true
+
+  tasks:
+    - name: Unregister
+      community.general.redhat_subscription:
+        state: absent
+      ignore_errors: true 
+
+- name: "Tear down rhis Env"
+  hosts: build_control
+  connection: local
+  become: true
+
+  tasks:
+
+    - name: "Include vaulted vars"
+      ansible.builtin.include_vars:
+        file: "~/rhisbuilder_vault.yml"
+
+    - name: "Include top level vars"
+      ansible.builtin.include_vars:
+        dir: "../vars"
+
+    - name: "Cleaning up the following Virtual machines"
+      ansible.builtin.debug:
+        msg: "{{ item }}"
+      with_inventory_hostnames:
+        - all:!build_control
+
+    - name: "Power off instances"
+      community.vmware.vmware_guest_powerstate:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        name: "{{ item }}"
+        state: "powered-off"
+        validate_certs: "{{ vcenter_validate_certs }}"
+      with_inventory_hostnames:
+        - all:!build_control
+      ignore_errors: true
+
+    - name: "Remove instances"
+      community.vmware.vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        name: "{{ item }}"
+        cluster: "{{ vcenter_cluster }}"
+        state: "absent"
+        validate_certs: "{{ vcenter_validate_certs }}"
+      with_inventory_hostnames:
+        - all:!build_control
+      ignore_errors: true
+

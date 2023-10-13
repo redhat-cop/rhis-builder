@@ -1,0 +1,16 @@
+---
+- name: Configure public DNS for bootstrap server set
+  community.aws.route53:
+    state: present
+    zone: "{{ workshop_dns_zone }}"
+    record: "{{ item.tags.short_name }}.{{ ec2_name_prefix|lower }}.{{ workshop_dns_zone }}"
+    type: A
+    ttl: 300
+    overwrite: true
+    value: "{{ item.public_ip_address }}"
+    wait: true
+  loop:
+    - '{{ idm_instance }}'
+    - '{{ sat_instance }}'
+    - '{{ aap_instance }}'
+    - '{{ hub_instance }}'

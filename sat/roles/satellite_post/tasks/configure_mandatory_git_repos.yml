@@ -1,0 +1,7 @@
+---
+- name: "Configure the mandatory git repos"
+  include_tasks: "ensure_clone_git_repos.yml"
+  loop: "{{ git_repos_mandatory }}"
+  loop_control:
+    loop_var: gitrepo
+  when: "git_repos_mandatory is defined"

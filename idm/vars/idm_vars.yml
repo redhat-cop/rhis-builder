@@ -1,0 +1,115 @@
+# prerequisites
+repository_ids:
+  - rhel-8-for-x86_64-baseos-rpms
+  - rhel-8-for-x86_64-appstream-rpms
+  - rhel-8-for-x86_64-supplementary-rpms
+  - satellite-client-6-for-rhel-8-x86_64-rpms
+
+timeserver1: "192.168.252.8"
+timeserver2: "192.168.252.7"
+
+ipa_admin_principal: "{{ ipa_admin_principal_vault }}"
+ipa_admin_password: "{{ ipa_admin_password_vault }}"
+ipa_dm_password: "{{ ipa_dm_password_vault }}"
+ipa_server_domain: "example.ca"
+ipa_server_realm: "{{ ipa_server_domain | upper }}"
+
+# ipaserver role variables
+# These deviate from our standard
+ipaadmin_password: "{{ ipa_admin_password }}"
+ipadm_password: "{{ ipa_dm_password }}"
+
+ipaserver_ip_addresses: "192.168.140.5"
+ipaserver_domain: "{{ ipa_server_domain }}"
+ipaserver_realm: "{{ ipa_server_realm }}"
+
+ipaserver_hostname: "idm.example.ca"
+ipaserver_no_host_dns: true
+ipaserver_mem_check: false
+
+ipaserver_install_packages: false
+ipaserver_setup_firewalld: true
+
+ipaserver_setup_adtrust: false
+ipaserver_setup_kra: true
+ipaserver_setup_dns: true
+
+ipaserver_auto_reverse: true
+ipaserver_forwarders:
+  - "8.8.8.8"
+ipaserver_forward_policy: "first"
+ipaserver_external_ca: false
+
+makehomedir: true
+sshtrustdns: true
+default_password: "redhat1!"
+
+# example of forwarding to your production domain
+dns_forward_zones:
+  - dns_forward_zone: "parmstrong.ca"
+    dns_forward_zone_servers:
+      - ip_address: "192.168.252.5"
+      - ip_address: "192.168.252.6"
+    dns_forward_zone_policy: "only"
+    dns_skip_overlap_check: true
+
+dns_update_zones:
+  - name: "example.ca"
+    foreman_proxy_BIND_update_policy: 'grant EXAMPLE.CA krb5-self * A; grant EXAMPLE.CA krb5-self * AAAA; grant EXAMPLE.CA krb5-self * SSHFP; grant realm-capsule\@EXAMPLE.CA wildcard * ANY;'
+  - name: "168.192.in-addr.arpa"
+    foreman_proxy_BIND_update_policy: 'grant EXAMPLE.CA krb5-subdomain 168.192.in-addr.arpa. PTR; grant realm-capsule\@EXAMPLE.CA wildcard * ANY;'
+  - name: "140.168.192.in-addr.arpa"
+    foreman_proxy_BIND_update_policy: 'grant EXAMPLE.CA krb5-subdomain 254.168.192.in-addr.arpa. PTR; grant realm-capsule\@EXAMPLE.CA wildcard * ANY;'
+
+idm_user_groups:
+  - { name: "satgroup-administrator", desc: "Satellite Server Administrators" }
+  - { name: "satgroup-org-administrator", desc: "Satellite Default Org Administrators - Manager Role" }
+  - { name: "satgroup-site-administrator", desc: "Satellite Default Org Administrators - Manager Role for a Location" }
+  - { name: "satgroup-compliance-manager", desc: "Satellite Systems Compliance Managers - Full control compliance content" }
+  - { name: "satgroup-compliance-auditor", desc: "Satellite Systems Compliance Auditor - Read only control compliance content" }
+  - { name: "satgroup-operator", desc: "Satellite Server Operators - Full control on hosts and content hosts" }
+  - { name: "satgroup-sub-manager", desc: "Satellite Subscription Manager - manage all subsc:riptions" }
+  - { name: "satgroup-content-manager", desc: "Satellite Content Manager - manage all content" }
+  - { name: "aapgroup-administrator", desc: "Ansible Automation Platform Administrators" }
+  - { name: "aapgroup-auditor", desc: "Ansible Automation Platform Auditors" }
+  - { name: "aapgroup-operator", desc: "Ansible Automation Platform Server Operators" }
+  - { name: "aapgroup-proj_manager", desc: "Ansible Automation Platform Project Manager" }
+  - { name: "aapgroup-template_manager", desc: "Ansible Automation Platform Template Manager" }
+  - { name: "aapgroup-user", desc: "Ansible Automation Platform User - can run basic Templates and Workflows" }
+  - { name: "aapgroup-developer", desc: "Ansible Automation Platform Programmer - an AAP power user" }
+
+idm_host_groups:
+  - { name: "sat-servers", desc: "Satellite Servers and Capsules" }
+  - { name: "aap-servers", desc: "Ansible Automation Platform Servers" }
+  - { name: "util-servers", desc: "Utility Servers for General Purpose work" }
+
+idm_users:
+  - { login: "poc_admin", first: "POC", last: "Admin", city: "Waterloo", userstate: "Ontario", departmentnumber: "42", email: "poc_admin@example.ca", employeenumber: "13", employeetype: "full-time", title: "POC Administrator" }
+  - { login: "developer1", first: "Developer", last: "One", city: "Raliegh", userstate: "North Carolina", departmentnumber: "53", email: "developer1@example.ca", employeenumber: "29", employeetype: "full-time", title: "Senior Developer" }
+  - { login: "developer2", first: "Developer", last: "Two", city: "Ottawa", userstate: "Ontario", departmentnumber: "53", email: "developer2@example.ca", employeenumber: "20", employeetype: "full-time", title: "Senior Developer" }
+  - { login: "developer3", first: "Developer", last: "Three", city: "Montreal", userstate: "Quebec", departmentnumber: "53", email: "developer3@example.ca", employeenumber: "1", employeetype: "full-time", title: "Principal Data Scientist" }
+  - { login: "sat_admin", first: "Sat", last: "Admin" }
+  - { login: "sat_org_admin", first: "Org", last: "Admin" }
+  - { login: "site_admin", first: "Site", last: "Admin" }
+  - { login: "comply_mgr", first: "Comply", last: "Mgr" }
+  - { login: "comply_aud", first: "Comply", last: "Aud" }
+  - { login: "pfy_operator", first: "PFY", last: "Operator" }
+  - { login: "bofh", first: "B", last: "OperatorFH" }
+  - { login: "content_mgr", first: "Content", last: "Mgr" }
+
+idm_group_users:
+  - { group: "admins", user: ["admin", "poc_admin", "bofh"] }
+  - { group: "aapgroup-developer", user: ["developer1", "developer2", "developer3"] }
+  - { group: "aapgroup-administrator", user: ["poc_admin", "bofh"] }
+  - { group: "aapgroup-user", user: ["poc_admin", "bofh", "developer1", "developer2", "developer3"] }
+  - { group: "satgroup-administrator", user: ["sat_admin", "poc_admin"] }
+  - { group: "satgroup-org-administrator", user: ["sat_org_admin", "poc_admin"] }
+  - { group: "satgroup-site-administrator", user: ["site_admin", "poc_admin"] }
+  - { group: "satgroup-compliance-manager", user: ["comply_mgr", "poc_admin"] }
+  - { group: "satgroup-compliance-auditor", user: ["comply_aud", "poc_admin"] }
+  - { group: "satgroup-operator", user: ["pfy_operator", "bofh"] }
+  - { group: "satgroup-content-manager", user: ["content_mgr", "poc_admin"] }
+
+idm_group_groups:
+  - { group: "satgroup-administrator", value: "admins" }
+  - { group: "aapgroup-administrator", value: "admins" }

@@ -1,0 +1,25 @@
+---
+# Get all the hosts from the vars folders and add them to the inventory
+- name: "Collect inventory hosts"
+  hosts: build_control
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - "vars/common_vars.yml"
+    - "vars/controller_vars.yml"
+    - "vars/hub_vars.yml"
+    - "vars/tang_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+
+    - name: "Build the controllers"
+      ansible.builtin.include_tasks: "controller/sat_build_controller.yml"
+
+    - name: "Build the hubs"
+      ansible.builtin.include_tasks: "hub/sat_build_hub.yml"
+
+    - name: "Build the container_host"
+      ansible.builtin.include_tasks: "tang/sat_build_container_host.yml"
+

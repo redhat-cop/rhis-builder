@@ -1,0 +1,32 @@
+---
+- name: "Check if the host exists and is reachable"
+  block:
+  
+  - ansible.builtin.set_fact:
+      host_exists: false
+  
+  - name: "Can we resolve the host"
+    assert:
+      that: "{{ host.fqdn is ansible.utils.resolvable }}"
+
+  - name: "Can we ssh to host?"
+    ansible.builtin.wait_for:
+        timeout: 60
+        sleep: 10
+        port: 22
+        host: "{{ host.fqdn }}"
+        search_regex: OpenSSH
+    
+  - name: "Execute a command"
+    command: "echo 'I am alive.'"
+    delegate_to: "{{ host.fqdn }}"
+    register: result
+
+  - ansible.builtin.set_fact:
+      host_exists: true
+    when: result.stdout == "I am alive."
+
+  rescue:
+
+    - ansible.builtin.set_fact:
+        host_exists: false

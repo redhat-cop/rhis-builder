@@ -1,0 +1,28 @@
+---
+# This play creates the Content View Filters for a Content View
+#
+
+- name: "Create the content view filter - {{ cvf.name }}"
+  redhat.satellite.content_view_filter:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    organization: "{{ satellite_initial_organization }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ cvf.name }}"
+    description: "{{ cvf.description | default(omit) }}"
+    content_view: "{{ cv.name }}"
+    filter_type: "{{ cvf.type }}"
+    inclusion: "{{ cvf.inclusion }}"
+    repositories: "{{ cvf.repositories }}"
+    original_packages: "{{ cvf.original_packages | default(omit) }}"
+    original_module_streams: "{{ cvf.original_module_streams | default(omit) }}"
+
+
+- name: "Configure Content View Filter Rules"
+  include_tasks: create_cvf_rules.yml
+  loop: "{{ cvf.rules }}"
+  loop_control:
+    loop_var: cvfr
+  when: "cvf.rules is defined"
+

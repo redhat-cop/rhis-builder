@@ -1,0 +1,12 @@
+---
+- name: "Ensure the proper repositories are enabled"
+  community.general.rhsm_repository: 
+    name: "{{ repository_ids }}"
+    state: enabled
+    purge: true
+
+- name: "Ensure the release is not set"
+  ansible.builtin.command: "subscription-manager release --unset"
+
+- name: "Clean the yum metadata"
+  ansible.builtin.command: "yum clean all"

@@ -1,0 +1,30 @@
+---
+# This play adds the filter rules to a content view filter
+# There are a lot of ways to create rules. Please consult the latest documentation
+
+- name: "Create the content view filter {{ cvfr.name }}"
+  redhat.satellite.content_view_filter_rule:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    organization: "{{ satellite_initial_organization }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    content_view: "{{ cv.name }}"
+    content_view_filter: "{{ cvf.name }}"
+    name: "{{ cvfr.name | default(omit) }}"
+    state: "{{ cvfr.state | default(omit) }}"
+    min_version: "{{ cvfr.min_version | default(omit) }}"
+    max_version: "{{ cvfr.max_version | default(omit) }}"
+    version: "{{ cvfr.version | default(omit) }}"
+    errata_id: "{{ cvfr.errata_id | default(omit) }}"
+    stream: "{{ cvfr.stream | default(omit) }}"
+    context: "{{ cvfr.context | default(omit) }}"
+    architecture: "{{ cvfr.architecture | default(omit) }}"
+    date_type: "{{ cvfr.date_type | default(omit) }}"
+    start_date: "{{ cvfr.start_date | default(omit) }}"
+    end_date: "{{ cvfr.end_date | default(omit) }}"
+    rule_name: "{{ cvfr.rule_name | default(omit) }}"  # name alias
+    module_name: "{{ cvfr.module_name | default(omit) }}"  # name alias
+    package_name: "{{ cvfr.package_name | default(omit) }}"  # name alias
+    package_group: "{{ cvfr.package_group | default(omit) }}"  # name alias
+    arch:  "{{ cvfr.arch | default(omit) }}" # architecture alias

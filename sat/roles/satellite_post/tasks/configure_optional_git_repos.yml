@@ -1,0 +1,7 @@
+---
+- name: "Configure the optional git repos"
+  include_tasks: "ensure_clone_git_repos.yml"
+  loop: "{{ git_repos_optional }}"
+  loop_control:
+    loop_var: gitrepo
+  when: "git_repos_optional is defined"

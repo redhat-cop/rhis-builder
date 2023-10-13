@@ -1,0 +1,61 @@
+# This is a template for deploying AAP with rhis_builder
+# We need to set values from the configuration depending on the deployment type
+# These deployment types are based on the models in Red Hat documentation 
+# For Controller and Platform installation types there will be a controllers section defined in the variables file
+# The first controller listed will be the installer node (controllers[0]).
+
+    {% if controllers[0].aap_admin_password is defined %}
+      {% set admin_password = controllers[0].aap_admin_password %}
+    {% endif %}
+    {% if controllers[0].aap_pg_host is defined %}
+      {% set pg_host = controllers[0].aap_pg_host %} 
+    {% endif %}
+    {% if controllers[0].aap_pg_port is defined %}
+      {% set pg_port = controllers[0].aap_pg_port %} 
+    {% endif %}
+    {% if controllers[0].aap_pg_database is defined %}
+      {% set pg_database = controllers[0].aap_pg_database %} 
+    {% endif %}
+    {% if controllers[0].aap_pg_username is defined %}
+      {% set pg_username = controllers[0].aap_pg_username %}
+    {% endif %}
+    {% if controllers[0].aap_pg_password is defined %}
+      {% set pg_password = controllers[0].aap_pg_password %} 
+    {% endif %}
+    {% if controllers[0].aap_pg_sslmode is defined %}
+      {% set pg_sslmode = controllers[0].aap_pg_sslmode %} 
+    {% endif %}
+    {% if controllers[0].aap_postgres_use_ssl is defined %}
+      {% set postgres_use_ssl = controllers[0].aap_postgres_use_ssl %} 
+    {% endif %}
+    {% if controllers[0].aap_postgres_ssl_cert is defined %}
+      {% set postgres_ssl_cert = controllers[0].aap_postgres_ssl_cert %} 
+    {% endif %}
+    {% if controllers[0].aap_postgres_ssl_key is defined %}
+      {% set postgres_ssl_key = controllers[0].aap_postgres_ssl_key %} 
+    {% endif %}
+    {% if controllers[0].aap_registry_url is defined %}
+      {% set registry_url = controllers[0].aap_registry_url %} 
+    {% endif %}
+    {% if controllers[0].aap_registry_username is defined %}
+      {% set registry_username = controllers[0].aap_registry_username %} 
+    {% endif %}
+    {% if controllers[0].aap_registry_password is defined %}
+      {% set registry_password = controllers[0].aap_registry_password %} 
+    {% endif %}
+    {% if controllers[0].aap_custom_ca_cert is defined %}
+      {% set custom_ca_cert = controllers[0].aap_custom_ca_cert %} 
+    {% endif %}
+    {% if controllers[0].aap_web_server_ssl_key is defined %}
+      {% set web_server_ssl_key = controllers[0].aap_web_server_ssl_key %} 
+    {% endif %}
+    {% if controllers[0].aap_web_server_ssl_cert is defined %}
+      {% set web_server_ssl_cert = controllers[0].aap_web_server_ssl_cert %} 
+    {% endif %}
+    {% if controllers[0].aap_automationhub_ssl_key is defined %}
+      {% set automationhub_ssl_key = controllers[0].aap_automationhub_ssl_key %} 
+    {% endif %}
+    {% if controllers[0].aap_automationhub_ssl_cert is defined %}
+      {% set automationhub_ssl_cert = controllers[0].aap_automationhub_ssl_cert %} 
+    {% endif %}
+

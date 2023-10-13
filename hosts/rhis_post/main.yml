@@ -1,0 +1,58 @@
+---
+# Run the post build tasks
+# Run and launch from provisioner
+
+# Get the credentials for sync'd collections and add our namespace
+- name: "Create Automation Hub Credentials"
+  ansible.builtin.include_tasks: "tasks/add_hub_credentials.yml"
+  no_log: true
+
+# Add the above credentials + standard credentials to Controller
+# This includes the hub admin credentials for adding ee containers.
+- name: "Add AAP Credentials"
+  ansible.builtin.include_tasks: "tasks/add_aap_credentials.yml"
+  no_log: true
+
+- name: "Map Galaxy Credentials to Organizations"
+  ansible.builtin.include_tasks: "tasks/add_hub_credentials_to_org.yml"
+
+# Create the ee's and add them to the Hub and Controller
+- name: "Build Execution Environments"
+  ansible.builtin.include_tasks: "tasks/build_ees.yml"
+  no_log: true
+
+- name: "Register Execution Environments"
+  ansible.builtin.include_tasks: "tasks/add_ees.yml"
+  no_log: true
+
+# Add the inventory
+- name: "Add AAP inventories"
+  ansible.builtin.include_tasks: "tasks/add_inventories.yml"
+
+# Add the inventory sources
+- name: "Add AAP inventory sources"
+  ansible.builtin.include_tasks: "tasks/add_inventory_sources.yml"
+
+# Add the static inventory hosts
+- name: "Add AAP inventory sources"
+  ansible.builtin.include_tasks: "tasks/add_static_hosts.yml"
+
+# Add the static inventory groups
+- name: "Add AAP inventory sources"
+  ansible.builtin.include_tasks: "tasks/add_static_groups.yml"
+
+# Add our demo projects
+- name: "Add AAP projects"
+  ansible.builtin.include_tasks: "tasks/add_projects.yml"
+
+# Add the demo templates for callback and pipeline
+- name: "Add AAP templates"
+  ansible.builtin.include_tasks: "tasks/add_templates.yml"
+
+# Add the pipeline workflow template
+- name: "Add AAP workflows"
+  ansible.builtin.include_tasks: "tasks/add_workflow_templates.yml"
+
+# Run the pipeline
+- name: "Run Test Jobs"
+  ansible.builtin.include_tasks: "tasks/launch_test_jobs.yml"

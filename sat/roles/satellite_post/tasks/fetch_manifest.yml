@@ -1,0 +1,18 @@
+---
+# Download the specified manifest from the portal
+# 
+- name: Clean up any exiting manifest
+  ansible.builtin.file:
+    path: "{{ manifest_path}}"
+    state: absent
+
+- name: Download the specified manifest
+  redhat.satellite.redhat_manifest:
+    portal: "{{ manifest_portal_url }}"
+    username: "{{ manifest_cdn_username }}"
+    password: "{{ manifest_cdn_password }}"
+    validate_certs: "{{ manifest_validate_certs }}"
+    name: "{{ manifest_name }}"
+    path: "{{ manifest_path }}"
+    content_access_mode: "{{ satellite_manifest_content_access_mode | default(omit) }}"
+    uuid: "{{ satellite_manifest_uuid | default(omit) }}"

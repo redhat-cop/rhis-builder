@@ -1,0 +1,82 @@
+---
+- name: "Import inventory playbook for AWS if needed"
+  ansible.builtin.import_playbook: ../init_env/aws/fix_aws_dns.yml
+  when: rhisbuilder_bootstrap_target == 'aws'
+
+- name: "Collect hosts and add to inventory"
+  ansible.builtin.import_playbook: "collect_hosts.yml"
+  when: rhisbuilder_bootstrap_target == 'vmware'
+
+- name: "Build aap"
+  hosts: aap_controller
+  remote_user: ansiblerunner
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/common_vars.yml"
+    - "vars/controller_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+  
+  tasks:
+    - name: "Build the ansible controllers"
+      ansible.builtin.include_tasks: controller/main.yml
+      tags:
+        - tags_phase_4
+        - tags_aap
+        - tags_controllers
+
+- name: "Build automation hub"
+  hosts: automation_hub
+  remote_user: ansiblerunner
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/common_vars.yml"
+    - "vars/hub_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+  
+  tasks:
+    - name: "Build the ansible automation hubs"
+      ansible.builtin.include_tasks: hub/main.yml
+      tags:
+        - tags_phase_4
+        - tags_aap
+        - tags_hubs
+
+- name: "Build tang server(s) if needed"
+  hosts: container_host
+  connection: local
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/common_vars.yml"
+    - "vars/tang_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+    - name: "Build the container servers for tang and others"
+      ansible.builtin.include_tasks: tang/main.yml
+      tags:
+        - tags_phase_4
+        - tags_nbde
+        - tags_tang
+
+- name: "Post deploy configuration - hosts"
+  hosts: build_control
+  connection: local
+  remote_user: ansiblerunner
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/common_vars.yml"
+    - "vars/hub_vars.yml"
+    - "vars/rhis_post_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+    - name: "Run post provisioning tasks"
+      ansible.builtin.include_tasks: "rhis_post/main.yml"
+      tags:
+        - tags_phase_4
+        - tags_rhis_post
+

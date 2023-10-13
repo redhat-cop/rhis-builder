@@ -1,0 +1,166 @@
+---
+subnets_mandatory: []
+subnets_optional: []
+
+aws_access_key: "{{ aws_access_key_vault }}"
+aws_secret_key: "{{ aws_secret_key_vault }}"
+
+compute_resources_mandatory:
+  - name: "EC2-{{ ec2_region }}"
+    provider: "EC2"
+    description: "EC2 compute for {{ ec2_name_prefix }} Region {{ ec2_region }}"
+    locations: "{{ satellite_initial_location }}"
+    organizations: "{{ satellite_initial_organization }}"
+    provider_params:
+      user: "{{ aws_access_key }}"
+      password: "{{ aws_secret_key }}"
+      region: "{{ ec2_region }}"
+    images:
+      - name: "ImageBuilder main"
+        operatingsystem: "RHEL 8.8"
+        architecture: "x86_64"
+        user_data: true
+        image_username: 'ec2-user'
+        uuid: "{{ imagebuilder_ami }}"
+
+# compute_resources_optional:
+
+# setup_virtwho
+satellite_virtwho_username: "{{ satellite_virtwho_username_vault }}"
+satellite_virtwho_password: "{{ satellite_virtwho_password_vault }}"
+
+virtwho_configs_mandatory: []
+#  - foreman_virt_who_configure_config:
+#      name: "VMware"
+#      hypervisor_type: "esx"
+#      hypervisor_server: "192.168.252.30"
+#      hypervisor_username: "{{ vcenter_virtwho_username }}"
+#      hypervisor_password: "{{ vcenter_virtwho_password }}"
+#      hypervisor_id: "hostname"
+#      interval: "120"
+#      filtering_mode: 0
+#      satellite_url: "sat.example.ca"
+#      organization_id: 1
+
+# compute_profiles
+compute_profiles_mandatory:
+  - name: "AWS_SOE_Small"
+    compute_attributes:
+      - compute_resource: "EC2-{{ ec2_region }}"
+        vm_attrs:
+          flavor_id: "m1.small"
+          image_id: "{{ imagebuilder_ami }}"
+          managed_ip: "private"
+          subnet_id: "{{ hostvars['localhost']['subnet_id'] }}"
+          security_group_ids:
+            - "{{ hostvars['localhost']['sg_id'] }}"
+
+  - name: "AWS_SOE_Medium"
+    compute_attributes:
+      - compute_resource: "EC2-{{ ec2_region }}"
+        vm_attrs:
+          flavor_id: "m4.large"
+          image_id: "{{ imagebuilder_ami }}"
+          managed_ip: "private"
+          subnet_id: "{{ hostvars['localhost']['subnet_id'] }}"
+          security_group_ids:
+            - "{{ hostvars['localhost']['sg_id'] }}"
+
+  - name: "AWS_SOE_Large"
+    compute_attributes:
+      - compute_resource: "EC2-{{ ec2_region }}"
+        vm_attrs:
+          flavor_id: "m4.xlarge"
+          image_id: "{{ imagebuilder_ami }}"
+          managed_ip: "private"
+          subnet_id: "{{ hostvars['localhost']['subnet_id'] }}"
+          security_group_ids:
+            - "{{ hostvars['localhost']['sg_id'] }}"
+
+  - name: "AWS_SOE_XLarge"
+    compute_attributes:
+      - compute_resource: "EC2-{{ ec2_region }}"
+        vm_attrs:
+          flavor_id: "m4.4xlarge"
+          image_id: "{{ imagebuilder_ami }}"
+          interfaces_attributes:
+          managed_ip: "private"
+          subnet_id: "{{ hostvars['localhost']['subnet_id'] }}"
+          security_group_ids:
+            - "{{ hostvars['localhost']['sg_id'] }}"
+
+  - name: "AWS_SOE_XLarge_Public"
+    compute_attributes:
+      - compute_resource: "EC2-{{ ec2_region }}"
+        vm_attrs:
+          flavor_id: "m4.4xlarge"
+          image_id: "{{ imagebuilder_ami }}"
+          interfaces_attributes:
+          managed_ip: "public"
+          subnet_id: "{{ hostvars['localhost']['subnet_id'] }}"
+          security_group_ids:
+            - "{{ hostvars['localhost']['sg_id'] }}"
+
+oss_mandatory:
+  - name: "RedHat"
+    major: 8
+    minor: 8
+    description: "RHEL 8.8"
+    family: "Redhat"
+    password_hash: "SHA256"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    state: "present"
+    architectures:
+      - "x86_64"
+    provisioning_templates:
+      - "Kickstart default"
+      - "Kickstart default finish"
+      - "Linux host_init_config default"
+      - "Discovery Red Hat kexec"
+      - "Kickstart default user data"
+      - "SOE Kickstart Default"
+      - "SOE Kickstart Default Finish"
+    ptables:
+      - "Kickstart default"
+      - "Kickstart default thin"
+    default_templates:
+      - name: "SOE Kickstart Default"
+        template_kind: "provision"
+      - name: "SOE Kickstart Default Finish"
+        template_kind: "finish"
+      - name: "Linux host_init_config default"
+        template_kind: "host_init_config"
+      - name: "Kickstart default user data"
+        template_kind: "user_data"
+
+hostgroups_mandatory:
+  - name: "RHEL8base"
+    description: "RHEL 8 SOE base hostgroup"
+    activation_keys: "SOE_RHEL8"
+    ansible_roles:
+      - theforeman.foreman_scap_client
+    architecture: "x86_64"
+    compute_profile: "AWS_SOE_Medium"
+    compute_resource: "EC2-{{ ec2_region }}"
+    content_source: "{{ satellite_fqdn }}"
+    content_view: "SOE_RHEL8"
+    domain: "{{ satellite_domain }}"
+    lifecycle_environment: "Development"
+    kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+    locations: "{{ satellite_initial_location }}"
+    organization: "{{ satellite_initial_organization }}"
+    openscap_capsule: "{{ satellite_fqdn }}"
+    operatingsystem: "RHEL 8.8"
+    realm: "{{ satellite_domain | upper }}"
+    root_pass: "{{ satellite_admin_password }}"
+
+discovery_rules_mandatory: []
+#  - name: "3nic_host"
+#    enabled: false
+#    state: present
+#    organizations: "{{ satellite_initial_organization }}"
+#    locations: "{{ satellite_initial_location }}"
+#    search: 'disk_count = 2 and memory > 32000 and facts.interfaces ~ "*,*,*,*"'
+#    priority: 20
+#    hostgroup: "RHEL9base/RHEL9_CIS2"

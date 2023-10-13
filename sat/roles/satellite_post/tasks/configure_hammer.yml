@@ -1,0 +1,28 @@
+---
+# This task sets up hammer on the satellite server so we can execute
+# additional setup commands 
+# Updated for Satellite 6.6.z health check label is now 'server-ping'
+
+- name: "Create a directory for the hammer config for the root user"
+  file:
+    dest: "/root/.hammer/cli.modules.d/"
+    state: "directory"
+
+- name: "Create the configuration file"
+  template:
+    src: "foreman.yml.j2"
+    dest: "/root/.hammer/cli.modules.d/foreman.yml"
+
+- name: "Check hammer"
+  command: "hammer ping"
+  register: output
+
+- fail:
+  when: "'Status:          ok' not in output.stdout"
+
+- name: "Check health"
+  command: "satellite-maintain health check --label server-ping"
+  register: output
+
+- fail:
+  when: "'[OK]' not in output.stdout"

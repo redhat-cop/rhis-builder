@@ -1,0 +1,16 @@
+---
+# This play will create the defined media for optional and mandatory repositories
+# 
+
+- name: Delete the previous Medium definition if it exists
+  command: "hammer medium delete --name={{ md.name }} --organization={{ md.organization | quote }} --location={{ md.location | quote }}"
+  ignore_errors: true
+
+- name: Fetch content if required
+  include_tasks: "{{ md.fetch_content_task }}"
+  when: "md.fetch_content_task is defined"
+
+- name: Create the Media {{ md.name }}
+  command: "hammer medium create --name={{ md.name }} --organization={{ md.organization | quote }} --location={{ md.location | quote }} --path={{ md.path | replace(' ', '_') }} --os-family={{ md.os_family | quote }}"
+
+

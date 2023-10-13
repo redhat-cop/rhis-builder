@@ -1,0 +1,7 @@
+---
+- name: Configure the optional compute resources.
+  include_tasks: ensure_compute_resource.yml
+  loop: "{{ compute_resources_optional }}"
+  loop_control:
+    loop_var: cr
+  when: "compute_resources_optional is defined"

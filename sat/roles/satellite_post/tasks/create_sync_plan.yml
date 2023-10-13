@@ -1,0 +1,15 @@
+---
+# This play will create the defined sync plans
+
+- name: Create the sync plan {{ sp.name }}
+  redhat.satellite.sync_plan:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    organization: "{{ satellite_initial_organization }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ sp.name }}"
+    interval: "{{ sp.interval }}"
+    enabled: "{{ sp.enabled }}"
+    sync_date: "{{ sp.sync_date }}"
+    state: present

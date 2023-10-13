@@ -1,0 +1,32 @@
+---
+ec2_info:
+  idm:
+    instance_type: m4.xlarge
+    architecture: x86_64
+    disk_volume_type: gp3
+    disk_space: 30
+    disk_iops: 3000
+    disk_throughput: 125
+  satellite:
+    instance_type: r5a.xlarge
+    architecture: x86_64
+    disk_volume_type: gp3
+    disk_space: 500
+    disk_iops: 4000
+    disk_throughput: 375
+  aap:
+    instance_type: m4.xlarge
+    architecture: x86_64
+    disk_volume_type: gp3
+    disk_space: 40
+    disk_iops: 3000
+    disk_throughput: 125
+  hub:
+    instance_type: m4.xlarge
+    architecture: x86_64
+    disk_volume_type: gp3
+    disk_space: 40
+    disk_iops: 3000
+    disk_throughput: 125
+  rhel:
+    username: 'ec2-user'

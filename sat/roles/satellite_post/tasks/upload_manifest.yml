@@ -1,0 +1,30 @@
+---
+# The role doesn't handle refreshing automatically
+
+- name: "Upload the manifest"
+  block:
+    - name: Try to upload
+      redhat.satellite.subscription_manifest:
+        username: "{{ satellite_admin_username }}"
+        password: "{{ satellite_admin_password }}"
+        server_url: "{{ satellite_url }}"
+        organization: "{{ satellite_initial_organization }}"
+        manifest_path: "{{ manifest_path }}"
+        state: present
+  rescue:
+    - name: Delete any exiting manifest
+      redhat.satellite.subscription_manifest:
+        username: "{{ satellite_admin_username }}"
+        password: "{{ satellite_admin_password }}"
+        server_url: "{{ satellite_url }}"
+        organization: "{{ satellite_initial_organization }}"
+        state: absent
+
+    - name: Try to uploading again
+      redhat.satellite.subscription_manifest:
+        username: "{{ satellite_admin_username }}"
+        password: "{{ satellite_admin_password }}"
+        server_url: "{{ satellite_url }}"
+        organization: "{{ satellite_initial_organization }}"
+        manifest_path: "{{ manifest_path }}"
+        state: present

@@ -1,0 +1,20 @@
+---
+# Ensure that the workflow node exists
+# Each workflow node should be an existing job template, workflow template, project sync, inventory sync or approval node
+
+- name: "Ensure the node exists in the workflow"
+  ansible.controller.workflow_job_template_node:
+    controller_host: "{{ controller_host }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    all_parents_must_converge: "{{ node.all_parents_must_converge | default(omit) }}"
+    always_nodes: "{{ node.always_nodes | default(omit) }}" #list of nodes that always run after this one completes
+    approval_node: "{{ node.approval_node | default(omit) }}"
+    failure_nodes: "{{ node.failure_nodes | default(omit) }}"
+    identifier: "{{ node.identifier }}"
+    organization: "{{ node.organization | default('Default') }}"
+    success_nodes: "{{ node.success_nodes | default(omit) }}"
+    unified_job_template: "{{ node.unified_job_template }}"
+    workflow_job_template: "{{ workflow.name }}"
+    validate_certs: "{{ aap_validate_certs }}"
+    verbosity: "{{ node.verbosity | default(omit) }}"

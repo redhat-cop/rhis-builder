@@ -1,0 +1,254 @@
+# This is a template for deploying a Standalone Automation Hubs with rhis_builder
+# The first hub listed will be the installer host (hubs[0]).
+    {% if hubs[0].aap_admin_password is defined %}
+      {% set admin_password = hubs[0].aap_admin_password %}
+    {% endif %}
+    {% if hubs[0].aap_hub_admin_password is defined %}
+      {% set automationhub_admin_password = hubs[0].aap_hub_admin_password %}
+    {% endif %}
+    {% if hubs[0].aap_hub_pg_host is defined %}
+      {% set automationhub_pg_host = hubs[0].aap_hub_pg_host %} 
+    {% endif %}
+    {% if hubs[0].aap_hub_pg_port is defined %}
+      {% set automationhub_pg_port = hubs[0].aap_hub_pg_port %} 
+    {% endif %}
+    {% if hubs[0].aap_hub_pg_database is defined %}
+      {% set automationhub_pg_database = hubs[0].aap_hub_pg_database %} 
+    {% endif %}
+    {% if hubs[0].aap_hub_pg_username is defined %}
+      {% set automationhub_pg_username = hubs[0].aap_hub_pg_username %}
+    {% endif %}
+    {% if hubs[0].aap_hub_pg_password is defined %}
+      {% set automationhub_pg_password = hubs[0].aap_hub_pg_password %} 
+    {% endif %}
+    {% if hubs[0].aap_hub_pg_sslmode is defined %}
+      {% set automationhub_pg_sslmode = hubs[0].aap_hub_pg_sslmode %} 
+    {% endif %}
+    {% if hubs[0].aap_hub_postgres_use_ssl is defined %}
+      {% set automationhub_postgres_use_ssl = hubs[0].aap_hub_postgres_use_ssl %} 
+    {% endif %}
+    {% if hubs[0].aap_hub_postgres_ssl_cert is defined %}
+      {% set automationhub_postgres_ssl_cert = hubs[0].aap_hub_postgres_ssl_cert %} 
+    {% endif %}
+    {% if hubs[0].aap_hub_postgres_ssl_key is defined %}
+      {% set automationhub_postgres_ssl_key = hubs[0].aap_hub_postgres_ssl_key %} 
+    {% endif %}
+    {% if hubs[0].aap_registry_url is defined %}
+      {% set registry_url = hubs[0].aap_registry_url %} 
+    {% endif %}
+    {% if hubs[0].aap_registry_username is defined %}
+      {% set registry_username = hubs[0].aap_registry_username %} 
+    {% endif %}
+    {% if hubs[0].aap_registry_password is defined %}
+      {% set registry_password = hubs[0].aap_registry_password %} 
+    {% endif %}
+    {% if hubs[0].aap_custom_ca_cert is defined %}
+      {% set custom_ca_cert = hubs[0].aap_custom_ca_cert %} 
+    {% endif %}
+    {% if hubs[0].aap_hub_ssl_key is defined %}
+      {% set automationhub_ssl_key = hubs[0].aap_hub_ssl_key %} 
+    {% endif %}
+    {% if hubs[0].aap_hub_ssl_cert is defined %}
+      {% set automationhub_ssl_cert = hubs[0].aap_hub_ssl_cert %} 
+    {% endif %}
+
+# Automation Controller Nodes
+# Automation controller nodes should never be defined in this template
+[automationcontroller]
+
+[automationcontroller:vars]
+
+# Execution Nodes should never be defined in this template
+[execution_nodes]
+
+
+[automationhub]
+{% if hubs is defined %}
+{% for host in hubs %}
+{{ host.fqdn }}
+{% endfor %}
+{% endif %}
+
+# Automation Catalog is deprecated and shound never be defined
+[automationcatalog]
+
+# Database for Controller should not be defined in this template.
+[database]
+{% if ansibledb is defined %}
+{% for host in ansibledb %}
+{{ host.fqdn }}
+{% endfor %}
+{% endif %}
+
+
+# Single Sign-On
+# If sso_redirect_host is set, that will be used for application to connect to
+# SSO for authentication. This must be reachable from client machines.
+#
+# ssohost.example sso_redirect_host=<host/ip>
+[sso]
+
+[all:vars]
+
+# Execution Environment Configuration
+#
+
+# Credentials for container registry to pull execution environment images from,
+# registry_username and registry_password are required for registry.redhat.io
+#
+# When deployed with Automation Hub:
+# - The installer will push execution environment images to Automation Hub and
+#   configure Automation Controller to pull images from the Hub registry.
+# - To make Hub to be the only registry to pull execution environment images from,
+#   set 'ee_from_hub_only' to True. This is set to True by default when bundle
+#   installer is used.
+
+registry_url='{{ registry_url | default("registry.redhat.io", true) }}'
+registry_username='{{ registry_username }}'
+registry_password='{{ registry_password }}'
+{% if ee_from_hub_only is defined %}
+ee_from_hub_only='{{ ee_from_hub_only }}'
+{% endif %}
+
+# Receptor Configuration
+#
+receptor_listener_port=27199
+
+# Automation Hub Configuration
+#
+
+automationhub_admin_password='{{ automationhub_admin_password | default("", true) }}'
+
+automationhub_pg_host='{{ automationhub_pg_host | default("", true) }}'
+automationhub_pg_port='{{ automationhub_pg_host | default(5432, true) }}'
+
+automationhub_pg_database='{{ automationhub_pg_database | default("automationhub", true) }}'
+automationhub_pg_username='{{ automationhub_pg_username | default("automationhub", true) }}'
+automationhub_pg_password='{{ automationhub_pg_password | default("", true) }}'
+automationhub_pg_sslmode='{{ automationhub_pg_sslmode | default("prefer", true) }}'
+
+# Set to True to overwrite existing admin password.
+#
+# automationhub_force_change_admin_password = False
+
+# The main automation hub URL that clients will connect to (e.g. https://<load balancer host>).
+# If not specified, the first node in the [automationhub] group will be used when needed.
+#
+# automationhub_main_url = ''
+
+# By default when one uploads collections to Automation Hub
+# an admin needs to approve it before it is made available
+# to the users. If one wants to disable the content approval
+# flow, the following setting should be set to False.
+#
+# automationhub_require_content_approval = True
+
+# At import time collections can go through a series of checks.
+# Behaviour is driven by galaxy-importer.cfg configuration.
+# Example are ansible-doc, ansible-lint, flake8, ...
+#
+# The following parameter allow one to drive this configuration.
+# This variable is expected to be a dictionary.
+#
+# automationhub_importer_settings = None
+
+# The default install will deploy a TLS enabled Automation Hub.
+# If for some reason this is not the behavior wanted one can
+# disable TLS enabled deployment.
+#
+# automationhub_disable_https = False
+
+# The default install will deploy a TLS enabled Automation Hub.
+# Unless specified otherwise the HSTS web-security policy mechanism
+# will be enabled. This setting allows one to disable it if need be.
+#
+# automationhub_disable_hsts = False
+
+# The default install will not create a signing service. If set to true
+# a signing service will be created.
+
+# automationhub_create_default_collection_signing_service = False
+# automationhub_create_default_container_signing_service = False
+
+# If a signing service is enabled, one must provide a signing script and a key.
+# Note: these MUST be absolute paths.
+
+# automationhub_collection_signing_service_key = /absolute/path/to/key/to/sign
+# automationhub_collection_signing_service_script =  /absolute/path/to/script/that/signs
+
+# automationhub_container_signing_service_key = /absolute/path/to/key/to/sign
+# automationhub_container_signing_service_script =  /absolute/path/to/script/that/signs
+
+# If a collection signing service is enabled, collections won't be signed automatically by default.
+# The following parameter will have them signed by default.
+#
+# automationhub_auto_sign_collections = False
+
+# If upgrading from Ansible Automation Platform 2.0 or earlier, you must either:
+# - provide an existing Automation Hub token as 'automationhub_api_token' or
+# - set 'generate_automationhub_token' to True to generate a new token
+# Generating a new token will invalidate the existing token.
+#
+# automationhub_api_token=''
+# generate_automationhub_token=
+
+# Automation Hub LDAP configuration
+#
+# For Automation Hub to connect to LDAP directly the following variables
+# need to be configured. The list of all possible configuration can be found here:
+# https://django-auth-ldap.readthedocs.io/en/latest/reference.html#settings
+# Extra parameters will need to be passed through an ansible ldap_extra_settings dictionary.
+
+automationhub_authentication_backend = "{{ hubs[0].aap_hub_authentication_backend | default(omit) }}"
+
+{% if hubs[0].aap_hub_authentication_backend is defined and hubs[0].aap_hub_authentication_backend == "ldap" %}
+automationhub_ldap_server_uri = "{{ hubs[0].aap_hub_ldap_server_uri }}"
+automationhub_ldap_bind_dn = "{{ hubs[0].aap_hub_ldap_bind_dn }}"
+automationhub_ldap_bind_password = "{{ hubs[0].aap_hub_ldap_bind_password }}"
+automationhub_ldap_user_search_base_dn = "{{ hubs[0].aap_hub_ldap_user_search_base_dn }}"
+automationhub_ldap_group_search_base_dn = "{{ hubs[0].aap_hub_ldap_group_search_base_dn }}"
+{% endif %}
+
+# By default, bundle installer seeds certified and validated collections into
+# Automation Hub. Set to False to disable the seeding.
+#
+# automationhub_seed_collections = True
+
+
+# SSL-related variables
+
+# If set, this will install a custom CA certificate to the system trust store.
+# Certificate and key to install in nginx for the web UI and API
+
+{% if custom_ca_cert is defined %}
+custom_ca_cert="{{ custom_ca_cert }}"
+{% endif %}
+
+{% if web_server_ssl_cert is defined %}
+web_server_ssl_cert="{{ web_server_ssl_cert }}"
+web_server_ssl_key="{{ web_server_ssl_key }}"
+{% endif %}
+
+{% if automationhub_ssl_cert is defined %}
+automationhub_ssl_cert="{{ automationhub_ssl_cert }}"
+automationhub_ssl_key="{{ automationhub_ssl_key }}"
+{% endif %}
+
+# Server-side SSL settings for PostgreSQL (when we are installing it).
+# postgres_use_ssl=False
+# postgres_ssl_cert=/path/to/pgsql.crt
+# postgres_ssl_key=/path/to/pgsql.key
+
+# Keystore file to install in SSO node
+# sso_custom_keystore_file='/path/to/sso.jks'
+
+# The default install will deploy SSO with sso_use_https=True
+# Keystore password is required for https enabled SSO
+sso_keystore_password=''
+
+# Single-Sign-On configuration
+sso_console_admin_password=''
+
+# The default install will register node to the Red Hat Insights Service
+# if the node is registered with Subscription Manager. Set to False to disable.
+# enable_insights_collection = True

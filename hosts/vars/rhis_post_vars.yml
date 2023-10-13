@@ -1,0 +1,820 @@
+---
+# vars file for rhis_post
+rhis_default_git_dest: "/root/rhis_ee_repos"
+redhat_container_registry_url: "registry.redhat.io"
+redhat_registry_username: "{{ redhat_registry_username_vault }}"
+redhat_registry_password: "{{ redhat_registry_password_vault }}"
+automation_hub_token: "{{ automation_hub_token_vault }}"
+private_hub_host: "{{ private_hub_host_vault }}"
+private_hub_username: "{{ private_hub_username_vault }}"
+private_hub_password: "{{ private_hub_password_vault }}"
+controller_host: "{{ aap_default_controller_fqdn }}"
+controller_username: "{{ aap_admin_username_vault }}"
+controller_password: "{{ aap_admin_password_vault }}"
+
+aap_validate_certs: false
+ah_container_token: ""
+
+#Ansible execution environments
+credentials:
+  - name: "automation_hub"
+    organization: "Default"
+    credential_type: "Ansible Galaxy/Automation Hub API Token"
+    description: "Red Hat Ansible Automation Hub"
+    state: present
+    inputs:
+      url: "{{ automation_hub_url_vault }}"
+      auth_url: "{{ automation_hub_auth_url_vault }}"
+      token: "{{ automation_hub_token_vault }}"
+
+  - name: "github_demo"
+    organization: "Default"
+    credential_type: "Source Control"
+    description: "rhis_builder demo credential"
+    state: present
+    inputs:
+      username: "{{ github_demo_username_vault }}"
+      password: "{{ github_demo_gpat_vault}}"
+
+  - name: "default_machine"
+    organization: "Default"
+    credential_type: "Machine"
+    description: "The default local machine auth for demo systems"
+    state: present
+    inputs:
+      username: "{{ default_environment_username_vault }}"
+      password: "{{ default_environment_password_vault }}"
+
+  - name: "idm_machine"
+    organization: "Default"
+    credential_type: "Machine"
+    description: "The Identity Management machine auth for AAP"
+    state: present
+    inputs:
+      username: "{{ aap_idm_machine_username_vault }}"
+      password: "{{ aap_idm_machine_password_vault }}"
+
+  - name: "default_vault"
+    organization: "Default"
+    credential_type: "Vault"
+    description: "The default vault credential for demo projects"
+    state: present
+    inputs:
+      vault_password: "{{ default_environment_password_vault }}"
+
+  - name: "demo_satellite"
+    organization: "Default"
+    credential_type: "Red Hat Satellite 6"
+    description: "login for demo satellite"
+    state: present
+    inputs:
+      host: "{{ satellite_server_url }}"
+      username: "{{ sat_inital_admin_username_vault }}"
+      password: "{{ sat_inital_admin_password_vault }}"
+  
+  - name: "demo_hub_container_cred"
+    organization: "Default"
+    credential_type: "Container Registry"
+    description: "automation hub registry"
+    state: present
+    inputs:
+      host: "{{ hubs[0].fqdn }}"
+      authentication_url: "{{ hubs[0].fqdn }}"
+      username: "{{ private_hub_username }}"
+      password: "{{ private_hub_password }}"
+
+  - name: "demo_hub_api_token"
+    organization: "Default"
+    credential_type: "Ansible Galaxy/Automation Hub API Token"
+    description: "Red Hat Ansible Automation Hub"
+    state: present
+    inputs:
+      url: "https://{{ hubs[0].fqdn }}api/galaxy/content/rh-certified/"
+      token: "48fd7248effc763c0d0716ce035cc5c0b3c3aa90"
+
+# Note: We have not implemented organizations
+# Note: The order of the credentials here define precedence
+org_galaxy:
+  - name: "Default"
+    galaxy_credentials:
+      - "automation_hub"
+      - "Ansible Galaxy"
+      - "demo_hub_api_token"
+
+exec_envs:
+  - name: "rhis_example_ca_ee"
+    credential: "demo_hub_container_cred"
+    image: "{{ hubs[0].fqdn }}/rhis_example_ca_ee"
+    description: "Execution Environment for rhis_builder incl. realm certificates and collections"
+    pull: missing
+    organization: "Default"
+    tag: "v1"
+    git_repo: "https://github.com/parmstro/rhis_ansible_ee.git"
+    git_dest: "{{ rhis_default_git_dest }}"
+    git_clone: true
+    git_force: true
+
+inventories:
+  - name: "sat.example.ca"
+    description: "demo satellite inventory"
+    organization: "Default"
+    state: present
+
+  - name: "TheSatellite"
+    description: "The Satellite Server"
+    organization: "Default"
+    state: present
+
+  - name: "TheAutomationController"
+    description: "The AAP Controller Server"
+    organization: "Default"
+    state: present
+
+  - name: "SOE_pipeline_inventory"
+    description: "demo SOE pipeline inventory"
+    organization: "Default"
+    state: present
+
+inventory_sources:
+  - name: "sat.example.ca"
+    credential: "demo_satellite"
+    description: "demo satellite inventory source"
+    execution_environment: "rhis_example_ca_ee"
+    inventory: "sat.example.ca"
+    organization: "Default"
+    overwrite: true
+    source: "satellite6"
+    state: "present"
+    update_on_launch: true
+    
+static_hosts:
+  - name: "sat.example.ca"
+    description: "The satellite server"
+    enabled: true
+    inventory: "TheSatellite"
+    state: present
+
+  - name: "controller1.example.ca"
+    description: "The AAP Controller server"
+    enabled: true
+    inventory: "TheAutomationController"
+    state: present
+
+  - name: "testjboss.example.ca"
+    description: "jboss SOE test host"
+    enabled: true
+    inventory: "SOE_pipeline_inventory"
+    state: present
+    variables:
+      fqdn: "testjboss.example.ca"
+      hostgroup: "RHEL8base/RHEL8_CIS2/RHEL8_JBoss"
+      kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+      compute_resource: "VMware_Lab"
+      compute_profile: "SOE_Medium"
+      mac: "00:50:56:ff:ff:ff"
+      dhostname: ""
+  - name: "testlamp.example.ca"
+    description: "LAMP stack SOE test host"
+    enabled: true
+    inventory: "SOE_pipeline_inventory"
+    state: present
+    variables:
+      fqdn: "testlamp.example.ca"
+      hostgroup: "RHEL8base/RHEL8_CIS2/RHEL8_LAMP"
+      kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+      compute_resource: "VMware_Lab"
+      compute_profile: "SOE_Medium"
+      mac: "00:50:56:ff:ff:ff"
+      dhostname: ""
+  - name: "testwordpress.example.ca"
+    description: "Wordpress SOE test host"
+    enabled: true
+    inventory: "SOE_pipeline_inventory"
+    state: present
+    variables:
+      fqdn: "testwordpress.example.ca"
+      hostgroup: "RHEL8base/RHEL8_CIS2/RHEL8_Wordpress"
+      kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+      compute_resource: "VMware_Lab"
+      compute_profile: "SOE_Medium"
+      mac: "00:50:56:ff:ff:ff"
+      dhostname: ""
+
+static_groups:
+  - name: "JBoss"
+    description: "Main group for JBoss test servers"
+    hosts:
+      - "testjboss.example.ca"
+    inventory: "SOE_pipeline_inventory"
+    state: present
+  - name: "LAMP"
+    description: "Main group for LAMP stack test servers"
+    hosts:
+      - "testlamp.example.ca"
+    inventory: "SOE_pipeline_inventory"
+    state: present
+  - name: "dbservers"
+    description: "Installer group for database servers in LAMP stack test"
+    hosts:
+      - "testlamp.example.ca"
+    inventory: "SOE_pipeline_inventory"
+    state: present
+  - name: "webservers"
+    description: "Installer group for web servers in LAMP stack test"
+    hosts:
+      - "testlamp.example.ca"
+    inventory: "SOE_pipeline_inventory"
+    state: present
+  - name: "WordPress"
+    description: "Main group for WordPress servers"
+    hosts:
+      - "testwordpress.example.ca"
+    inventory: "SOE_pipeline_inventory"
+    state: present
+  - name: "wordpressserver"
+    description: "Installer group for WordPress servers"
+    hosts:
+      - "testwordpress.example.ca"
+    inventory: "SOE_pipeline_inventory"
+    state: present
+
+projects:
+  - name: "sat_ansible_callback"
+    organization: "Default"
+    credential: "github_demo"
+    description: "demo callback play - motd, cockpit install with certs, time"
+    default_env: "rhis_example_ca_ee"
+    scm_type: "git"
+    scm_branch: "main"
+    scm_clean: true
+    scm_delete_on_update: false
+    scm_track_submodules: false
+    scm_update_on_launch: false
+    scm_url: "https://github.com/parmstro/sat_ansible_callback.git"
+  
+    state: present
+    validate_certs: "{{ aap_validate_certs }}"
+
+  - name: "AutomatingContentManagement"
+    organization: "Default"
+    credential: "github_demo"
+    description: "demo SOE pipeline"
+    default_env: "rhis_example_ca_ee"
+    scm_type: "git"
+    scm_branch: "main"
+    scm_clean: true
+    scm_delete_on_update: false
+    scm_track_submodules: false
+    scm_update_on_launch: false
+    scm_url: "https://github.com/parmstro/AutomatingContentManagement.git"
+    scm_update_on_launch: false
+    state: present
+    validate_certs: "{{ aap_validate_certs }}"
+
+templates:
+  - name: "ACM1PublishContent"
+    description: "Publish the SOE Content for JBoss, LAMP and Wordpress"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "PublishOnly.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      force_publish: true
+      sat_validate_certs: true
+      content_views:
+        - name: "EPEL8"
+          date_filter_name: "ErrataByDate"
+        - name: "JBossEAP74"
+          date_filter_name: "ErrataByDate"
+        - name: "SOE_RHEL8"
+          date_filter_name: "ErrataByDate"
+      composite_content_views:
+        - name: "SOE_JBoss"
+        - name: "SOE_RHEL8EPEL"
+
+  - name: "ACM2PromoteToDev"
+    description: "Promote the SOE Content for JBoss, LAMP and Wordpress to Development"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "PromoteOnly.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      force_promote: true
+      sat_validate_certs: true
+      current_lce: "Library"
+      target_lce: "SOE_Development"
+      content_views:
+        - name: "SOE_RHEL8"
+      composite_content_views:
+        - name: "SOE_JBoss"
+        - name: "SOE_RHEL8EPEL"
+
+  - name: "ACM3DeployTestServers"
+    description: "Deploy JBoss, LAMP and Wordpress test machines to Development"
+    job_type: "run"
+    organization: "Default"
+    inventory: "SOE_pipeline_inventory"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "CreateHostFromHostGroup.yml"
+    limit: "JBoss:LAMP:WordPress"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      sat_validate_certs: true
+
+  - name: "ACM4SnapshotTestServers"
+    description: "Deploy JBoss, LAMP and Wordpress test machines to Development"
+    job_type: "run"
+    organization: "Default"
+    inventory: "SOE_pipeline_inventory"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_create_snapshot.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+          snap_name: testjboss.original
+          snap_description: "test base jboss build - delete me"
+          quiesce: true
+        - name: testlamp.parmstrong.ca
+          snap_name: testlamp.original
+          snap_description: "test base LAMP build - delete me"
+          quiesce: true
+        - name: testwordpress.parmstrong.ca
+          snap_name: testwordpress.original
+          snap_description: "test base WordPress build - delete me"
+          quiesce: true
+
+  - name: "ACM5.1.1BuildJBoss"
+    description: "Deploy JBoss application"
+    job_type: "run"
+    organization: "Default"
+    inventory: "SOE_pipeline_inventory"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "testcontent/jboss-standalone/main.yml"
+    limit: "JBoss"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      http_port: 8080
+      https_port: 8443
+      sample_app_git_repo: "https://github.com/parmstro/jboss-eap-quickstarts.git"
+      sample_app_root: "/samples/jboss"
+      sample_app_dir: "kitchensink/"
+      app_fingerprint: "/samples/jboss/c0df90d8-5173-4e65-bc82-88b6033fc6a0"
+
+  - name: "ACM5.1.2TestJBoss"     
+    description: "Test JBoss application"
+    job_type: "run"
+    organization: "Default"
+    inventory: "SOE_pipeline_inventory"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "testcontent/jboss-standalone/deploymenttest.yml"
+    limit: "JBoss"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      http_port: 8080
+      https_port: 8443
+      sample_app_git_repo: "https://github.com/parmstro/jboss-eap-quickstarts.git"
+      sample_app_root: "/samples/jboss"
+      sample_app_dir: "kitchensink/"
+      app_fingerprint: "/samples/jboss/c0df90d8-5173-4e65-bc82-88b6033fc6a0"
+
+  - name: "ACM5.2.1BuildLAMP"     
+    description: "Build LAMP stack application"
+    job_type: "run"
+    organization: "Default"
+    inventory: "SOE_pipeline_inventory"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "testcontent/lamp_simple_rhel7/main.yml"
+    limit: "LAMP"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+
+  - name: "ACM5.2.2TestLAMP"     
+    description: "Test LAMP stack application"
+    job_type: "run"
+    organization: "Default"
+    inventory: "SOE_pipeline_inventory"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "testcontent/lamp_simple_rhel7/deploymenttest.yml"
+    limit: "LAMP"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+
+  - name: "ACM5.3.1BuildWordpress"     
+    description: "Build WordPress application"
+    job_type: "run"
+    organization: "Default"
+    inventory: "SOE_pipeline_inventory"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "testcontent/wordpress-nginx_rhel7/main.yml"
+    limit: "WordPress"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+
+  - name: "ACM5.3.2TestWordpress"     
+    description: "Test WordPress application"
+    job_type: "run"
+    organization: "Default"
+    inventory: "SOE_pipeline_inventory"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "testcontent/wordpress-nginx_rhel7/deploymenttest.yml"
+    limit: "WordPress"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+
+  - name: "ACM6PromoteToQA"
+    description: "Promote the SOE Content for JBoss, LAMP and Wordpress machines to Qualification"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "PromoteOnly.yml"
+    become_enabled: true
+    credentials:
+      - default_machine
+      - default_vault
+    variables: 
+      force_promote: true
+      sat_validate_certs: true
+      current_lce: "SOE_Development"
+      target_lce: "SOE_Qualification"
+      content_views:
+        - name: "SOE_RHEL8"
+      composite_content_views:
+        - name: "SOE_JBoss"
+        - name: "SOE_RHEL8EPEL"
+
+  - name: "ACM7DeleteSnapshots"
+    description: "Delete test machine snapshots"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_delete_snapshot.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+          snap_name: testjboss.original
+          snap_description: "test base jboss build - delete me"
+          quiesce: true
+        - name: testlamp.parmstrong.ca
+          snap_name: testlamp.original
+          snap_description: "test base LAMP build - delete me"
+          quiesce: true
+        - name: testwordpress.parmstrong.ca
+          snap_name: testwordpress.original
+          snap_description: "test base WordPress build - delete me"
+          quiesce: true
+
+  - name: "ACMPowerOffVM"
+    description: "Power-off test machines"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_power_off_vm.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+        - name: testlamp.parmstrong.ca
+        - name: testwordpress.parmstrong.ca
+
+  - name: "ACMPowerOnVM"
+    description: "Power-on test machines"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_power_on_vm.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+        - name: testlamp.parmstrong.ca
+        - name: testwordpress.parmstrong.ca
+
+  - name: "ACMRebootGuestOS"
+    description: "Reboot test machines"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_reboot_guest_os.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+        - name: testlamp.parmstrong.ca
+        - name: testwordpress.parmstrong.ca
+
+  - name: "ACMRemoveAllSnaps"
+    description: "Remove all snapshots from test machines"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_remove_all_snapshots.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+        - name: testlamp.parmstrong.ca
+        - name: testwordpress.parmstrong.ca
+
+  - name: "ACMRestartVM"
+    description: "Restart the test machine vm"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_restart_vm.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+        - name: testlamp.parmstrong.ca
+        - name: testwordpress.parmstrong.ca
+
+  - name: "ACMRevertSnaps"
+    description: "Revert the VM to a previous snapshot"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_revert_snapshot.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+          snap_name: testjboss.original
+          snap_description: "test base jboss build - delete me"
+          quiesce: true
+        - name: testlamp.parmstrong.ca
+          snap_name: testlamp.original
+          snap_description: "test base LAMP build - delete me"
+          quiesce: true
+        - name: testwordpress.parmstrong.ca
+          snap_name: testwordpress.original
+          snap_description: "test base WordPress build - delete me"
+          quiesce: true
+
+  - name: "ACMShutdownGuestOS"
+    description: "Graceful shutdown of test machine vm"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_shutdown_guest_os.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+        - name: testlamp.parmstrong.ca
+        - name: testwordpress.parmstrong.ca
+
+  - name: "ACMSuspendVM"
+    description: "Suspend test machine vm - use with caution"
+    job_type: "run"
+    organization: "Default"
+    inventory: "TheAutomationController"
+    project: "AutomatingContentManagement"
+    execution_environment: "rhis_example_ca_ee"
+    playbook: "vmware/vmw_suspend_vm.yml"
+    become_enabled: true
+    credentials:
+      - "default_machine"
+      - "default_vault"
+    variables: 
+      host_list:
+        - name: testjboss.parmstrong.ca
+        - name: testlamp.parmstrong.ca
+        - name: testwordpress.parmstrong.ca
+
+workflow_templates:
+  - name: "DevLCE_ContentDeliveryPipeline"
+    description: "SOE content delivery pipeline for the Development Lifecycle"
+    organization: "Default"
+    state: present
+    workflow_nodes:
+      - identifier: "Pipeline1Node101"
+        unified_job_template:
+          name: "ACM1PublishContent"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node201"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node201"
+        unified_job_template:
+          name: "ACM2PromoteToDev"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node301"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node301"
+        unified_job_template:
+          name: "ACM3DeployTestServers"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node401"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node401"
+        unified_job_template:
+          name: "ACM4SnapshotTestServers"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node511"
+            - identifier: "Pipeline1Node521"
+            - identifier: "Pipeline1Node531"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node511"
+        unified_job_template:
+          name: "ACM5.1.1BuildJBoss"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node512"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node512"
+        unified_job_template:
+          name: "ACM5.1.2TestJBoss"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node601"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node521"
+        unified_job_template:
+          name: "ACM5.2.1BuildLAMP"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node522"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node522"
+        unified_job_template:
+          name: "ACM5.2.2TestLAMP"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node601"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node531"
+        unified_job_template:
+          name: "ACM5.3.1BuildWordpress"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node532"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node532"
+        unified_job_template:
+          name: "ACM5.3.2TestWordpress"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node601"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node601"
+        all_parents_must_converge: true
+        unified_job_template:
+          name: "ACM6PromoteToQA"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "Pipeline1Node701"
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+      - identifier: "Pipeline1Node701"
+        unified_job_template:
+          name: "ACM7DeleteSnapshots"
+          organization: 
+            name: "Default"
+          type: job_template
+        related:
+          success_nodes: []
+          failure_nodes: []
+          always_nodes: []
+          credentials: []
+

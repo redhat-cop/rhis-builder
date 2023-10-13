@@ -1,0 +1,44 @@
+---
+# This set of tasks sets up the cloud-init metadata for the instances
+
+# Get the executing users default ssh key
+- name: "Retrieve users public ssh key"
+  ansible.builtin.shell: "cat ~/.ssh/id_rsa.pub"
+  register: output
+
+- name: "Assign the variable"
+  ansible.builtin.set_fact:
+    cloudint_ssh_key: "{{ output.stdout_lines[0] }}"
+
+- name: "Ensure the vcenter address is in hosts file"
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    search_string: "{{ vcenter_ip }}"
+    line: "{{ vcenter_ip }} {{ vcenter_hostname }}"
+    owner: root
+    group: root
+    mode: '0644'
+    
+- name: "Template the metadata files"
+  ansible.builtin.template:
+    src: "metadata.j2"
+    dest: "{{ item.name }}_metadata.yml"
+  loop: "{{ instance_data }}"
+
+- name: "Template the userdata files"
+  ansible.builtin.template:
+    src: "userdata.j2"
+    dest: "{{ item.name }}_userdata.yml"
+  loop: "{{ instance_data }}"
+
+- name: "Generate the base64 metadata variables"
+  ansible.builtin.include_tasks: generate_base64_metadata.yml
+  loop: "{{ instance_data }}"
+
+- name: "Generate the base64 userdata variables"
+  ansible.builtin.include_tasks: generate_base64_userdata.yml
+  loop: "{{ instance_data }}"
+
+- name: "Clean-up the tmp files"
+  ansible.builtin.include_tasks: cleanup.yml
+  loop: "{{ instance_data }}"

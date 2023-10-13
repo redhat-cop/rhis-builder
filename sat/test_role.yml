@@ -1,0 +1,17 @@
+---
+- name: "Test Role"
+  hosts: sat.example.ca
+  become: true
+  gather_facts: true
+  
+  vars_files:
+    - "vars/satellite_pre_vars.yml"
+    - "vars/satellite_vars.yml"
+    - "vars/satellite_provisioning_vars_vmware.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+
+  - name: "Run a role test "
+    ansible.builtin.include_role:
+      name: "{{ test_role_name }}"

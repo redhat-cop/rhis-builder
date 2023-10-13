@@ -1,0 +1,28 @@
+---
+- name: "Update the system"
+  ansible.builtin.dnf:
+    name: '*'
+    state: latest
+  async: "{{ async_timeout }}"
+  poll: 0
+  register: async_update
+
+- name: "Check on system update"
+  async_status:
+    jid: "{{ async_update.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: "{{ ( async_timeout / async_delay ) | int }}"
+  delay: "{{ async_delay }}"
+
+- name: "Reset the Satellite module"
+  ansible.builtin.command: "dnf -y module reset satellite:el8"
+
+- name: "Enable the Satellite module"
+  ansible.builtin.command: "dnf -y module enable satellite:el8"
+
+- name: "Install the Satellite RPM packages"
+  ansible.builtin.dnf:
+    name: satellite
+    state: present
+

@@ -1,0 +1,17 @@
+---
+- name: "Post deploy configuration - hosts"
+  hosts: build_control
+  remote_user: ansiblerunner
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/common_vars.yml"
+    - "vars/controller_vars.yml"
+    - "vars/hub_vars.yml"
+    - "vars/rhis_post_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+     # Add the pipeline workflow template
+     - name: "Add AAP workflows"
+       ansible.builtin.include_tasks: "rhis_post/tasks/add_workflow_templates.yml"

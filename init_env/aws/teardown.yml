@@ -1,0 +1,58 @@
+---
+- name: Perform Checks to make sure this Playbook will complete successfully
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: true
+  vars_files:
+    - "vars/aws_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+    - name: collection final check
+      block:
+        - name: run AWS check setup if using AWS
+          include_role:
+            name: roles/aws_check_setup
+      rescue:
+        - name: Error with setup
+          fail:
+            msg: The provisioner has failed during initial check_setup, please scroll up to see exact error.  Open an issue on https://github.com/ansible/workshops/issues
+
+- name: Destroy instances in AWS
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: false
+  vars_files:
+    - "vars/aws_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+  vars:
+    ec2_wait: false
+    teardown: true
+    s3_state: absent
+    state: absent
+    debug_teardown: false
+
+  tasks:
+    - {include_role: {name: roles/manage_ec2_infra}}
+
+    - name: Remove route53 dns entries
+      become: false
+      community.aws.route53:
+        state: absent
+        zone: "{{ workshop_dns_zone }}"
+        record: "{{ item }}.{{ ec2_name_prefix|lower }}.{{ workshop_dns_zone }}"
+        type: A
+        wait: true
+      when: manage_public_dns
+      loop:
+        - 'idm'
+        - 'sat'
+        - 'aap'
+        - 'hub'
+
+    - name: Remove workshop local files
+      file:
+        dest: "{{ playbook_dir }}/{{ ec2_name_prefix }}"
+        state: absent

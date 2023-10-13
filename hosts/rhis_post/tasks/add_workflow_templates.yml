@@ -1,0 +1,9 @@
+---
+# This tasks creates the workflows and workflow nodes
+
+- name: "Add the workflows to the controller"
+  ansible.builtin.include_tasks: "ensure_aap_workflow.yml"
+  loop: "{{ workflow_templates }}"
+  loop_control:
+    loop_var: workflow
+  

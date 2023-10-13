@@ -1,0 +1,17 @@
+---
+# standard user groups in a POC
+- name: Add the standard groups for controlling Satellite Access
+  redhat.rhel_idm.ipagroup:
+    name: "{{ item.name }}"
+    description: "{{ item.desc }}"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+  loop: "{{ idm_user_groups }}"
+  
+- name: Add the standard host groups for controlling sudo and HBAC access
+  redhat.rhel_idm.ipahostgroup:
+    name: "{{ item.name }}"
+    description: "{{ item.desc }}"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+  loop: "{{ idm_host_groups }}"

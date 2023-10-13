@@ -1,0 +1,28 @@
+---
+# Deploy the container hosts for tang servers
+- name: "Create the container hosts from hostgroup"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/common/tasks/create_host_from_hostgroup.yml"
+  loop: "{{ containerhosts }}"
+  loop_control:
+    loop_var: host
+
+- name: "Wait for container hosts to be up"
+  ansible.builtin.wait_for:
+      timeout: 7200
+      sleep: 60
+      port: 22
+      host: "{{ host }}"
+      search_regex: OpenSSH
+  loop: "{{ containerhosts | map(attribute='fqdn') | flatten | list }}"
+  loop_control:
+    loop_var: host
+
+
+- name: "Collect the container hosts"
+  ansible.builtin.include_tasks: "common/tasks/add_host_to_inventory.yml"
+  loop: "{{ containerhosts }}"
+  loop_control:
+    loop_var: host
+
+
+

@@ -1,0 +1,19 @@
+---
+# Add the statically defined groups to the controller
+
+- name: "Ensure that group {{ group.name }} is {{ group.state }}"
+  ansible.controller.group:
+    controller_host: "{{ active_controller }}"
+    controller_username: "{{ aap_admin_username }}"
+    controller_password: "{{ aap_admin_password }}"
+    children: "{{ group.children | default(omit) }}"
+    description: "{{ group.description | default(omit) }}"
+    hosts: "{{ group.hosts | default(omit) }}"
+    inventory: "{{ group.inventory }}"
+    name: "{{ group.name }}"
+    new_name: "{{ group.new_name | default(omit) }}"
+    preserve_existing_children: "{{ group.preserve_existing_children | default(false) }}"
+    preserve_existing_hosts: "{{ group.preserve_existing_hosts | default(false) }}"
+    state: "{{ group.state | default('present') }}"
+    validate_certs: "{{ aap_validate_certs }}"
+    variables: "{{ group.variables | default(omit) }}"

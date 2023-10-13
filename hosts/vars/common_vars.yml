@@ -1,0 +1,55 @@
+---
+# Use a similar format to this file for systems built after Phase 3: Satellite bootstrap
+
+# NOTE: Baremetal requires a valid MAC for a discovered host
+# Supplying one here will specify a particular discovered host
+# providing "ff:ff:ff:ff:ff:ff" will use search criteria to find the first matching discovered host
+# providing the default "00:50:56:ff:ff:ff" is used for virtual machines
+
+# the builder key file is unique to your deployment.
+# it is the ssh key that your builder uses to access hosts. 
+# The public key is distributed by the Satellite
+# When you deploy AAP, the AAP server gets a copy as well
+builder_key_file: "~/.ssh/id_rsa"
+
+
+build_tang: false
+
+# There needs to be a refactoring of variable names across the projects to eliminate duplication and reassignment like the below.
+satellite_admin_username: "{{ satellite_username_vault }}"
+satellite_admin_password: "{{ satellite_password_vault }}"
+satellite_url: "https://sat.example.ca"
+satellite_initial_organization: "example"
+satellite_initial_location: "lab"
+satellite_validate_certs: false
+
+delete_host: false
+use_sync_build: false
+
+satellite_service_acct_username: "{{ satellite_admin_username }}"
+satellite_service_acct_password: "{{ satellite_admin_password }}"
+satellite_server_url: "https://sat.example.ca"
+satellite_organization: "{{ satellite_initial_organization }}"
+satellite_location: "{{ satellite_initial_location }}"
+discovered_hosts_resouce: "discovered_hosts"
+discovered_hosts_search: "disk_count = 1 and memory > 32000"
+discovered_host_req_nic_count: 1  #we use > below so does not include lo 
+build_comment: "Created by Labbuilder2"
+
+search_dh_mac: "ff:ff:ff:ff:ff:ff"
+default_vm_mac: "00:50:56:ff:ff:ff"
+default_compute_resource: "VMware_Lab"
+default_compute_profile: "SOE_Medium"
+
+ipa_server_fqdn: "idm.example.ca"
+ipa_admin_principal: "{{ ipa_admin_principal_vault }}"
+ipa_admin_password: "{{ ipa_admin_password_vault }}"
+
+# 
+# hostlist:
+#  - fqdn: "controller.example.ca"
+#    hostgroup: "RHEL8base"
+#    kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+#    compute_resource: "{{ default_compute_resource }}"
+#    compute_profile: "{{ default_compute_profile }}"
+#    mac: "{{ default_vm_mac }}"

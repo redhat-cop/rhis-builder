@@ -1,0 +1,13 @@
+---
+- name: "Create the domain"
+  redhat.satellite.domain:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    organizations: "{{ domain.organizations }}"
+    locations: "{{ domain.locations }}"
+    name: "{{ domain.name }}"
+    dns_proxy: "{{ domain.dns_capsule }}"
+    description: "{{ domain.description | default(omit) }}"
+    parameters: "{{ domain.parameters | default(omit) }}"

@@ -1,0 +1,4 @@
+---
+rootvg_blockdev_partition: 2
+rootvg_name: rootvg
+rootvg_rootlvname: 'rootvg-rootlv'

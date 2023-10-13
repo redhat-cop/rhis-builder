@@ -1,0 +1,46 @@
+---
+# Display a debug message to the user to power on the other systems
+# Wait for input to continue
+#
+# we will start polling and monitoring to discover when the hypervisors are up
+# Then proceed to phase 3 - Infrastructure
+# 
+# Deploy RHEVM + Gluster
+# Deploy Ansible Tower
+# Deploy CFME
+# Configure Tower Jobs for 
+#  - Satellite Maint
+#    - Monthly CV/CCV publishing
+#    - testing
+#    - promotion
+#  - OCP platform deploy jobs
+#  - OCP App deploy jobs
+#
+# Proceed to Phase 4
+# - run Deploy OCP from Tower
+# - run Deploy App from Tower
+#
+# FIN!
+- set_fact:
+    msg:
+       PPPPPP   OOOOOO  WWW  WWW  WWW EEEEEEEE RRRRRRR      OOOOOO  NNNNN    NN
+       PP   PP OO    OO  WW  W W  WW  EE       RR    RR    OO    OO NN NN    NN
+       PP   PP OO    OO  WW WW WW WW  EE       RR    RR    OO    OO NN  NN   NN
+       PPPPP   OO    OO   W W   W W   EEEEEEEE RRRRRRR     OO    OO NN   NN  NN
+       PP      OO    OO   WWW   WWW   EE       RR  R       OO    OO NN   NN  NN
+       PP      OO    OO    WW   WW    EE       RR   R      OO    OO NN    NN NN
+       PP       OOOOOO     W     W    EEEEEEEE RR    R      OOOOOO  NN    NNNNN
+       
+       Your lab systems!!! They should discover (and optionally auto deploy) the infrastructure.
+       
+
+- name: Yay!, time to power on the rest of your systems!
+  debug:
+    msg: "{{ msg.split('\n') }}"
+
+- name: Waiting 10 minutes until hypervisors deployed to proceed
+  wait_for:
+    state: present
+    path: "{{ playbook_dir }}/all_hypervisors_booted"
+    timeout: 600
+

@@ -1,0 +1,11 @@
+---
+# Configure the Optional Operating Systems defined.
+#
+
+- name: "Configure the Mandatory Operating Systems defined."
+  include_tasks: create_os.yml
+  loop: "{{ oss_optional }}"
+  loop_control:
+    loop_var: "os"
+  when: "oss_optional is defined"
+

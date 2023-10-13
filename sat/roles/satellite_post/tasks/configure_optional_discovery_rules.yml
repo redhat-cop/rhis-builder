@@ -1,0 +1,8 @@
+---
+- name: "Create the optional discovery rules"
+  include_tasks: create_discovery_rule.yml
+  loop: "{{ discovery_rules_optional }}"
+  loop_control:
+    loop_var: drule
+  when: "discovery_rules_optional is defined"
+

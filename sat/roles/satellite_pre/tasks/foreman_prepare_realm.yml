@@ -1,0 +1,68 @@
+---
+- name: "Clean up old keytabs"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/foreman-proxy/freeipa.keytab
+    - "freeipa.keytab"
+
+- name: "Setup satellite realm user"
+  ansible.builtin.shell: "echo '{{ ipa_admin_password }}' | kinit {{ ipa_admin_principal }}; echo '{{ ipa_admin_password }}' | /usr/sbin/foreman-prepare-realm admin {{ foreman_proxy_realm_principal }}"
+  register: result
+
+- name: "Wait for keytab generation and retrieval"
+  ansible.builtin.wait_for:
+    path: "freeipa.keytab"
+
+- name: "Ensure the foreman-proxy directory exists"
+  ansible.builtin.file:
+    path: /etc/foreman-proxy
+    state: directory
+
+- name: "Move the keytab to the foreman-proxy directory"
+  ansible.builtin.copy:
+    src: "freeipa.keytab"
+    dest: /etc/foreman-proxy/freeipa.keytab
+    owner: foreman-proxy
+    group: foreman-proxy
+    remote_src: yes
+
+- name: "Test the new keytab"
+  ansible.builtin.command: "kinit -kt /etc/foreman-proxy/freeipa.keytab {{ foreman_proxy_realm_principal }}"
+  register: result
+
+- name: "Assert Success"
+  ansible.builtin.assert:
+    that:
+      - result.stdout == ""
+
+
+- name: "copy the ipa ca-certificates to the trust directory"
+  ansible.builtin.copy:
+    src: /etc/ipa/ca.crt
+    dest: /etc/pki/ca-trust/source/anchors/ipa.crt
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: enable the trust
+  ansible.builtin.command: "update-ca-trust enable"
+
+- name: update the trust
+  ansible.builtin.command: "update-ca-trust"
+
+- name: "Set up IdM forward lookup zone to allow foreman proxy to update DNS"
+  redhat.rhel_idm.ipadnszone:
+    ipaadmin_principal: "{{ ipa_admin_principal }}"
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    name: "{{ ipa_dns_forward_zone }}"
+    update_policy: "{{ foreman_proxy_BIND_update_policy }}"
+
+- name: "Set up IdM reverse lookup zone to allow foreman proxy to update DNS"
+  redhat.rhel_idm.ipadnszone:
+    ipaadmin_principal: "{{ ipa_admin_principal }}"
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    name: "{{ ipa_dns_reverse_zone }}"
+    update_policy: "{{ foreman_proxy_BIND_update_policy }}"

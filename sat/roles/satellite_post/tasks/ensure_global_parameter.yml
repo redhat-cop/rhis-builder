@@ -1,0 +1,13 @@
+---
+# This play ensures the state of global parameters
+- name: "Ensure the state of global parameter {{ gp.name }}"
+  redhat.satellite.global_parameter:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ gp.name }}"
+    value: "{{ gp.value }}"
+    parameter_type: "{{ gp.parameter_type }}"
+    hidden_value: "{{ gp.hidden_value | default(omit) }}"
+    state: "{{ gp.state | default(omit) }}"

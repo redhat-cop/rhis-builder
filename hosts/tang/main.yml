@@ -1,0 +1,26 @@
+---
+# Deploy the container hosts for tang servers
+# This will eventually use the rhel_system_roles, however, these roles are rather opaque 
+
+# We really should create a hostgroup for container hosts that builds it with podman, etc..
+- name: "Ensure podman is installed on container hosts"
+  ansible.builtin.include_tasks: "../common/tasks/ensure_container_tools.yml"
+
+- name: "Fetch latest containers to host"
+  ansible.builtin.include_tasks: "tasks/get_container.yml"
+  loop: "{{ containers }}"
+  loop_control:
+    loop_var: container
+  
+- name: "Configure container startup"
+  ansible.builtin.include_tasks: "tasks/configure_container.yml"
+  loop: "{{ containers }}"
+  loop_control:
+    loop_var: container
+
+- name: "Test Tang Server"
+  ansible.builtin.include_tasks: "tasks/verify_deployment.yml"
+
+
+
+

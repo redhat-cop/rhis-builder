@@ -1,0 +1,76 @@
+---
+# This task creates a host from a definition
+# based on a hostgroup
+# This task expects to be called with a dictionary called host
+#  host:
+#    fqdn: "testjboss2.example.ca"
+#    organization: "example"
+#    hostgroup: "baseRHEL8/JBossSOE"
+#    kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+#    compute_resource: "VMware_Lab"
+#    compute_profile: "SOE_Medium"
+#    mac: "00:50:56:ff:ff:ff"
+#
+# NOTE: When compute_resource == 'Baremetal' a valid MAC for a discovered host
+# Supplying one here will specify a particular discovered host
+# providing "ff:ff:ff:ff:ff:ff" will use search criteria to find the first matching discovered host
+#
+#  host:
+#    fqdn: "testjboss2.example.ca"
+#    organization: "example"
+#    hostgroup: "baseRHEL8/JBossSOE"
+#    kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+#    compute_resource: "Baremetal"
+#    mac: "ff:ff:ff:ff:ff:ff"
+#    search: "disk_count = 1 and memory > 32000"
+#    req_nic_count: 1  #we use > below so does not include lo
+#
+# When specifying any other compute resource, provide "00:50:56:ff:ff:ff" or do not include the entry
+- name: "Intialize values"
+  ansible.builtin.set_fact:
+    use_sync_build: true
+  when: use_sync_build is not defined
+
+- name: "Determine if host already exists"
+  ansible.builtin.include_tasks: check_for_host.yml
+  
+
+- debug:
+    var: host_exists
+
+- debug:
+    var: delete_host
+
+- name: "If host does not exist OR the host exists and delete_host is true - build the host"
+  block:
+
+  - name: "Delete host"
+    ansible.builtin.include_tasks: delete_host.yml
+
+  - name: "Create the host"
+    ansible.builtin.include_tasks: create_host.yml
+
+  - name: Wait 2h for systems to come up on port 22 - checking every 60s
+    ansible.builtin.wait_for:
+      timeout: 7200
+      sleep: 60
+      port: 22
+      host: "{{ host.fqdn }}"
+      search_regex: OpenSSH
+      delay: 600
+    when:
+     - use_sync_build
+    connection: local
+
+  - name: Wait an additional 10 min for systems to complete post configuration.
+    ansible.builtin.wait_for:
+      timeout: 600
+      sleep: 60
+      port: 22
+      host: "{{ host.fqdn }}"
+      search_regex: OpenSSH
+      delay: 180
+    when:
+     - use_sync_build
+    connection: local
+  when: ( host_exists == false ) or ( host_exists == true and delete_host == true )

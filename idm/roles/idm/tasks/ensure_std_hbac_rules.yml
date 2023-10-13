@@ -1,0 +1,44 @@
+---
+# Restrict developers to logging in to only the jump server and the ocpmaster servers
+- name: "Create the admin_allow_all rule for Realm and Satellite Administrators"
+  redhat.rhel_idm.ipahbacrule:
+    name: admin_allow_all
+    description: "Realm Admin accesses all hosts"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    hostcategory: all
+    servicecategory: all
+    group: 
+    - admins
+    - satgroup-administrator
+
+- name: "Create a Sat Operators HBAC rule"
+  redhat.rhel_idm.ipahbacrule:
+    name: sat-operators
+    description: "Satellite Operators can access the Satellite and Capsule Servers"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    hostgroup:
+    - sat-servers
+    servicecategory: all
+    group:
+    - satgroup-operator
+
+- name: "Create a AAP Operators HBAC rule"
+  redhat.rhel_idm.ipahbacrule:
+    name: aap-operators
+    description: "Ansible Automation Platform Operators can access AAP Servers"
+    state: present
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    hostgroup:
+    - aap-servers
+    servicecategory: all
+    group:
+    - aapgroup-administrator
+    - aapgroup-operator
+
+- name: "Disable the allow_all rule"
+  redhat.rhel_idm.ipahbacrule:
+    name: allow_all
+    state: disabled
+    ipaadmin_password: "{{ ipa_admin_password }}"

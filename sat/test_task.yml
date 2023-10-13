@@ -1,0 +1,15 @@
+---
+- name: "Test Task"
+  hosts: sat.example.ca
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/satellite_pre_vars.yml"
+    - "vars/satellite_vars.yml"
+    - "vars/satellite_provisioning_vars_vmware.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+
+  - name: "Test the specified task"
+    ansible.builtin.include_tasks: roles/satellite_post/tasks/{{ test_task_name }}.yml

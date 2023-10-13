@@ -1,0 +1,185 @@
+---
+# NOTE: registry username and passwords are generated from a service account created at
+# https://access.redhat.com/terms-based-registry/#/accounts
+
+ssl_certs_dir: "/etc/ipa/private"
+passfile: "{{ ssl_certs_dir }}/passfile"
+crt_service_type: "HTTP"
+crt_force_regen: true
+
+active_controller: "{{ controllers[0].fqdn }}"
+
+ssl_rsa_key_pass: "{{ aap_controller_ssl_rsa_key_pass_vault }}"
+ssl_private_key_cipher: "aes256"
+ssl_private_key_size: 4096 
+ssl_public_key_format: "PEM"
+csr_digest: "aes256"
+csr_organizationName: "{{ ansible_domain | upper }}"
+csr_organizationUnitName: "Lab"
+csr_localityName: "Hespeler"
+csr_stateOrProvinceName: "ON"
+csr_countryName: "CA"
+csr_emailAddress: "admin@{{ ansible_domain }}"
+ipa_server_ca_path: "/etc/ipa/ca.crt"
+
+aap_manifest_name: "rhis_app_manifest"
+aap_manifest_destiny: "/tmp/rhis_aap_manifest.zip"
+aap_manifest_portal_url: "https://subscription.rhsm.redhat.com"
+aap_manifest_validate_certs: false 
+aap_manifest_cdn_username: "{{ aap_cdn_username_vault }}"
+aap_manifest_cdn_password: "{{ aap_cdn_password_vault }}"
+aap_manifest_account: "{{ aap_cdn_account_number_vault }}"
+aap_validate_certs: false
+
+aap_ldap_domain_map: "dc=example,dc=ca"
+aap_admin_username: "{{ aap_admin_username_vault }}"
+aap_admin_password: "{{ aap_admin_password_vault }}"
+
+aap_settings:
+  - name: "authentication"
+    settings:
+      AUTH_LDAP_SERVER_URI: "ldap://{{ ipa_server_fqdn }}:389"
+      AUTH_LDAP_BIND_DN: "{{ aap_auth_ldap_bind_dn_vault }}"
+      AUTH_LDAP_BIND_PASSWORD: "{{ aap_auth_ldap_bind_password_vault }}"
+      AUTH_LDAP_USER_DN_TEMPLATE: "uid=%(user)s,cn=users,cn=accounts,{{ aap_ldap_domain_map }}"
+      AUTH_LDAP_GROUP_TYPE: "MemberDNGroupType"
+      AUTH_LDAP_REQUIRE_GROUP: "cn=aapgroup-user,cn=groups,cn=accounts,{{ aap_ldap_domain_map }}"
+      AUTH_LDAP_GROUP_SEARCH: '["cn=groups,cn=accounts,{{ aap_ldap_domain_map }}","SCOPE_SUBTREE","(objectClass=groupOfNames)"]'
+      AUTH_LDAP_GROUP_TYPE_PARAMS: 
+        member_attr: "member"
+        name_attr: "cn"
+      AUTH_LDAP_USER_FLAGS_BY_GROUP: '{ "is_superuser": [ "cn=aapgroup-administrator,cn=groups,cn=accounts,{{ aap_ldap_domain_map }}"] }'
+      AUTH_LDAP_USER_ATTR_MAP:
+        email: "mail"
+        first_name: "givenName"
+        last_name: "surname"
+
+controllers:
+  - fqdn: "controller1.example.ca"
+    inventory_groups:
+      - aap_controller
+      - vmware_host
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    hostgroup: "RHEL8base"
+    kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+    compute_resource: "{{ default_compute_resource }}"
+    compute_profile: "{{ default_compute_profile }}"
+    mac: "{{ default_vm_mac }}"
+    build_comment: "Deployed by rhis_builder"
+    node_type: hybrid
+    ssl_cert_path: "{{ ssl_certs_dir }}/controller1.example.ca.crt"
+    ssl_key_path: "{{ ssl_certs_dir }}/controller1.example.ca.key"
+    ssl_private_key_pem_path: "{{ ssl_certs_dir }}/controller1.example.ca.pem"
+    ssl_csr_path: "{{ ssl_certs_dir }}/controller1.example.ca.csr"
+    standalone: true
+    aap_admin_password: "{{ aap_admin_password_vault }}"
+    aap_pg_host: ""
+    aap_pg_port: 5432
+    aap_pg_database: "awx"
+    aap_pg_username: "awx"
+    aap_pg_password: "{{ aap_pg_password_vault }}"
+    aap_pg_sslmode: "prefer"
+    aap_registry_url: "registry.redhat.io"
+    aap_registry_username: "{{ aap_registry_username_vault }}"
+    aap_registry_password: "{{ aap_registry_password_vault }}"
+    aap_custom_ca_cert: "{{ ipa_server_ca_path }}"
+    aap_web_server_ssl_cert: "{{ ssl_certs_dir }}/controller1.example.ca.crt"
+    aap_web_server_ssl_key: "{{ ssl_certs_dir }}/controller1.example.ca.key"
+    aap_installer_host: "true"
+    aap_file_repo_name: "Red Hat Ansible Automation Platform 2.3 for RHEL 8 x86_64 Files"
+    aap_product: "Red Hat Ansible Automation Platform"
+    aap_bundle_file: "ansible-automation-platform-setup-bundle-latest.tar.gz"
+    aap_destination_dir: "/root/ansible_installer"
+
+# any supported app configuration variable can be added to the controller section 
+# prepended by aap_ and the corresponding variable will be templated in the 
+# ansible installer inventory file
+# e.g.
+    #aap_postgres_use_ssl: true
+    #aap_postgres_ssl_cert: "/path/to/postgres/ssl_cert"
+    #aap_postgres_ssl_key: "/path/to/postgres/ssl_key"
+
+
+
+## Example config for multi-node deployment
+
+# controllers:
+#   - fqdn: "controller1.example.ca"
+#     organization: "{{ satellite_initial_organization }}"
+#     location: "{{ satellite_initial_location }}"
+#     hostgroup: "RHEL8base"
+#     kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+#     compute_resource: "{{ default_compute_resource }}"
+#     compute_profile: "{{ default_compute_profile }}"
+#     mac: "{{ default_vm_mac }}"
+#     build_comment: "Deployed by Labbuilder2"
+#     node_type: control
+#     ansible_registry_username: "{{ aap_registry_username_vault }}"
+#     ansible_registry_password: "{{ aap_registry_password_vault }}"
+#     ansible_custom_ca_cert: "/etc/ipa/ca.crt"
+#     ansible_web_server_ssl_cert: "/etc/ipa/private/controller1.example.ca.crt"
+#     ansible_web_server_ssl_key: "/etc/ipa/private/controller1.example.ca.key"
+#     ansible_receptor_listener_port=27199
+#     ansible_automationhub_admin_password="{{ aap_automationhub_admin_password_vault }}"
+#     ansible_automationhub_pg_host="ansibledb.example.ca"
+#     ansible_automationhub_pg_password="{{ aap_automationhub_pg_password_vault }}"
+#   - fqdn: "controller2.example.ca"
+#     organization: "{{ satellite_initial_organization }}"
+#     location: "{{ satellite_initial_location }}"
+#     hostgroup: "RHEL8base"
+#     kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+#     compute_resource: "{{ default_compute_resource }}"
+#     compute_profile: "{{ default_compute_profile }}"
+#     mac: "{{ default_vm_mac }}"
+#     build_comment: "Deployed by Labbuilder2"
+#     node_type: control
+#     ansible_custom_ca_cert: "/etc/ipa/ca.crt"
+#     ansible_web_server_ssl_cert: "/etc/ipa/private/controller2.example.ca.crt"
+#     ansible_web_server_ssl_key: "/etc/ipa/private/controller2.example.ca.key"
+
+# execnodes:
+#   - fqdn: "exec1.example.ca"
+#     organization: "{{ satellite_initial_organization }}"
+#     location: "{{ satellite_initial_location }}"
+#     hostgroup: "RHEL8base"
+#     kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+#     compute_resource: "{{ default_compute_resource }}"
+#     compute_profile: "{{ default_compute_profile }}"
+#     mac: "{{ default_vm_mac }}"
+#     build_comment: "Deployed by Labbuilder2"
+#     node_type: execution
+#   - fqdn: "exec2.example.ca"
+#     organization: "{{ satellite_initial_organization }}"
+#     location: "{{ satellite_initial_location }}"
+#     hostgroup: "RHEL8base"
+#     kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+#     compute_resource: "{{ default_compute_resource }}"
+#     compute_profile: "{{ default_compute_profile }}"
+#     mac: "{{ default_vm_mac }}"
+#     build_comment: "Deployed by Labbuilder2"
+#     node_type: execution
+
+# ansibledb:
+#   fqdn: "ansibledb1.example.ca"
+#   organization: "{{ satellite_initial_organization }}"
+#   location: "{{ satellite_initial_location }}"
+#   hostgroup: "RHEL8base"
+#   kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+#   compute_resource: "{{ default_compute_resource }}"
+#   compute_profile: "{{ default_compute_profile }}"
+#   mac: "{{ default_vm_mac }}"
+#   build_comment: "Deployed by Labbuilder2"
+#   
+#   
+#     
+# hub
+#   - fqdn: "hub1.example.ca"
+#     organization: "{{ satellite_initial_organization }}"
+#     location: "{{ satellite_initial_location }}"
+#     hostgroup: "RHEL8base"
+#     kickstart_repository: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+#     compute_resource: "{{ default_compute_resource }}"
+#     compute_profile: "{{ default_compute_profile }}"
+#     mac: "{{ default_vm_mac }}"
+#     build_comment: "Deployed by Labbuilder2"

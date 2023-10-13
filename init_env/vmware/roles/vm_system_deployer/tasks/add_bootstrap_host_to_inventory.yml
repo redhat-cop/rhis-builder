@@ -1,0 +1,5 @@
+---
+- name: "Add host {{ guest_fqdn }} to inventory"
+  ansible.builtin.add_host:
+    groups: "{{ inventory_groups }}"
+    hostname: "{{ guest_fqdn }}"

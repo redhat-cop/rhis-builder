@@ -1,0 +1,1751 @@
+---
+satellite_fqdn: "{{ ansible_fqdn }}"
+satellite_domain: "{{ ansible_domain }}"
+
+satellite_url: "https://{{ satellite_fqdn }}"
+satellite_initial_organization: "example"
+satellite_initial_location: "lab"
+satellite_admin_username: "{{ sat_inital_admin_username_vault }}"
+satellite_admin_password: "{{ sat_inital_admin_password_vault }}"
+satellite_validate_certs: true
+
+satellite_admin_email: "{{ satellite_admin_username}}@{{ satellite_domain }}"
+
+async_timeout: 14400
+async_delay: 15
+
+cv_publish_timeout: "{{ async_timeout }}"
+cv_publish_retry_interval: "{{ async_delay }}"
+
+sat_installer_verbose: true
+sat_installer_options:
+  - '--skip-checks-i-know-better'
+  - '--foreman-initial-organization "{{ satellite_initial_organization }}"'
+  - '--foreman-initial-location "{{ satellite_initial_location }}"'
+  - '--foreman-initial-admin-username "{{ satellite_admin_username }}"'
+  - '--foreman-initial-admin-password "{{ satellite_admin_password }}"'
+  - '--foreman-initial-admin-email "{{ satellite_admin_email }}"'
+  - '--foreman-initial-admin-first-name  "Satellite"'
+  - '--foreman-initial-admin-last-name  "Administrator"'
+  - '--foreman-ipa-authentication true'
+  - '--certs-server-ca-cert "/etc/ipa/ca.crt"'
+  - '--certs-server-cert "/etc/ipa/private/{{ satellite_fqdn }}/{{ satellite_fqdn }}.crt"'
+  - '--certs-server-key "/etc/ipa/private/{{ satellite_fqdn }}/{{ satellite_fqdn }}.key"'
+  - '--enable-foreman-compute-ec2'
+  - '--enable-foreman-compute-libvirt'
+  - '--enable-foreman-compute-vmware'
+  - '--foreman-proxy-dns true'
+  - '--foreman-proxy-dns-managed false'
+  - '--foreman-proxy-dns-provider "nsupdate_gss"'
+  - '--foreman-proxy-dns-server "{{ ipa_server_fqdn }}"'
+  - '--foreman-proxy-dns-tsig-keytab "/etc/foreman-proxy/freeipa.keytab"'
+  - '--foreman-proxy-dns-tsig-principal "{{ foreman_proxy_realm_principal }}"'
+  - '--foreman-proxy-http true'
+  - '--foreman-proxy-realm true'
+  - '--foreman-proxy-realm-keytab "/etc/foreman-proxy/freeipa.keytab"'
+  - '--foreman-proxy-realm-principal "{{ foreman_proxy_realm_principal }}"'
+  - '--foreman-proxy-realm-provider  "freeipa"'
+  - '--foreman-proxy-registration true'
+  - '--foreman-proxy-templates true'
+  - '--foreman-proxy-tftp true'
+  - '--foreman-proxy-content-enable-ansible true'
+  - '--foreman-proxy-content-enable-deb true'
+  - '--foreman-proxy-content-enable-docker true'
+  - '--foreman-proxy-content-enable-file true'
+  - '--foreman-proxy-content-enable-katello-agent false'
+  - '--foreman-proxy-content-enable-yum true'
+  - '--foreman-proxy-plugin-discovery-install-images true'
+
+#  Currently this must be false - no plugin shipped in repos
+#  - '--foreman-proxy-content-enable-ostree false'
+#  - '--foreman-proxy-content-enable-python true'
+
+# when we are using Satellite as the dhcp server
+#  - '--foreman-proxy-dhcp: false'
+#  - '--foreman-proxy-dhcp-interface: "{{ ansible_facts.interfaces | select('match', '^(e)+') | list | first }}"'
+#  - '--foreman-proxy-dhcp-range: "192.168.140.1 192.168.140.254"'
+#  - '--foreman-proxy-dhcp-gateway: "192.168.140.1"'
+#  - '--foreman-proxy-dhcp-nameservers: "192.168.140.10"'
+#  - '--foreman-proxy-dhcp-option-domain: "[{{ satellite_domain }}]"'
+#  - '--foreman-proxy-dhcp-pxeserver: "{{ satellite_fqdn }}"'
+#  - '--foreman-proxy-dhcp-network: "192.168.140.0"'
+#  - '--foreman-proxy-dhcp-netmask: "255.255.252.0"'
+
+# Satellite Configuration Variables
+manifest_name: "sat.example.ca"
+manifest_path: "/root/bootstrap_manifest.zip"
+manifest_portal_url: "https://subscription.rhsm.redhat.com"
+manifest_validate_certs: true
+manifest_cdn_username: "{{ cdn_username_vault }}"
+manifest_cdn_password: "{{ cdn_password_vault }}"
+manifest_account: "{{ cdn_account_number_vault }}"
+manifest_subs:
+  - name: "Base"
+    pool_id: "2c942c3586e8eba20186f1455d851eff"
+    qty: 100
+  - name: "Ansible"
+    pool_id: "2c942c3586e8eba20186f1455d8e1f03"
+    qty: 30
+  - name: "SatCapsule"
+    pool_id: "2c942c3586e8eba20186f1455ead1f07"
+    qty: 1
+  - name: "NonRHEL"
+    pool_id: "2c946bbb86ea234a0186f1459e13397e"
+    qty: 100
+
+# organizations
+# locations
+
+# Red Hat Repositories
+# - mandatory: make demos work - this pattern is used throughout
+# - optional: let's *you* do stuff - this pattern is used throughout
+# the repo may or may not have a basearch or releasever - this is a total crap shoot
+#
+
+# Sync / Publish / Promote main control vars
+# set to true to overide default to sync all content, publish all CVs and CCVs, and promote
+# these are valuable in testing or in maintainance runs
+# Content promotion is embedded in the publish operation for this project
+skip_sync: false
+skip_publish: false
+
+# Add additional content not needed for boostrap but still valuable and useful
+# Can be set to false to skip managemet of repos, CVs and CCVs
+repos_mandatory:
+  - name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "8"
+
+  - name: "Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "8"
+
+  - name: "Red Hat Enterprise Linux 8 for x86_64 - Supplementary (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "8"
+
+  - name: "Red Hat Ansible Engine 2.9 for RHEL 8 x86_64 (RPMs)"
+    product: "Red Hat Ansible Engine"
+
+  - name: "Red Hat Ansible Automation Platform 2.3 for RHEL 8 x86_64 (Files)"
+    product: "Red Hat Ansible Automation Platform"
+
+  - name: "Red Hat Satellite Client 6 for RHEL 8 x86_64 (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+
+  - name: "Red Hat Satellite Capsule 6.13 for RHEL 8 x86_64 (RPMs)"
+    product: "Red Hat Satellite Capsule"
+
+  - name: "Red Hat Satellite Maintenance 6.13 for RHEL 8 x86_64 (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+
+  - name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS (Kickstart)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "8.8"
+
+  - name: "Red Hat Enterprise Linux 8 for x86_64 - AppStream (Kickstart)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "8.8"
+
+  - name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "8.8"
+
+  - name: "Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "8.8"
+
+  - name: "Red Hat Enterprise Linux 8 for x86_64 - Supplementary (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "8.8"
+
+  # Needed for the JBoss server pipeline
+  - name: "JBoss Enterprise Application Platform 7.4 (RHEL 8) (RPMs)"
+    product: "JBoss Enterprise Application Platform"
+
+
+repos_optional:
+  - name: "Red Hat Enterprise Linux 7 Server (RPMs)"
+    product: "Red Hat Enterprise Linux Server"
+    basearch: "x86_64"
+    releasever: "7Server"
+
+  - name: "Red Hat Enterprise Linux 7 Server - Extras (RPMs)"
+    product: "Red Hat Enterprise Linux Server"
+
+  - name: "Red Hat Enterprise Linux 7 Server - RH Common (RPMs)"
+    product: "Red Hat Enterprise Linux Server"
+    basearch: "x86_64"
+    releasever: "7Server"
+
+  - name: "Red Hat Enterprise Linux 7 Server - Optional (RPMs)"
+    product: "Red Hat Enterprise Linux Server"
+    basearch: "x86_64"
+    releasever: "7Server"
+
+  - name: "Red Hat Enterprise Linux 7 Server - Supplementary (RPMs)"
+    product: "Red Hat Enterprise Linux Server"
+    basearch: "x86_64"
+    releasever: "7Server"
+
+# Including a kickstart repository now creates a default operating system for that version
+# The OS for this is name: "RedHat 7.9"
+  - name: "Red Hat Enterprise Linux 7 Server (Kickstart)"
+    product: "Red Hat Enterprise Linux Server"
+    basearch: "x86_64"
+    releasever: "7.9"
+
+  - name: "Red Hat Satellite Client 6 (for RHEL 7 Server) (RPMs)"
+    product: "Red Hat Enterprise Linux Server"
+
+  - name: "Red Hat Ansible Engine 2.9 RPMs for Red Hat Enterprise Linux 7 Server"
+    product: "Red Hat Ansible Engine"
+
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "9"
+
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "9"
+
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - Supplementary (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "9"
+
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "9.2"
+
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "9.2"
+
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - Supplementary (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "9.2"
+
+# The OSs for this are
+#   name: "RedHat 9.2"
+# we got both by not specifying releasever for the kickstart repos
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS (Kickstart)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "9.2"
+
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - AppStream (Kickstart)"
+    product: "Red Hat Enterprise Linux for x86_64"
+    releasever: "9.2"
+
+  - name: "Red Hat Satellite Client 6 for RHEL 9 x86_64 (RPMs)"
+    product: "Red Hat Enterprise Linux for x86_64"
+
+  - name: "Red Hat Enterprise Linux 8 for x86_64 - High Availability (RPMs)"
+    product: "Red Hat Enterprise Linux High Availability for x86_64"
+    releasever: "8"
+
+  - name: "Red Hat Enterprise Linux 9 for x86_64 - High Availability (RPMs)"
+    product: "Red Hat Enterprise Linux High Availability for x86_64"
+    releasever: "9"
+
+custom_products:
+  - name: "EPEL8"
+    description: "Extra Packages for Enterprise Linux 8"
+    org: "{{ satellite_initial_organization }}"
+    label: "EPEL8"
+    repositories:
+    - name: "EPEL8"
+      upstream_name: ""
+      content_type: "yum"
+      url: "https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/"
+      username: ""
+      password: ""
+      download_policy: "on_demand"
+    - name: "EPEL8_Streams"
+      upstream_name: ""
+      content_type: "yum"
+      url: "https://dl.fedoraproject.org/pub/epel/8/Modular/x86_64/"
+      username: ""
+      password: ""
+      download_policy: "on_demand"
+
+  - name: "CentOS Streams"
+    desc: "CentOS Streams from Red Hat"
+    org: "{{ satellite_initial_organization }}"
+    label: "centos_streams"
+    repositories:
+    - name: "centos-8-appstream"
+      upstream_name: ""
+      content_type: "yum"
+      url: "http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/"
+      username: ""
+      password: ""
+      download_policy: "on_demand"
+    - name: "centos-8-baseos"
+      upstream_name: ""
+      content_type: "yum"
+      url: "http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/"
+      username: ""
+      password: ""
+      download_policy: "on_demand"
+
+  - name: "Microsoft SQL Server for Linux 2022 for RHEL 8"
+    desc: "Microsoft SQL Server for Linux 2022 installation and tools"
+    org: "{{ satellite_initial_organization }}"
+    label: "mssqlserver-2022-rhel-8"
+    repositories:
+    - name: "packages-microsoft-com-mssql-server-2022-rhel-8"
+      description: "MSSQL Server 2022 server installation packages"
+      upstream_name: ""
+      content_type: "yum"
+      url: "https://packages.microsoft.com/rhel/8/mssql-server-2022/"
+      username: ""
+      password: ""
+      download_policy: "on_demand"
+    - name: "msql-tools-2022-rhel-8"
+      description: "MSSQL Server 2022 tools and drivers packages"
+      upstream_name: ""
+      content_type: "yum"
+      url: "https://packages.microsoft.com/rhel/8/prod/"
+      username: ""
+      password: ""
+      download_policy: "on_demand"
+
+lifecycle_environments:
+  - name: "Development"
+    label: "Development"
+    desc: "Content Development - proposed for SOEs"
+    org: "{{ satellite_initial_organization }}"
+    prior: "Library"
+
+  - name: "Qualification"
+    label: "Qualification"
+    desc: "Content Qualification of SOEs"
+    org: "{{ satellite_initial_organization }}"
+    prior: "Development"
+
+  - name: "Production"
+    label: "Production"
+    desc: "Production Server Approved Content"
+    org: "{{ satellite_initial_organization }}"
+    prior: "Qualification"
+
+  - name: "Retired"
+    label: "Retired"
+    desc: "Retired Content - No longer used with Active Servers"
+    org: "{{ satellite_initial_organization }}"
+    prior: "Production"
+
+sync_plans_mandatory:
+  - name: "nightly_os"
+    desc: "Nightly OS repo sync - 00:30"
+    interval: "daily"
+    sync_date: "{{ ansible_date_time.date }} 00:30:00"
+    enabled: true
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "nightly_infra"
+    desc: "Nightly non-OS repo sync - 02:30"
+    interval: "daily"
+    sync_date: "{{ ansible_date_time.date }} 02:30:00"
+    enabled: true
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "nightly_third_party"
+    desc: "Nightly non-OS repo sync - 03:30"
+    interval: "daily"
+    sync_date: "{{ ansible_date_time.date }} 03:30:00"
+    enabled: true
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+product_plan_mandatory:
+  - name: "Red Hat Enterprise Linux Server for x86_64"
+    plan: "nightly_os"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "Red Hat Enterprise Linux for x86_64"
+    plan: "nightly_os"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "Red Hat Satellite Capsule"
+    plan: "nightly_infra"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "Red Hat Ansible Automation Platform"
+    plan: "nightly_infra"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "Red Hat Ansible Engine"
+    plan: "nightly_infra"
+    organization: "{{ satellite_initial_organization }}"
+
+product_plan_optional:
+  - name: "Red Hat Enterprise Linux Server"
+    plan: "nightly_os"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "Red Hat Enterprise Linux High Availability for x86_64"
+    plan: "nightly_os"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "EPEL8"
+    plan: "nightly_third_party"
+    organization: "{{ satellite_initial_organization }}"
+
+  - name: "CentOS Streams"
+    plan: "nightly_third_party"
+    organization: "{{ satellite_initial_organization }}"
+  
+  - name: "Microsoft SQL Server for Linux 2022 for RHEL 8"
+    plan: "nightly_third_party"
+    organization: "{{ satellite_initial_organization }}"
+
+errata_end_date: "{{ ansible_date_time.date }}"
+
+cvs_mandatory:
+  - name: "AAP_Files"
+    desc: "Red Hat Ansible Automation Platform Install Files"
+    org: "{{ satellite_initial_organization }}"
+    repositories:
+    - name: "Red Hat Ansible Automation Platform 2.3 for RHEL 8 x86_64 Files"
+      product: "Red Hat Ansible Automation Platform"
+    environments:
+    - "Library"
+
+  - name: "EPEL8"
+    desc: "Extra Packages for Enterprise Linux 8"
+    org: "{{ satellite_initial_organization }}"
+    repositories:
+    - name: "EPEL8"
+      product: "EPEL8"
+    environments:
+    - "Library"
+
+  - name: "SOE_RHEL8"
+    desc: "Red Hat Enterprise Linux 8 Standard Operating Environment Content"
+    org: "{{ satellite_initial_organization }}"
+    repositories:
+    - name: "Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 8 for x86_64 - Supplementary RPMs 8"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 8 for x86_64 - AppStream Kickstart 8.8"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Kickstart 8.8"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Satellite Client 6 for RHEL 8 x86_64 RPMs"
+      product: "Red Hat Enterprise Linux for x86_64"
+    filters:
+    - name: "Include_All_Packages_No_Errata"
+      type: "rpm"
+      inclusion: true
+      description: "Include all rpms with no errata for all repositories"
+      original_packages: true
+      repositories: "[]"
+    - name: "Include_All_Streams_No_Errata"
+      type: "modulemd"
+      inclusion: true
+      description: "Include all module streams with no errata for all repositories"
+      original_module_streams: true
+      repositories: "[]"
+    - name: "Include_Errata_By_Date"
+      type: "erratum"
+      inclusion: true
+      description: "Include all errata updated as of {{ errata_end_date }}"
+      repositories: "[]"
+      rules:
+      - name: "errata-by-date-{{ errata_end_date }}"
+        end_date: "{{ errata_end_date }}"
+        date_type: "updated"
+        types:
+        - "enhancement"
+        - "bugfix"
+        - "security"
+    - name: "Exclude_FireFox"
+      type: "rpm"
+      inclusion: false
+      description: "Do not provide Firefox to servers"
+      repositories: "[]"
+      rules:
+      - name: "firefox*"
+        basearch: "x86_64"
+    date_filter_name: "Include_Errata_By_Date"
+    environments:
+    - "Library"
+    - "Development"
+    - "Qualification"
+    - "Production"
+
+cvs_optional:
+  - name: "SOE_RHEL7"
+    desc: "Our Red Hat Enterprise Linux 7 Standard Operating Environment Content"
+    org: "{{ satellite_initial_organization }}"
+    repositories:
+    - name: "Red Hat Ansible Engine 2.9 RPMs for Red Hat Enterprise Linux 7 Server x86_64"
+      product: "Red Hat Ansible Engine"
+    - name: "Red Hat Satellite Client 6 for RHEL 7 Server RPMs x86_64"
+      product: "Red Hat Enterprise Linux Server"
+    - name: "Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64"
+      product: "Red Hat Enterprise Linux Server"
+    - name: "Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server"
+      product: "Red Hat Enterprise Linux Server"
+    - name: "Red Hat Enterprise Linux 7 Server - RH Common RPMs x86_64 7Server"
+      product: "Red Hat Enterprise Linux Server"
+    - name: "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server"
+      product: "Red Hat Enterprise Linux Server"
+    - name: "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.9"
+      product: "Red Hat Enterprise Linux Server"
+    filters:
+    - name: "Include_All_Packages_No_Errata"
+      type: "rpm"
+      inclusion: true
+      description: "Include all packages with no errata for all repositories"
+      original_packages: true
+      repositories: "[]"
+    - name: "Include_Errata_By_Date"
+      type: "erratum"
+      inclusion: true
+      description: "Include all errata updated as of the 1st of the month"
+      repositories: "[]"
+      rules:
+      - name: "errata-by-date-{{ errata_end_date }}"
+        end_date: "{{ errata_end_date }}"
+        date_type: "updated"
+        types:
+        - "enhancement"
+        - "bugfix"
+        - "security"
+    - name: "Exclude_FireFox"
+      type: "rpm"
+      inclusion: false
+      description: "Do not provide Firefox to servers"
+      repositories: "[]"
+      rules:
+      - name: "firefox*"
+        basearch: "x86_64"
+    date_filter_name: "Include_Errata_By_Date"
+    environments:
+    - "Library"
+    - "Development"
+    - "Qualification"
+    - "Production"
+
+  - name: "LEAPP_2_RHEL8"
+    desc: "Red Hat Enterprise Linux 8.6 for LEAPP migrations"
+    org: "{{ satellite_initial_organization }}"
+    repositories:
+    - name: "Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8.8"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8.8"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 8 for x86_64 - Supplementary RPMs 8.8"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Satellite Client 6 for RHEL 8 x86_64 RPMs"
+      product: "Red Hat Enterprise Linux for x86_64"
+    filters:
+    - name: "Include_All_Packages_No_Errata"
+      type: "rpm"
+      inclusion: true
+      description: "Include all rpms with no errata for all repositories"
+      original_packages: true
+      repositories: "[]"
+    - name: "Include_All_Streams_No_Errata"
+      type: "modulemd"
+      inclusion: true
+      description: "Include all module streams with no errata for all repositories"
+      original_module_streams: true
+      repositories: "[]"
+    - name: "Include_Errata_By_Date"
+      type: "erratum"
+      inclusion: true
+      description: "Include all errata updated as of {{ errata_end_date }}"
+      repositories: "[]"
+      rules:
+      - name: "errata-by-date-{{ errata_end_date }}"
+        end_date: "{{ errata_end_date }}"
+        date_type: "updated"
+        types:
+        - "enhancement"
+        - "bugfix"
+        - "security"
+    - name: "Exclude_FireFox"
+      type: "rpm"
+      inclusion: false
+      description: "Do not provide Firefox to servers"
+      repositories: "[]"
+      rules:
+      - name: "firefox*"
+        basearch: "x86_64"
+    date_filter_name: "Include_Errata_By_Date"
+    environments:
+    - "Library"
+
+  - name: "SOE_RHEL9"
+    desc: "Red Hat Enterprise Linux 9 Standard Operating Environment Content"
+    org: "{{ satellite_initial_organization }}"
+    repositories:
+    - name: "Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS RPMs 9"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 9 for x86_64 - Supplementary RPMs 9"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 9 for x86_64 - AppStream Kickstart 9.2"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS Kickstart 9.2"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Satellite Client 6 for RHEL 9 x86_64 RPMs"
+      product: "Red Hat Enterprise Linux for x86_64"
+    filters:
+    - name: "Include_All_Packages_No_Errata"
+      type: "rpm"
+      inclusion: true
+      description: "Include all rpms with no errata for all repositories"
+      original_packages: true
+      repositories: "[]"
+    - name: "Include_All_Streams_No_Errata"
+      type: "modulemd"
+      inclusion: true
+      description: "Include all module streams with no errata for all repositories"
+      original_module_streams: true
+      repositories: "[]"
+    - name: "Include_Errata_By_Date"
+      type: "erratum"
+      inclusion: true
+      description: "Include all errata updated as of {{ errata_end_date }}"
+      repositories: "[]"
+      rules:
+      - name: "errata-by-date-{{ errata_end_date }}"
+        end_date: "{{ errata_end_date }}"
+        date_type: "updated"
+        types:
+        - "enhancement"
+        - "bugfix"
+        - "security"
+    - name: "Exclude_FireFox"
+      type: "rpm"
+      inclusion: false
+      description: "Do not provide Firefox to servers"
+      repositories: "[]"
+      rules:
+      - name: "firefox*"
+        basearch: "x86_64"
+    date_filter_name: "Include_Errata_By_Date"
+    environments:
+    - "Library"
+    - "Development"
+    - "Qualification"
+    - "Production"
+
+  - name: "LEAPP_2_RHEL9"
+    desc: "Red Hat Enterprise Linux 9.2 for LEAPP migrations"
+    org: "{{ satellite_initial_organization }}"
+    repositories:
+    - name: "Red Hat Enterprise Linux 9 for x86_64 - AppStream RPMs 9.2"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 9 for x86_64 - BaseOS RPMs 9.2"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Enterprise Linux 9 for x86_64 - Supplementary RPMs 9.2"
+      product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Red Hat Satellite Client 6 for RHEL 9 x86_64 RPMs"
+      product: "Red Hat Enterprise Linux for x86_64"
+    filters:
+    - name: "Include_All_Packages_No_Errata"
+      type: "rpm"
+      inclusion: true
+      description: "Include all rpms with no errata for all repositories"
+      original_packages: true
+      repositories: "[]"
+    - name: "Include_All_Streams_No_Errata"
+      type: "modulemd"
+      inclusion: true
+      description: "Include all module streams with no errata for all repositories"
+      original_module_streams: true
+      repositories: "[]"
+    - name: "Include_Errata_By_Date"
+      type: "erratum"
+      inclusion: true
+      description: "Include all errata updated as of {{ errata_end_date }}"
+      repositories: "[]"
+      rules:
+      - name: "errata-by-date-{{ errata_end_date }}"
+        end_date: "{{ errata_end_date }}"
+        date_type: "updated"
+        types:
+        - "enhancement"
+        - "bugfix"
+        - "security"
+        state: "present"
+    - name: "Exclude_FireFox"
+      type: "rpm"
+      inclusion: false
+      description: "Do not provide Firefox to servers"
+      repositories: "[]"
+      rules:
+      - name: "firefox*"
+        basearch: "x86_64"
+    date_filter_name: "Include_Errata_By_Date"
+    environments:
+    - "Library"
+
+  - name: "MSSQLServer"
+    desc: "Microsoft SQL Server for Linux 2022 content"
+    org: "{{ satellite_initial_organization }}"
+    repositories:
+    - name: "packages-microsoft-com-mssql-server-2022-rhel-8"
+      product: "Microsoft SQL Server for Linux 2022 for RHEL 8"
+    - name: "msql-tools-2022-rhel-8"
+      product: "Microsoft SQL Server for Linux 2022 for RHEL 8"
+    filters:
+    - name: "Include_Packages_No_Errata"
+      type: "rpm"
+      inclusion: true
+      description: "Include all rpms with no errata for all repositories"
+      original_packages: true
+      repositories: "[]"
+    - name: "Include_Errata_By_Date"
+      type: "erratum"
+      inclusion: true
+      description: "Include all errata updated as of the 1st of the month"
+      repositories: "[]"
+      rules:
+      - name: "errata-by-date-{{ errata_end_date }}"
+        enddate: "{{ errata_end_date }}"
+        datetype: "updated"
+        types:
+        - "enhancement"
+        - "bugfix"
+        - "security"
+    date_filter_name: "Include_Errata_By_Date"
+    environments:
+    - "Library"
+
+  - name: "JBossEAP74"
+    desc: "Red Hat JBoss EAP 7.4 Content"
+    org: "{{ satellite_initial_organization }}"
+    repositories:
+    - name: "JBoss Enterprise Application Platform 7.4 RHEL 8 RPMs"
+      product: "JBoss Enterprise Application Platform"
+    filters:
+    - name: "Include_All_Packages_No_Errata"
+      type: "rpm"
+      inclusion: "true"
+      description: "Include all packages with no errata for all repositories"
+      original_packages: true
+      repositories: "[]"
+    - name: "Include_All_Streams_No_Errata"
+      type: "modulemd"
+      inclusion: "true"
+      description: "Include all packages with no errata for all repositories"
+      original_module_streams: true
+      repositories: "[]"
+    - name: "Include_Errata_By_Date"
+      type: "erratum"
+      inclusion: "true"
+      description: "Include all errata updated as of {{ errata_end_date }}"
+      repositories: "[]"
+      rules:
+      - name: "errata-by-date-{{ errata_end_date }}"
+        end_date: "{{ errata_end_date }}"
+        date_type: "updated"
+        types:
+        - "enhancement"
+        - "bugfix"
+        - "security"
+    date_filter_name: "Include_Errata_By_Date"
+    environments:
+    - "Library"
+
+
+#  - name: "CentOS"
+#    desc: "CentOS Content"
+#    org: "{{ satellite_initial_organization }}"
+#    repositories:
+#    - name: "centos-8-appstream"
+#      product: "CentOS Streams"
+#    - name: "centos-8-baseos"
+#      product: "CentOS Streams"
+#    filters:
+#    - name: "Include_Packages_No_Errata"
+#      type: "rpm"
+#      inclusion: true
+#      description: "Include all rpms with no errata for all repositories"
+#      original_packages: true
+#      repositories: "[]"
+#    - name: "Include_All_Streams_No_Errata"
+#      type: "modulemd"
+#      inclusion: true
+#      description: "Include all module streams with no errata for all repositories"
+#      original_module_streams: true
+#      repositories: "[]"
+#    - name: "Include_Errata_By_Date"
+#      type: "erratum"
+#      inclusion: true
+#      description: "Include all errata updated as of the 1st of the month"
+#      repositories: "[]"
+#      rules:
+#      - name: "errata-by-date-{{ errata_end_date }}"
+#        enddate: "{{ errata_end_date }}"
+#        datetype: "updated"
+#        types:
+#        - "enhancement"
+#        - "bugfix"
+#        - "security"
+#    date_filter_name: "Include_Errata_By_Date"
+#    environments:
+#    - "Library"
+#    - "Development"
+
+ccvs_mandatory:
+  - name: "SOE_AAP"
+    desc: "SOE for Ansible Automation Platform Servers"
+    org: "{{ satellite_initial_organization }}"
+    components:
+    - content_view: "SOE_RHEL8"
+      latest: true
+    - content_view: "AAP_Files"
+      latest: true
+    environments:
+    - "Library"
+    - "Development"
+    - "Qualification"
+
+  - name: "SOE_RHEL8EPEL"
+    desc: "SOE for RHEL8 with EPEL"
+    org: "{{ satellite_initial_organization }}"
+    components:
+    - content_view: "SOE_RHEL8"
+      latest: true
+    - content_view: "EPEL8"
+      latest: true
+    environments:
+    - "Library"
+    - "Development"
+    - "Qualification"
+
+ccvs_optional:
+  - name: "LEAPP_7_2_8"
+    desc: "Migrate from RHEL 7.9 to RHEL 8.6"
+    org: "{{ satellite_initial_organization }}"
+    components:
+    - content_view: "SOE_RHEL7"
+      latest: true
+    - content_view: "LEAPP_2_RHEL8"
+      latest: true
+    environments:
+    - "Library"
+    - "Development"
+    - "Qualification"
+
+  - name: "LEAPP_8_2_9"
+    desc: "Migrate from RHEL 8 to RHEL 9"
+    org: "{{ satellite_initial_organization }}"
+    components:
+    - content_view: "SOE_RHEL8"
+      latest: true
+    - content_view: "LEAPP_2_RHEL9"
+      latest: true
+    environments:
+    - "Library"
+    - "Development"
+    - "Qualification"
+  - name: "SOE_JBoss"
+    desc: "Production JBoss Applications"
+    org: "{{ satellite_initial_organization }}"
+    components:
+    - content_view: "SOE_RHEL8"
+      latest: true
+    - content_view: "JBossEAP74"
+      latest: true
+    environments:
+    - "Library"
+    - "Development"
+    - "Qualification"
+
+  - name: "SOE_MSSQL"
+    desc: "SQL Server SOE"
+    org: "{{ satellite_initial_organization }}"
+    components:
+    - content_view: "SOE_RHEL8"
+      latest: true
+    - content_view: "MSSQLServer"
+      latest: true
+    environments:
+    - "Library"
+    - "Development"
+    - "Qualification"
+
+global_parameters_mandatory:
+  - name: "ansible_host_config_key"
+    value: "50f79524-5415-462b-b5d3-2eeebc65aaac"
+    parameter_type: "string"
+    hidden_value: false
+    state: "present"
+
+  - name: "ansible_job_template_id"
+    value: 11
+    parameter_type:	"integer"
+    hidden_value: false
+    state: "present"
+
+  - name: "ansible_roles_check_mode"
+    value: false
+    parameter_type: "boolean"
+    hidden_value: false
+    state: "present"
+
+  - name: "ansible_tower_fqdn"
+    value: "aap.example.ca"
+    parameter_type: "string"
+    hidden_value: false
+    state: "present"
+
+  - name: "ansible_tower_provisioning"
+    value: false
+    parameter_type: "boolean"
+    hidden_value: false
+    state: "present"
+
+  - name: "enable-epel"
+    value: false
+    parameter_type: "boolean"
+
+  - name: "enable-remote-execution-pull"
+    value: false
+    parameter_type:	"boolean"
+
+  - name: "fips_enabled"
+    value: false
+    parameter_type:	"boolean"
+
+  - name: "encrypt_grub"
+    value: false
+    parameter_type:	"boolean"
+
+  - name: "grubmenu_pass"
+    value: "grub.pbkdf2.sha512.10000.513EB658A14D5090C45943245F4A77F1FC0220BE9931E1A7986AAC5A6E02EDFF8E7091B4BE33AE0FF2324D28FF92C58A4AFB7AAB8A39A61AE5197B2F96280062.3D80CE311344A666AED1E3882E41F4455EA8567FA75D9CF70313D0A7F5A6AB0CEB269491ECA20DCCC653A111C3E6BF59F49E0FDE9E62EED9AA75C168A10A2C18"
+    parameter_type:	"string"
+    hidden_value: true
+
+  - name: "host_packages"
+    value: "vim"
+    parameter_type: "string"
+
+  - name: "host_registration_insights"
+    value: true
+    parameter_type:	"boolean"
+
+  - name: "host_registration_remote_execution"
+    value: true
+    parameter_type: "boolean"
+
+  - name: "network_zone"
+    value: "public"
+    parameter_type: "string"
+
+  - name: "package_upgrade"
+    value: true
+    parameter_type:	"boolean"
+
+  - name: "redhat_install_agent"
+    value: false
+    parameter_type:	"boolean"
+
+  - name: "redhat_install_host_tools"
+    value: true
+    parameter_type:	"boolean"
+
+  - name: "redhat_install_host_tracer_tools"
+    value: true
+    parameter_type: "boolean"
+
+  - name: "remove_default_passphrase"
+    value: true
+    parameter_type:	"boolean"
+
+  - name: "remote_execution_ssh_keys"
+    value: "{{ remote_execution_ssh_keys_vault }}"
+    parameter_type: "string"
+
+  - name: "remote_execution_ssh_user"
+    value: "{{ remote_execution_ssh_user_vault }}"
+    parameter_type: "string"
+
+  - name: "remote_execution_create_user"
+    value: true
+    parameter_type: "boolean"
+
+  - name: "remote_execution_effective_user_method"
+    value: "sudo"
+    parameter_type: "string"
+
+  - name: "syspurpose_role"
+    value: "Red Hat Enterprise Linux Server"
+    parameter_type: "string"
+
+  - name: "syspurpose_sla"
+    value: "Self-Support"
+    parameter_type: "string"
+
+  - name: "syspurpose_usage"
+    value: "Development/Test"
+    parameter_type: "string"
+
+  - name: "use_foreman_users"
+    value: true
+    parameter_type: "boolean"
+
+  - name: "use_ntp"
+    value: false
+    parameter_type: "boolean"
+
+global_parameters_optional:
+
+  - name: "an_example_optional_global_parameter"
+    value: "Delete Me"
+    parameter_type: "string"
+
+# NOTE: Most media is now included in the content view
+# media_mandatory:
+#  - name: RHEL7Server
+#    os_family: Redhat
+#    path: "http://{{ satellite_fqdn }}/pulp/repos/{{ satellite_initial_organization | replace(' ', '_') }}/Library/content/dist/rhel/server/7/$major.$minor/$arch/kickstart/"
+#    organization: "{{ satellite_initial_organization }}"
+#    location: "{{ satellite_initial_location }}"
+
+# media_optional:
+
+prov_templates_mandatory:
+# snippets
+  - name: "soe_create_users_selinux"
+    type: "snippet"
+    locked: false
+    description: "Create default users based on satellite owner"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_create_users_selinux.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "soe_disable_non_sat_repos"
+    type: "snippet"
+    locked: false
+    description: "Disable configured host repositories not provided by Satellite"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_disable_non_sat_repos.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "soe_ensure_python"
+    type: "snippet"
+    locked: false
+    description: "Ensure that the proper OS python version is installed (RHEL8)"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_ensure_python.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "soe_ifcfg_generic_interface"
+    type: "snippet"
+    locked: false
+    description: "Modified to support defined network zone"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_kickstart_ifcfg_generic_interface.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "soe_install_cockpit"
+    type: "snippet"
+    locked: false
+    description: "Ensure that the cockpit web UI is installed and enabled"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_install_cockpit.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "SOE Kickstart Default custom packages"
+    type: "snippet"
+    locked: false
+    description: "Adding a list of standard SOE packages to be installed on every SOE image"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_kickstart_default_custom_packages.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "soe_kickstart_ifcfg_bond_interface"
+    type: "snippet"
+    locked: false
+    description: "Modified to support defined network zone"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_kickstart_ifcfg_bond_interface.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "soe_kickstart_ifcfg_bonded_interface"
+    type: "snippet"
+    locked: false
+    description: "Modified to support defined network zone"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_kickstart_ifcfg_bonded_interface.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "soe_kickstart_networking_setup"
+    type: "snippet"
+    locked: false
+    description: "Modified to support defined network zone"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_kickstart_networking_setup.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "soe_use_NBDE"
+    type: "snippet"
+    locked: false
+    description: "Enables Network Bound Disk Encryption for host. REQUIRES encrypted type ptable. REQUIRES active tang servers."
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_snippet_soe_use_NBDE.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+# provisioning
+  - name: "SOE Kickstart Default Finish"
+    type: "provision"
+    locked: false
+    description: "The default finish kickstart for image based provisioning of SOE systems"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_soe_kickstart_default_finish.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "SOE Kickstart Default PXELinux"
+    type: "provision"
+    locked: false
+    description: "The default kickstart for PXE provisioning SOE systems"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_soe_kickstart_default_pxe_linux.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "SOE Kickstart Default"
+    type: "provision"
+    locked: false
+    description: "The default kickstart for network based provisioning SOE systems"
+    audit_comment: "created by labbuilder2"
+    path: "prov_template_soe_kickstart_default.j2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+
+ptables_mandatory:
+  - name: "RHEL_Server_CIS1"
+    os_family: "Red Hat"
+    path: "ptable_rhel_server_cis1.j2"
+    description: "Partition table supporting Center for Internet Security (CIS) Server Level 1"
+    audit_comment: "created by labbuilder2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "RHEL_Server_Compliance"
+    os_family: "Red Hat"
+    path: "ptable_rhel_server_compliance.j2"
+    description: "This partition scheme meets most major Compliance Profiles (OSPP, PCI-DSS, CIS Server 2, etc..).  Minimum 100GB disk required."
+    audit_comment: "created by labbuilder2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+  - name: "RHEL_Server_Compliance_Encrypted"
+    os_family: "Red Hat"
+    path: "ptable_rhel_server_compliance_encrypted.j2"
+    description: "Designed to meet most high security compliance requirements. luks2 encryption and NBDE. Requires a tang server to be up."
+    audit_comment: "created by labbuilder2"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+
+# ptables_optional:
+
+# Although the OSs are create automatically wdhen we include a kickstart
+# we still need to update some of the configurations, notably templates and partition tables
+oss_mandatory:
+  - name: "RedHat"
+    major: 8
+    minor: 8
+    description: "RHEL 8.8"
+    family: "Redhat"
+    password_hash: "SHA256"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    state: "present"
+    architectures:
+      - "x86_64"
+    provisioning_templates:
+      - "Kickstart default"
+      - "Kickstart default finish"
+      - "Kickstart default PXELinux"
+      - "Linux host_init_config default"
+      - "Kickstart default iPXE"
+      - "Discovery Red Hat kexec"
+      - "Kickstart default PXEGrub"
+      - "Kickstart default PXEGrub2"
+      - "Kickstart default user data"
+      - "SOE Kickstart Default"
+      - "SOE Kickstart Default Finish"
+      - "SOE Kickstart Default PXELinux"
+    ptables:
+      - "Kickstart default"
+      - "Kickstart default thin"
+      - "RHEL_Server_CIS1"
+      - "RHEL_Server_Compliance"
+      - "RHEL_Server_Compliance_Encrypted"
+    default_templates:
+      - name: "SOE Kickstart Default"
+        template_kind: "provision"
+      - name: "SOE Kickstart Default Finish"
+        template_kind: "finish"
+      - name: "SOE Kickstart Default PXELinux"
+        template_kind: "PXELinux"
+      - name: "Linux host_init_config default"
+        template_kind: "host_init_config"
+      - name: "Kickstart default iPXE"
+        template_kind: "iPXE"
+      - name: "Discovery Red Hat kexec"
+        template_kind: "kexec"
+      - name: "Kickstart default PXEGrub"
+        template_kind: "PXEGrub"
+      - name: "Kickstart default PXEGrub2"
+        template_kind: "PXEGrub2"
+      - name: "Kickstart default user data"
+        template_kind: "user_data"
+
+oss_optional:
+  - name: "RedHat"
+    major: 7
+    minor: 9
+    description: "RHEL 7.9"
+    family: "Redhat"
+    password_hash: "SHA256"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    state: "present"
+    architectures:
+      - "x86_64"
+    provisioning_templates:
+      - "Kickstart default"
+      - "Kickstart default finish"
+      - "Kickstart default PXELinux"
+      - "Linux host_init_config default"
+      - "Kickstart default iPXE"
+      - "Discovery Red Hat kexec"
+      - "Kickstart default PXEGrub"
+      - "Kickstart default PXEGrub2"
+      - "Kickstart default user data"
+      - "SOE Kickstart Default"
+      - "SOE Kickstart Default Finish"
+      - "SOE Kickstart Default PXELinux"
+    ptables:
+      - "Kickstart default"
+      - "Kickstart default thin"
+      - "RHEL_Server_CIS1"
+      - "RHEL_Server_Compliance"
+      - "RHEL_Server_Compliance_Encrypted"
+    default_templates:
+      - name: "SOE Kickstart Default"
+        template_kind: "provision"
+      - name: "SOE Kickstart Default Finish"
+        template_kind: "finish"
+      - name: "SOE Kickstart Default PXELinux"
+        template_kind: "PXELinux"
+      - name: "Linux host_init_config default"
+        template_kind: "host_init_config"
+      - name: "Kickstart default iPXE"
+        template_kind: "iPXE"
+      - name: "Discovery Red Hat kexec"
+        template_kind: "kexec"
+      - name: "Kickstart default PXEGrub"
+        template_kind: "PXEGrub"
+      - name: "Kickstart default PXEGrub2"
+        template_kind: "PXEGrub2"
+      - name: "Kickstart default user data"
+        template_kind: "user_data"
+
+  - name: "RedHat"
+    major: 9
+    minor: 0
+    description: "RHEL 9.0"
+    family: "Redhat"
+    password_hash: "SHA256"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    state: "present"
+    architectures:
+      - "x86_64"
+    provisioning_templates:
+      - "Kickstart default"
+      - "Kickstart default finish"
+      - "Kickstart default PXELinux"
+      - "Linux host_init_config default"
+      - "Kickstart default iPXE"
+      - "Discovery Red Hat kexec"
+      - "Kickstart default PXEGrub"
+      - "Kickstart default PXEGrub2"
+      - "Kickstart default user data"
+      - "SOE Kickstart Default"
+      - "SOE Kickstart Default Finish"
+      - "SOE Kickstart Default PXELinux"
+    ptables:
+      - "Kickstart default"
+      - "Kickstart default thin"
+      - "RHEL_Server_CIS1"
+      - "RHEL_Server_Compliance"
+      - "RHEL_Server_Compliance_Encrypted"
+    default_templates:
+      - name: "SOE Kickstart Default"
+        template_kind: "provision"
+      - name: "SOE Kickstart Default Finish"
+        template_kind: "finish"
+      - name: "SOE Kickstart Default PXELinux"
+        template_kind: "PXELinux"
+      - name: "Linux host_init_config default"
+        template_kind: "host_init_config"
+      - name: "Kickstart default iPXE"
+        template_kind: "iPXE"
+      - name: "Discovery Red Hat kexec"
+        template_kind: "kexec"
+      - name: "Kickstart default PXEGrub"
+        template_kind: "PXEGrub"
+      - name: "Kickstart default PXEGrub2"
+        template_kind: "PXEGrub2"
+      - name: "Kickstart default user data"
+        template_kind: "user_data"
+
+  - name: "RedHat"
+    major: 9
+    minor: 2
+    description: "RHEL 9.2"
+    family: "Redhat"
+    password_hash: "SHA256"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    state: "present"
+    architectures:
+      - "x86_64"
+    provisioning_templates:
+      - "Kickstart default"
+      - "Kickstart default finish"
+      - "Kickstart default PXELinux"
+      - "Linux host_init_config default"
+      - "Kickstart default iPXE"
+      - "Discovery Red Hat kexec"
+      - "Kickstart default PXEGrub"
+      - "Kickstart default PXEGrub2"
+      - "Kickstart default user data"
+      - "SOE Kickstart Default"
+      - "SOE Kickstart Default Finish"
+      - "SOE Kickstart Default PXELinux"
+    ptables:
+      - "Kickstart default"
+      - "Kickstart default thin"
+      - "RHEL_Server_CIS1"
+      - "RHEL_Server_Compliance"
+      - "RHEL_Server_Compliance_Encrypted"
+    default_templates:
+      - name: "SOE Kickstart Default"
+        template_kind: "provision"
+      - name: "SOE Kickstart Default Finish"
+        template_kind: "finish"
+      - name: "SOE Kickstart Default PXELinux"
+        template_kind: "PXELinux"
+      - name: "Linux host_init_config default"
+        template_kind: "host_init_config"
+      - name: "Kickstart default iPXE"
+        template_kind: "iPXE"
+      - name: "Discovery Red Hat kexec"
+        template_kind: "kexec"
+      - name: "Kickstart default PXEGrub"
+        template_kind: "PXEGrub"
+      - name: "Kickstart default PXEGrub2"
+        template_kind: "PXEGrub2"
+      - name: "Kickstart default user data"
+        template_kind: "user_data"
+
+  - name: "CentOS_Stream"
+    major: 8
+    minor:
+    description: "CentOS Streams 8"
+    family: "Redhat"
+    password_hash: "SHA256"
+    organization: "{{ satellite_initial_organization }}"
+    location: "{{ satellite_initial_location }}"
+    state: "present"
+    architectures:
+      - "x86_64"
+    provisioning_templates:
+      - "Kickstart default"
+      - "Kickstart default finish"
+      - "Kickstart default PXELinux"
+      - "Linux host_init_config default"
+      - "Kickstart default iPXE"
+      - "Discovery Red Hat kexec"
+      - "Kickstart default PXEGrub"
+      - "Kickstart default PXEGrub2"
+      - "Kickstart default user data"
+      - "SOE Kickstart Default"
+      - "SOE Kickstart Default Finish"
+      - "SOE Kickstart Default PXELinux"
+    ptables:
+      - "Kickstart default"
+      - "Kickstart default thin"
+      - "RHEL_Server_CIS1"
+      - "RHEL_Server_Compliance"
+      - "RHEL_Server_Compliance_Encrypted"
+    default_templates:
+      - name: "SOE Kickstart Default"
+        template_kind: "provision"
+      - name: "SOE Kickstart Default Finish"
+        template_kind: "finish"
+      - name: "SOE Kickstart Default PXELinux"
+        template_kind: "PXELinux"
+      - name: "Linux host_init_config default"
+        template_kind: "host_init_config"
+      - name: "Kickstart default iPXE"
+        template_kind: "iPXE"
+      - name: "Discovery Red Hat kexec"
+        template_kind: "kexec"
+      - name: "Kickstart default PXEGrub"
+        template_kind: "PXEGrub"
+      - name: "Kickstart default PXEGrub2"
+        template_kind: "PXEGrub2"
+      - name: "Kickstart default user data"
+        template_kind: "user_data"
+
+aks_mandatory:
+  - name: "SOE_RHEL8"
+    state: "present"
+    description: "Activate a RHEL 8 system"
+    organization: "{{ satellite_initial_organization }}"
+    auto_attach: false
+    content_overrides:
+      - label: "satellite-client-6-for-rhel-8-x86_64-rpms"
+        override: "enabled"
+    content_view: "SOE_RHEL8"
+    lifecycle_environment: "Development"
+    unlimited_hosts: true
+
+aks_optional:
+  - name: "SOE_RHEL7"
+    state: "present"
+    description: "Activate a RHEL 7 system"
+    organization: "{{ satellite_initial_organization }}"
+    auto_attach: false
+    content_overrides:
+      - label: "rhel-7-server-satellite-client-6-rpms"
+        override: "enabled"
+    content_view: "SOE_RHEL7"
+    lifecycle_environment: "Development"
+    unlimited_hosts: true
+
+  - name: "SOE_RHEL9"
+    state: "present"
+    description: "Activate a RHEL 9 system"
+    organization: "{{ satellite_initial_organization }}"
+    auto_attach: false
+    content_overrides:
+      - label: "satellite-client-6-for-rhel-9-x86_64-rpms"
+        override: "enabled"
+    content_view: "SOE_RHEL9"
+    lifecycle_environment: "Development"
+    unlimited_hosts: true
+
+  - name: "LEAPP_7_2_8"
+    state: "present"
+    description: "Migrate a RHEL 7 system to RHEL 8"
+    organization: "{{ satellite_initial_organization }}"
+    auto_attach: false
+    content_overrides:
+      - label: "rhel-7-server-extras-rpms"
+        override: "enabled"
+    content_view: "LEAPP_7_2_8"
+    lifecycle_environment: "Development"
+    unlimited_hosts: true
+
+  - name: "LEAPP_8_2_9"
+    state: "present"
+    description: "Migrate a RHEL 8 system to RHEL 9"
+    organization: "{{ satellite_initial_organization }}"
+    auto_attach: false
+    content_overrides:
+      - label: "rhel-8-for-x86_64-supplementary-rpms"
+        override: "disabled"
+    content_view: "LEAPP_8_2_9"
+    lifecycle_environment: "Development"
+    unlimited_hosts: true
+
+domains_mandatory:
+  - name: "{{ satellite_domain }}"
+    description: "root domain for the installation"
+    dns_capsule: "{{ satellite_fqdn }}"
+    organizations:
+      - "{{ satellite_initial_organization }}"
+    locations:
+      - "{{ satellite_initial_location }}"
+
+realms_mandatory:
+  - name: "{{ satellite_domain | upper }}"
+    organizations: "{{ satellite_initial_organization }}"
+    locations: "{{ satellite_initial_location }}"
+    realm_type: "Red Hat Identity Management"
+    realm_capsule: "{{ satellite_fqdn }}"
+
+# ansible role sources
+git_repos_mandatory:
+# RHEL9
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-e8.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-e8"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-ism.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-ism"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-cui.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-cui"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-pci-dss.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-pci-dss"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-ospp.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-ospp"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-hipaa.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-hipaa"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-cis.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-cis"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-anssi_bp28_minimal.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-anssi_bp28_minimal"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-anssi_bp28_intermediary.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-anssi_bp28_intermediary"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-anssi_bp28_high.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-anssi_bp28_high"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel9-stig.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel9-stig"
+    clone: true
+    force: true
+#RHEL8
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-cui.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel8-cui"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-rht-ccp.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel8-rht-ccp"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-pci-dss.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel8-pci-dss"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-ospp.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel8-ospp"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-hipaa.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel8-hipaa"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-cjis.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel8-cjis"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-cis.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel8-cis"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-anssi_bp28_minimal.git"
+    dest: "/etc/ansible/roles/ansible-role-anssi_bp28_minimal"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-anssi_bp28_intermediary.git"
+    dest: "/etc/ansible/roles/ansible-role-anssi_bp28_intermediary"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-anssi_bp28_high.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel8-anssi_bp28_high"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-anssi_bp28_enhanced.git"
+    dest: "/etc/ansible/roles/ansible-role-anssi_bp28_enhanced"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel8-stig.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel8-stig"
+    clone: true
+    force: true
+#RHEL7
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-cui.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel7-cui"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-pci-dss.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel7-pci-dss"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-ospp.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel7-ospp"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-cjis.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel7-cjis"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-cis.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel7-cis"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-stig.git"
+    dest: "/etc/ansible/roles/ansible-role-rhel7-stig"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-anssi_nt28_minimal.git"
+    dest: "/etc/ansible/roles/ansible-role-anssi_nt28_minimal"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-anssi_nt28_intermediary.git"
+    dest: "/etc/ansible/roles/ansible-role-anssi_nt28_intermediary"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-anssi_nt28_high.git"
+    dest: "/etc/ansible/roles/ansible-role-anssi_nt28_high"
+    clone: true
+    force: true
+  - repository: "https://github.com/RedHatOfficial/ansible-role-rhel7-anssi_nt28_enhanced.git"
+    dest: "/etc/ansible/roles/ansible-role-anssi_nt28_enhanced"
+    clone: true
+    force: true
+
+scap_content_mandatory:
+  - title: "RHEL 8 SCAP content"
+    scap_file: "ssg-rhel8-ds.xml"
+    locations:
+      - "{{ satellite_initial_location }}"
+    organizations:
+      - "{{ satellite_initial_organization }}"
+
+scap_content_optional:
+  - title: "RHEL 7 SCAP content"
+    scap_file: "ssg-rhel7-ds.xml"
+    locations:
+      - "{{ satellite_initial_location }}"
+    organizations:
+      - "{{ satellite_initial_organization }}"
+  - title: "RHEL 9 SCAP content"
+    scap_file: "ssg-rhel9-ds.xml"
+    locations:
+      - "{{ satellite_initial_location }}"
+    organizations:
+      - "{{ satellite_initial_organization }}"
+
+scap_tailoring_files_mandatory:
+  - name: "RHEL 8 DS 2022 Tailoring v3.0"
+    scap_file: "ssg-rhel8-ds-tailoring.xml"
+    locations:
+      - "{{ satellite_initial_location }}"
+    organizations:
+      - "{{ satellite_initial_organization }}"
+
+scap_tailoring_files_optional:
+  - name: "RHEL 7 DS 2022 Tailoring v3.0"
+    scap_file: "ssg-rhel7-ds-tailoring.xml"
+    locations:
+      - "{{ satellite_initial_location }}"
+    organizations:
+      - "{{ satellite_initial_organization }}"
+  - name: "RHEL 9 DS 2022 Tailoring v3.0"
+    scap_file: "ssg-rhel9-ds-tailoring.xml"
+    locations:
+      - "{{ satellite_initial_location }}"
+    organizations:
+      - "{{ satellite_initial_organization }}"
+
+# ansible roles
+satellite_api_proxy_id_string: "1-sat.example.ca"
+ansible_roles_import_list:
+  - "ansible-role-rhel9-e8"
+  - "ansible-role-rhel9-ism"
+  - "ansible-role-rhel9-cui"
+  - "ansible-role-rhel9-pci-dss"
+  - "ansible-role-rhel9-ospp"
+  - "ansible-role-rhel9-hipaa"
+  - "ansible-role-rhel9-cis"
+  - "ansible-role-rhel9-anssi_bp28_minimal"
+  - "ansible-role-rhel9-anssi_bp28_intermediary"
+  - "ansible-role-rhel9-anssi_bp28_high"
+  - "ansible-role-rhel9-stig"
+  - "ansible-role-rhel8-cui"
+  - "ansible-role-rhel8-rht-ccp"
+  - "ansible-role-rhel8-pci-dss"
+  - "ansible-role-rhel8-ospp"
+  - "ansible-role-rhel8-hipaa"
+  - "ansible-role-rhel8-cjis"
+  - "ansible-role-rhel8-cis"
+  - "ansible-role-anssi_bp28_minimal"
+  - "ansible-role-anssi_bp28_intermediary"
+  - "ansible-role-rhel8-anssi_bp28_high"
+  - "ansible-role-anssi_bp28_enhanced"
+  - "ansible-role-rhel8-stig"
+  - "ansible-role-rhel7-cui"
+  - "ansible-role-rhel7-pci-dss"
+  - "ansible-role-rhel7-ospp"
+  - "ansible-role-rhel7-cjis"
+  - "ansible-role-rhel7-cis"
+  - "ansible-role-rhel7-stig"
+  - "ansible-role-anssi_nt28_minimal"
+  - "ansible-role-anssi_bp28_intermediary"
+  - "ansible-role-anssi_bp28_high"
+  - "ansible-role-anssi_bp28_enhanced"
+  - "theforeman.foreman_scap_client"
+  - "RedHatInsights.insights-client"
+
+# SCAP policies - writing ansible module
+# Draft definition
+scap_policies:
+  - name: "RHEL9_CIS2"
+    description: "CIS Server Level 2 for RHEL9 scan"
+    deploy_by: "ansible"
+    scap_content: "name"
+    scap_profile: "name"
+    period: "weekly"
+    weekday: "Monday"
+    day_of_month:
+    cron_line:
+    hostgroups:
+      - "RHEL9_CIS2"
+    tailoring_file: "name"
+    tailoring_file_profile: "name"
+    organizations:
+      - "{{ satellite_initial_organization }}"
+    locations:
+      - "{{ satellite_initial_location }}"
+
+# general_settings
+general_settings:
+  - name: destroy_vm_on_host_delete
+    value: true
+
+# users
+# groups
+# roles

@@ -1,0 +1,7 @@
+---
+- name: "Configure the optional subnets"
+  include_tasks: "create_subnet.yml"
+  loop: "{{ subnets_optional }}"
+  loop_control:
+    loop_var: subnet
+  when: "subnets_optional is defined"

@@ -1,0 +1,22 @@
+---
+# This task is required to the nature of predefined OS's merging with custom OSs in Satellite.
+# Not everything is created at the same time so, it puts a kink in the process.
+#
+# Said kink, tie things together afterwards rather than when we build them
+#
+# If we are here at all, all sync plans and operating systems have already been destroyed
+# along with their pre-existing sync plans. So we have have a clean slate.
+
+- name: Attach the mandatory synchronization plans to their Products.
+  include_tasks: "link_sync_plan.yml"
+  loop: "{{ product_plan_mandatory }}"
+  loop_control:
+    loop_var: pp
+  when: "product_plan_mandatory is defined"
+
+- name: Attach the optional synchronization plans to their Products.
+  include_tasks: "link_sync_plan.yml"
+  loop: "{{ product_plan_optional }}"
+  loop_control:
+    loop_var: pp
+  when: "product_plan_optional is defined"

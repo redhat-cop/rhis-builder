@@ -1,0 +1,34 @@
+---
+# Create the Satellite manifest, first add creates a manifest if it doesn't exist.
+#
+
+- name: Clean up any existing manifest
+  include_tasks: "{{ role_path }}/tasks/clean_manifest.yml"
+
+- name: Create the manifest and attach subs
+  include_tasks: "{{ role_path }}/tasks/add_sub_2_manifest.yml"
+  loop: "{{ manifest_subs }}"
+  loop_control:
+    loop_var: sub
+  when: manifest_subs is defined
+
+#- name: Upload a manifest file if provided
+#  when: subscription_manifest_path
+#  block:
+#    - name: "Copy manifiest file to satellite system"
+#      ansible.builtin.copy:
+#        src: '{{ subscription_manifest_path }}'
+#        dest: '/root/satellite_manifest.zip'
+#        mode: '0600'
+#        owner: 'root'
+#        group: 'root'
+#
+#    - name: "Upload manifest into satellite"
+#      redhat.satellite.subscription_manifest:
+#        username: '{{ satellite_admin_username }}'
+#        password: '{{ satellite_admin_password }}'
+#        server_url: '{{ satellite_url }}'
+#        organization: '{{ satellite_initial_organization }}'
+#        state: present
+#        validate_certs: '{{ satellite_validate_certs }}'
+#        manifest_path: '/root/satellite_manifest.zip'

@@ -1,0 +1,90 @@
+<%#
+name: soe_use_NBDE
+description: "This snippet binds encrypted disks for Linux servers to specified tang
+  server\r\nRequires RHEL_Server_Compliance_Encrypted partition template"
+snippet: true
+model: ProvisioningTemplate
+organizations:
+- Default Organization
+locations:
+- Default Location
+-%>
+<%#
+This template expects the following host paramaters to be set in the hostgroup
+use_NBDE
+default_passphrase
+tang_server
+
+This template uses the following variables from Kickstart Default
+iface
+%>
+
+
+<%
+  target_drive = "/dev/sda2"
+-%>
+
+<% if host_param('use_NBDE') && (host_param('default_passphrase') != "") %>
+# install the tools for NBDE
+  echo " "
+  echo "#####################################"
+  echo "beginning luks binding to tang server"
+  <% if @host.operatingsystem.major.to_i == 8 %>
+  yum -y install clevis clevis-dracut clevis-luks clevis-systemd clevis-udisks2 cockpit-storaged
+  <% end -%>
+  
+  <% if @host.operatingsystem.major.to_i == 9 %>
+  yum -y install clevis clevis-dracut clevis-luks clevis-systemd clevis-udisks2  clevis-pin-tpm2 cockpit-storaged
+  <% end -%>
+  
+# ask tang for a 
+  echo "Requesting tang pin"
+  curl -sfg <%= host_param('tang_URL') %>/adv -o adv.jws
+  echo "tang pin acquired"
+  
+  echo "Binding LUKS volume to tang"
+
+  <% if @host.provider.downcase == 'vmware' %>
+  <% target_drive = "/dev/sda2" -%>
+  <% end -%>
+
+  <% if @host.provider.downcase == 'rhv' %>
+  <% target_drive = "/dev/vda2" -%>
+  <% end -%>
+
+  <% if @host.provider.downcase == 'baremetal' %>
+  <% target_drive = "/dev/disk/by-path/pci-0000:00:1f.2-ata-4-part2" -%>
+  <% end -%>
+  
+  clevis luks bind -y -f -k - -d <%= target_drive %> tang '{"url":"<%= host_param('tang_URL') %>"}' <<< <%= host_param('default_passphrase') %>
+  
+  echo "Check binding... volume tang server:"
+  clevis luks list -d <%= target_drive %>
+  echo "Binding completed"
+  
+  
+  echo "Regenerate initramfs to include clevis"
+  echo "Getting CURRENT_GRUB_CMDLINE_LINUX"
+  CURRENT_GCL=`grep GRUB_CMDLINE_LINUX /etc/default/grub | sed 's/GRUB_CMDLINE_LINUX=//' | sed 's/"//g'`;export CURRENT_GCL
+  echo $CURRENT_GCL
+  echo "Generating"
+  <% if (@host.provision_interface.subnet && !@host.provision_interface.subnet.dhcp_boot_mode?) || @static %>
+  # this should add the args so that we get our lvm args if needed.
+  grubby --update-kernel=ALL --args="$CURRENT_GCL rd.neednet=1 ip=<%= @host.provision_interface.ip %>::<%= @host.provision_interface.subnet.gateway %>:<%= @host.provision_interface.subnet.mask %>:<%= @host.name %>:<%= @host.provision_interface.identifier %>:none nameserver=<%= @host.provision_interface.subnet.dns_primary %> nameserver=<%= @host.provision_interface.subnet.dns_secondary %>"
+  dracut -fv --regenerate-all 
+  <% else %>
+  grubby --update-kernel=ALL --args="$CURRENT_GCL rd.neednet=1"
+  dracut -fv --regenerate-all
+  <% end -%>
+  echo "initramfs regenerated"
+  
+  
+  echo "removing default_passphrase from volume"
+  <% if host_param_true?('remove_default_passphrase') %>
+  cryptsetup luksRemoveKey <%= target_drive %> <<< <%= host_param('default_passphrase') %>
+  echo "default_passphrase key removed"
+  <% end -%>
+  echo "exiting luks binding to tang server"
+  echo "###################################"
+  echo " "
+<% end -%>

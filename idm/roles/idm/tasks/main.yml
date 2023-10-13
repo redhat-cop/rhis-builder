@@ -1,0 +1,36 @@
+---
+- name: "Ensure prerequisites are applied"
+  ansible.builtin.include_tasks: ensure_prerequisites.yml
+
+- name: "Apply the ipaserver role"
+  ansible.builtin.include_role:
+    name: redhat.rhel_idm.ipaserver
+
+- name: "Ensure dns forward zones exist"
+  ansible.builtin.include_tasks: ensure_dns_forward_zone.yml
+  loop: "{{ dns_forward_zones }}"
+  loop_control:
+    loop_var: zone
+  when: "dns_forward_zones is defined"  
+
+- name: "Ensure realm dns update permissions are configured"
+  ansible.builtin.include_tasks: ensure_fp_realm_dns_update.yml
+  loop: "{{ dns_update_zones }}"
+  loop_control:
+    loop_var: zone
+  when: "dns_update_zones is defined"  
+
+- name: "Ensure standard lab user groups exist"
+  ansible.builtin.include_tasks: ensure_std_user_groups.yml
+
+- name: "Ensure standard lab users exist"
+  ansible.builtin.include_tasks: ensure_std_users.yml
+
+- name: "Ensure standard lab sudo rules exist"
+  ansible.builtin.include_tasks: ensure_std_sudo_rules.yml
+
+- name: "Ensure standard lab hbac rules exist"
+  ansible.builtin.include_tasks: ensure_std_hbac_rules.yml
+
+- name: "Ensure DNS server is queryable on local network"
+  ansible.builtin.include_tasks: ensure_dns_queryable.yml

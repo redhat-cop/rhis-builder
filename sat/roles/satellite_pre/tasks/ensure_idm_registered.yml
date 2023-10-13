@@ -1,0 +1,13 @@
+---
+- name: "Reset the idm module state"
+  ansible.builtin.command: "dnf -y module reset idm"
+
+- name: "Enable the idm module"
+  ansible.builtin.command: "dnf -y module enable idm:DL1"
+
+- name: "Ensure the client module is installed"
+  ansible.builtin.shell: "dnf -y module install idm:DL1/client"
+
+- name: "Ensure the client configuration"
+  ansible.builtin.include_role:
+    name: "redhat.rhel_idm.ipaclient"

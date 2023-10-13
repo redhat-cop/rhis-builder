@@ -1,0 +1,35 @@
+<%#
+name: soe_install_cockpit
+description: This snippet installs and enabled the Cockpit Web Console for Linux servers
+  and extensions
+snippet: true
+model: ProvisioningTemplate
+-%>
+<%#
+This template accepts the following parameters:
+- cockpit_enable: boolean (default=false)
+- cockpit_listen_on: integer (default=9090)
+%>
+
+<% if (host_param('cockpit_enable')) -%>
+  yum -y install cockpit
+  
+#Add configuration file and selinux permissions if non-default port
+  <% if (host_param('cockpit_listen_on') != 9090) -%>
+
+mkdir -p /etc/systemd/system/websocket.cockpit.d/
+cat /etc/systemd/system/websocket.cockpit.d/ < EOF
+[Socket]
+<%= host_param('cockpit_listen_on') %>
+EOF
+    
+semanage port -a -t websm_port_t -p tcp <%= host_param('cockpit_listen_on') %>
+
+  <% end -%>
+
+systemctl enable --now firewalld
+firewall-cmd --permanent --add-port=<%= host_param('cockpit_listen_on') %>/tcp
+firewall-cmd --reload
+systemctl enable --now cockpit
+
+<% end -%>

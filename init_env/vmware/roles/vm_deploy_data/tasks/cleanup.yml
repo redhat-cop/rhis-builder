@@ -1,0 +1,13 @@
+---
+# This set of tasks cleans up the private data
+
+- name: "Cleanup metadata"
+  ansible.builtin.file:
+    path: "{{ item.name }}_metadata.yml"
+    state: absent
+  
+- name: "Cleanup userdata"
+  ansible.builtin.file:
+    path: "{{ item.name }}_userdata.yml"
+    state: absent
+  

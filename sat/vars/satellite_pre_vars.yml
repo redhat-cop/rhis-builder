@@ -1,0 +1,78 @@
+---
+# prerequisites
+repository_ids:
+  - rhel-8-for-x86_64-baseos-rpms
+  - rhel-8-for-x86_64-appstream-rpms
+  - satellite-6.13-for-rhel-8-x86_64-rpms
+  - satellite-maintenance-6.13-for-rhel-8-x86_64-rpms
+
+sat_firewalld_zone: "public"
+sat_firewalld_services: 
+  - RH-Satellite-6
+  - http
+  - https
+  - dhcp
+  - dns
+  - tftp
+
+timeserver1: "192.168.252.8"
+timeserver2: "192.168.252.7"
+
+# IdM client vars
+ipa_admin_password: "{{ ipa_admin_password_vault }}"
+ipa_admin_principal: "{{ ipa_admin_principal_vault }}"
+ipa_server_fqdn: "idm.example.ca"
+ipa_server_domain: "example.ca"
+ipa_server_realm: "{{ ipa_server_domain | upper }}"
+ipa_client_domain: "{{ ipa_server_domain }}"
+ipa_client_configure_dns_resolver: true
+ipa_client_dns_servers: "192.168.140.5"
+ipa_client_mkhomedir: true
+ipasssd_enable_dns_updates: true
+ipa_dns_reverse_zone: "168.192.in-addr.arpa"
+ipa_dns_forward_zone: "example.ca"
+ipa_default_BIND_policy: "grant {{ ipa_server_realm }} krb5-self * A; grant {{ ipa_server_realm }} krb5-self * AAAA; grant {{ ipa_server_realm }} krb5-self * SSHFP;"
+
+#ipaclient role vars: these do not follow standards
+ipaadmin_password: "{{ ipa_admin_password_vault }}"
+ipaadmin_principal: "{{ ipa_admin_principal_vault }}"
+ipaserver_fqdn: "{{ ipa_server_fqdn }}"
+ipaclient_domain: "{{ ipa_server_domain }}"
+ipaclient_realm: "{{ ipa_server_domain | upper }}"
+ipaclient_configure_dns_resolver: "{{ ipa_client_configure_dns_resolver }}"
+ipaclient_dns_servers: "{{ ipa_client_dns_servers }}"
+ipaclient_mkhomedir: "{{ ipa_client_mkhomedir }}"
+
+
+# Satellite specific vars used with IdM
+ipa_generate_certs: true
+
+# this is the name of the user being passed to prepare realm
+foreman_proxy_realm_principal: "realm-capsule"
+foreman_proxy_BIND_update_policy: "{{ ipa_default_BIND_policy }} grant {{ foreman_proxy_realm_principal }}\\@{{ ipa_server_realm }} wildcard * ANY;"
+
+sat_ssl_rsa_key_pass: "{{ sat_ssl_rsa_key_pass_vault }}"
+sat_ssl_certs_dir: "/etc/ipa/private/{{ ansible_fqdn }}/"
+sat_ssl_crt_path: "{{ sat_ssl_certs_dir }}{{ ansible_fqdn }}.crt"
+sat_ssl_key_path: "{{ sat_ssl_certs_dir }}{{ ansible_fqdn }}.key"
+sat_ssl_csr_path: "{{ sat_ssl_certs_dir }}{{ ansible_fqdn }}.csr"
+ipa_server_ca_path: "/etc/ipa/ca.crt"
+
+crt_service_type: "HTTP"
+crt_force_regen: true
+
+passfile: "{{ sat_ssl_certs_dir}}passfile"
+ssl_private_key_cipher: "aes256"
+ssl_private_key_size: 4096 
+ssl_private_key_pem_path: "{{ sat_ssl_certs_dir}}{{ ansible_fqdn }}.pem"
+ssl_public_key_path: "{{ sat_ssl_certs_dir}}{{ ansible_fqdn }}.pub"
+ssl_public_key_format: "PEM"
+
+csr_digest: "aes256"
+csr_organizationName: "{{ ansible_domain | upper }}"
+csr_organizationUnitName: "Demo Lab"
+csr_localityName: "Hespeler"
+csr_stateOrProvinceName: "ON"
+csr_countryName: "CA"
+csr_emailAddress: "admin@{{ ansible_domain }}"
+

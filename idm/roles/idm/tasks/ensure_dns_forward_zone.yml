@@ -1,0 +1,10 @@
+---
+# Setup the zone forwarding for our lab - need to request things from production
+- name: "Create the forward zone"
+  redhat.rhel_idm.ipadnsforwardzone:
+    ipaadmin_password: "{{ ipa_admin_password }}"
+    state: present
+    name: "{{ zone.dns_forward_zone }}"
+    forwarders: "{{ zone.dns_forward_zone_servers }}"
+    forwardpolicy: "{{ zone.dns_forward_zone_policy }}"
+    skip_overlap_check: "{{ zone.dns_skip_overlap_check }}"

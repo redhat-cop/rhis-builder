@@ -1,0 +1,20 @@
+---
+# We may want to create reference data here so that we have repeatability across builds targeted at
+# different environments (i.e. Satellite disk config should look the same on VMware, AWS and Bare Metal)
+
+baseimage_password: "{{ baseimage_password_vault }}"
+sat_vmware_pv_list:
+  - "/dev/sda3" 
+  - "/dev/sdb"
+
+# These values are used by vmware/groupvars/all/instance_vars.yml 
+# to ensure standard Satellite volume sizes
+# They are applied to role scope variables.
+sat_rootdisk_size_gb: "400"
+sat_contentdisk_size_mb: 524288
+sat_var_size_gb: "300G"
+sat_var_log_size_gb: "4G"
+sat_var_log_audit_size_gb: "4G"
+sat_var_tmp_size_gb: "4G"
+sat_tmp_size_gb: "4G"
+sat_home_size_gb: "20G"

@@ -1,0 +1,46 @@
+---
+- name: "Ensure the proper repositories are enabled"
+  community.general.rhsm_repository: 
+    name: "{{ repository_ids }}"
+    state: enabled
+    purge: true
+
+- name: "Update the system"
+  ansible.builtin.dnf:
+    name: '*'
+    state: latest
+  async: "{{ async_timeout }}"
+  poll: "{{ async_delay }}"
+
+- name: "Install chrony for accurate time keeping"
+  ansible.builtin.dnf:
+    name: chrony
+    state: present
+
+- name: "Configure 2 time servers"
+  ansible.builtin.template:
+    src: "chrony.j2"
+    dest: "/etc/chrony.conf"
+
+- name: "Start the chronyd service with default settings"
+  ansible.builtin.service:
+    name: chronyd
+    state: restarted
+    enabled: true
+
+- name: "Ensure the time is synchronized"
+  ansible.builtin.command: "chronyc makestep"
+
+- name: "Install the SOS Report package"
+  ansible.builtin.dnf:
+    name: sos
+    state: present
+
+- name: "Reset the idm module state"
+  ansible.builtin.command: "dnf -y module reset idm"
+
+- name: "Enable the idm module"
+  ansible.builtin.command: "dnf -y module enable idm:DL1"
+
+- name: "Install the server modules"
+  ansible.builtin.shell: "dnf -y module install idm:DL1/{client,common,server,dns,adtrust}"

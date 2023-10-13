@@ -1,0 +1,24 @@
+---
+# Deploy the automation controller using satellite
+- name: "Create the ansible controller hosts from hostgroup"
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/common/tasks/create_host_from_hostgroup.yml"
+  loop: "{{ controllers }}"
+  loop_control:
+    loop_var: host
+
+- name: "Wait for all controllers to be built"
+  ansible.builtin.wait_for:
+      timeout: 7200
+      sleep: 60
+      port: 22
+      host: "{{ host }}"
+      search_regex: OpenSSH
+  loop: "{{ controllers | map(attribute='fqdn') | flatten | list }}"
+  loop_control:
+    loop_var: host
+
+- name: "Collect the controllers"
+  ansible.builtin.include_tasks: "common/tasks/add_host_to_inventory.yml"
+  loop: "{{ controllers }}"
+  loop_control:
+    loop_var: host

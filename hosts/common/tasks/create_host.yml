@@ -1,0 +1,109 @@
+- name: "Set defaults"
+  set_fact:
+    target_mac: '{{ host.mac | default("00:50:56:ff:ff:ff") }}'
+    compute_resource: "{{ host.compute_resource }}"
+
+- name: "Get MAC of bare metal machine"
+  block:
+  - name: Get info on discovered hosts that meet criteria
+    include_tasks: get_foreman_list.yml
+    vars:
+      gfl_sat_username: "{{ satellite_service_acct_username }}"
+      gfl_sat_password: "{{ satellite_service_acct_password }}"
+      gfl_sat_server_url: "{{ satellite_url }}"
+      gfl_sat_validate_certs: "{{ satellite_validate_certs }}"
+      gfl_sat_organization: "{{ host.organization | default(omit) }}"
+      gfl_sat_params: "{{ host.params | default(omit) }}"
+      gfl_sat_resource: "{{ discovered_hosts_resource }}"
+      gfl_sat_search_string: "{{ host.search }}"
+
+  - set_fact:
+      discovered_hosts_resources: "{{ gfl_resources }}"
+  
+  - set_fact:
+      discovered_mac: "{{ dhr.mac }}"
+      discovered_name: "{{ dhr.name }}"
+    when: dhr.facts_hash.interfaces.split(',')|length > host.req_nic_count
+    loop: "{{ discovered_hosts_resources }}"
+    loop_control:
+      loop_var: dhr
+    register: hosts_macs_results
+    
+  - name: "Selecting first discovered host matching criteria"
+    set_fact:
+      target: "{{ hosts_macs_results.results | json_query('[].ansible_facts') | list | shuffle | first  }}"
+  
+  - set_fact:
+      target_mac: "{{ target.discovered_mac }}"
+      target_name: "{{ target.discovered_name }}"
+
+  when: compute_resource == "Baremetal" and mac == "ff:ff:ff:ff:ff:ff"
+  #delegate_to: localhost
+  connection: local
+
+- name: "Deploy the host"
+  redhat.satellite.host:
+    username: "{{ satellite_service_acct_username }}"
+    password: "{{ satellite_service_acct_password }}"
+    server_url: "{{ satellite_server_url }}"
+    organization: "{{ host.organization }}"
+    location: "{{ host.location }}"
+    name: "{{ host.fqdn }}"
+    comment: "{{ host.build_comment | default(omit) }}"
+    hostgroup: "{{ host.hostgroup }}"
+    kickstart_repository: "{{ host.kickstart_repository | default(omit) }}"
+    compute_resource: "{{ host.compute_resource | default(omit) }}"
+    compute_profile: "{{ host.compute_profile | default(omit) }}"
+    mac: "{{ target_mac }}"
+    build: true
+    state: present
+    validate_certs: "{{ satellite_validate_certs }}"
+    compute_attributes:
+      start: "1"
+  register: deploy_response
+
+- debug:
+    var: deploy_response
+
+- name: Restart the host
+  uri:
+    url: "{{ satellite_server_url }}/api/v2/discovered_hosts/{{ target_name }}/reboot"
+    method: PUT
+    user: "{{ satellite_service_acct_username }}"
+    password: "{{ satellite_service_acct_password }}"
+    force_basic_auth: yes
+    validate_certs: "{{ satellite_validate_certs }}"
+    status_code: 200
+    headers:
+      Content-Type: application/json
+      Accept: :application/json,version=2
+  register: restart_response
+  when: compute_resource == "Baremetal"
+  #delegate_to: localhost
+  connection: local
+
+- debug:
+    var: restart_response
+  when: compute_resource == "Baremetal"
+
+- name: Remove the discovered host entry
+  uri:
+    url: "{{ satellite_server_url }}/api/v2/discovered_hosts/{{ target_name }}"
+    method: DELETE
+    user: "{{ satellite_service_acct_username }}"
+    password: "{{ satellite_service_acct_password }}"
+    force_basic_auth: yes
+    validate_certs: "{{ satellite_validate_certs }}"
+    status_code: 200
+    headers:
+      Content-Type: application/json
+      Accept: :application/json,version=2
+  register: remove_response
+  when: compute_resource == "Baremetal"
+  #delegate_to: localhost
+  connection: local
+
+- debug:
+    var: remove_response
+  when: compute_resource == "Baremetal"
+

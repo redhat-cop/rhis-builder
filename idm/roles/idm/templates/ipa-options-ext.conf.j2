@@ -1,0 +1,21 @@
+/* User customization for BIND named
+ *
+ * This file is included in /etc/named.conf and is not modified during IPA
+ * upgrades.
+ *
+ * It must only contain "options" settings. Any other setting must be
+ * configured in /etc/named/ipa-ext.conf.
+ *
+ * Examples:
+ * allow-recursion { trusted_network; };
+ * allow-query-cache { trusted_network; };
+ */
+
+allow-recursion { trusted_network; };
+allow-query-cache { trusted_network; };
+
+/* turns on IPv6 for port 53, IPv4 is on by default for all ifaces */
+listen-on-v6 { any; };
+
+/* dnssec-enable is obsolete and 'yes' by default */
+dnssec-validation yes;

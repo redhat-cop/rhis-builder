@@ -1,0 +1,22 @@
+---
+# These are the necessary vmware vcenter parameters.
+# We are providing for a minimal cluster configuration
+# More complicated VMware configurations are left as an exercise for the user
+vcenter_domain: "example.ca"
+vcenter_hostname: "vcenter.{{ vcenter_domain }}"
+vcenter_ip: "192.168.140.30"
+vcenter_username: "{{ vcenter_username_vault }}"
+vcenter_password: "{{ vcenter_password_vault }}"
+vcenter_datacenter: "{{ vcenter_domain }}"
+vcenter_cluster: "NUCLab"
+vcenter_datastore: "NASAEX_VMS"
+vcenter_system_datastore: "NASAEX_VCTR"
+vcenter_base_folder_path: "base"
+vcenter_resource_pool: "/{{ vcenter_domain }}/host/{{ vcenter_cluster }}/Resources"
+vcenter_network: "VM Network"
+vcenter_validate_certs: false
+vcenter_skip_certs: 1  #used by our one govc call
+
+build_gateway: "192.168.140.1"
+build_netmask: "255.255.252.0"
+

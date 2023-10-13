@@ -1,0 +1,10 @@
+---
+# This playbook configures the mandatory discovery rules 
+#
+- name: Create the mandatory discovery rules 
+  include_tasks: create_discovery_rule.yml
+  loop: "{{ discovery_rules_mandatory }}"
+  loop_control:
+    loop_var: drule
+  when: "discovery_rules_mandatory is defined"
+

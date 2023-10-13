@@ -1,0 +1,18 @@
+---
+- name: "Install ipa-ext.conf to define DNS query ACL"
+  ansible.builtin.template:
+    src: ipa-ext.conf.j2
+    dest: /etc/named/ipa-ext.conf
+    owner: root
+    group: named
+    mode: "0640"
+  notify: "Restart IPA"
+
+- name: "Install ipa-options-ext.conf to allow DNS queries"
+  ansible.builtin.template:
+    src: ipa-options-ext.conf.j2
+    dest: /etc/named/ipa-options-ext.conf
+    owner: root
+    group: named
+    mode: "0640"
+  notify: "Restart IPA"
