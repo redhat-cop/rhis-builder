@@ -1,34 +1,35 @@
 # rhis-builder
-Be sure to check out the [Wiki](https://github.com/parmstro/labbuilder2/wiki)
 
-Welcome to rhis-builder. We currently build on VMware and aws, you can swag a deployment on metal with some tweaking, but that is currently an exercise for the user. 
+Welcome to rhis-builder. 
 
-## rhis-builder goals
+The goal of this project is to build a Red Hat based environment suitable for demostrating an opinionated Red Hat infrastructure that implements several Standard Operating Environments for Red Hat Enterprise Linux using Red Hat Management tools (Red Hat Infrastructure Standard Adoption Model). There will be more documentation and presentation material made available later, but for now, please check out the [Wiki](https://github.com/parmstro/labbuilder2/wiki)
 
-The goal of this project is to build a Red Hat based environment suitable for demostrating the a Red Hat infrastructure that implements several Standard Operating Environments for Red Hat Enterprise Linux (Red Hat Infrastructure Standard Adoption Model). There will be more documentation and presentation material made available later, but for now, please check out the [Wiki](https://github.com/parmstro/labbuilder2/wiki)
+NOTE: The wiki will make its way over here shortly.
 
-The rhis-builder project deploys all parts of the standard infrastructure on a hypervisor or cloud (or combinations thereof). The basic deployment builds 2 nodes on VMware or AWS, IdM and Satellite; sets up the compute resources in Satellite and deploys the rest of the hosts on that cluster. The build is controlled by a provisioning node (usually your laptop) that kicks off the main ansible playbook, site.yml.
+The rhis-builder project deploys all parts of the standard infrastructure on a hypervisor or cloud (or combinations thereof). The basic deployment builds 2 bootstrap nodes on VMware or AWS, an IdM primary server and a Satellite server; sets up the compute resources in Satellite and deploys the rest of the hosts. We only bootstrap on VMware and AWS currently. You can swag a bare metal bootstrap with some tweaking, but that is currently an exercise for the user. We are working to add Azure, Google and other hypervisor bootstrap targets in future. This limitation is only for the bootstrap nodes - the first IdM server and the Satellite.
+
+You can add any number of supported compute resources to the Satellite configuration. You can reference these later, or specify bare metal systems picked up during discovery, to build the rest of the nodes in the configuration. The rhis-builder build out is controlled by a provisioning node (e.g. your laptop, a vm or container within your environment). Clone the repository to your provisioner node, setup the variable files and launch site.yml using ansible-core.
 
 The build includes:
   - creating and downloading a base image from Red Hat image builder on console.redhat.com
   - Red Hat Identity Management primary server with "POC" users, groups, HBAC and sudo, etc..
-  - Red Hat Satellite with all the bells and whistles turned on
+  - Red Hat Satellite configured with all the bells and whistles turned on
   - Red Hat Ansible Automation Platform controllers, an execution environment and sample workflows for managing Satellite content
   - Red Hat Ansible Automation Hub
   - 2 x Container hosts that run tang servers in containers to manage NBDE for some of the sample hostgroups
   
-## rhis-builder non-goals
+## rhis-builder caveats
 
-It is not currently a goal of rhis-builder to create a production environment, although it could do that for small environments. The flexibility to build a completely custom production environment is not there yet.
+It is not currently a goal of rhis-builder to create a production environment, although it could do that for small environments. The flexibility to build a completely custom multi-site production environment is not there yet. This is a WIP.
 
-
-## High Level Flow
+## High Level Flow to get started
 
 - collect the credentials and config elements needed
 - plan your deployment
 - configure the appropriate variable files and inventory
 - run ansible-playbook -i inventory site.yml
 - make coffee, pull out your favourite game console
+- building the above and synching content for RHEL 7,8,9, CentOS Stream, JBoss, EPEL 8 and 9, and MSSQL Server for Linux completes 7h 15m on a small herd of Intel NUCs with 32GB RAM and 1TB SSD drives
 
 ## Preparation
 
@@ -52,7 +53,7 @@ You also need access to the target VMware instance that you are going to build y
   - All Privileges -> Virtual Machine -> Edit Inventory (All) 
   - All Privileges -> Virtual Machine -> Provisioning (All)
   
-As a general note, we are using ansible vault for storing our credentials. All vaulted variables are stored in rhisbuilder_vault.yml and stored in the home directory of the launching user.
+As a general note, we are using ansible vault for storing our credentials. All vaulted variables are stored in rhisbuilder_vault.yml and stored in the home directory of the launching user. The root of the project contains a SAMPLE file with the necessary vault variables. 
 
 When we have a variable secret that we are vaulting we reference a vaulted variable using variablename_vault, like this:
 - offline_token: "{{ offline_token_vault }}"
@@ -86,14 +87,16 @@ In this phase we deploy the IdM primary including:
 - ensure that foreman-proxy configuration exists for DNS zone update.
 - configure any DNS zone forwarding
 
-At the end of this phase we have a fully functional IdM Realm with integrated certificate authority and DNS.
+At the end of this phase we have a fully functional IdM Realm with integrated self-signed certificate authority and DNS.
 Please note, we don't support the generation of a CSR yet for external signing. This will come in a future iteration.
 
 See the Wiki page for [configuring the idm variables](https://github.com/parmstro/labbuilder2/wiki/Configuring-the-IdM-variables).
 
 ## Phase 3 - bootstrap the Satellite server
 
-This is a truly massive section. This phase installs and fully configures a Satellite server. The configuration of Satellite has two components - those configuration components that are considered mandatory for the functionality of our demonstrations and those components that are optional. The optional configuration components are those that you want to add to customize the environment for your builds or that perhaps you are working on for a new example/demonstration/deployment. By setting up mandatory and optional components it allows you to generate a build that you know works and then slowly add to it without mucking up stuff that you know works. The configuration covers almost every aspect of Satellite including:
+This is a truly massive section. This phase installs and fully configures a Satellite server. The configuration of Satellite has two components - those configuration components that are considered mandatory for the functionality of our demonstrations and those components that are optional. The optional configuration components are those that you want to add to customize the environment for your builds or that perhaps you are working on for a new example/demonstration/deployment. By setting up mandatory and optional components it allows you to generate a build that you know works. You can then slowly add to it without mucking up stuff. The configuration covers almost every aspect of Satellite including:
+
+### Satellite Preparation
 - configure the Satellite prerequisites
 - registering the satellite to Identity Manager
 - creating certificates for the Satellite instance
@@ -107,7 +110,7 @@ This is a truly massive section. This phase installs and fully configures a Sate
   - configure Red Hat repositories.
   - configure content credentials
   - configure any custom products and repos e.g. MSSQL Server for Linux
-  - synchronize the content (warning can take a loooonnnng time depending on your link)
+  - synchronize the content (this is what consumes the most time)
   - create the sync plans
   - attach the sync plans to content
   - create the life cycle environments
@@ -147,24 +150,25 @@ This is a truly massive section. This phase installs and fully configures a Sate
 
 ## Phase 4 - Provisioning other hosts
 
-In this phase we deploy the remaining hosts in our configuration. With Satellite deployed and configured with a compute resource and bare metal discover, this section can be as large as we want. 
+In this phase we deploy the remaining hosts in our configuration. With Satellite deployed and configured with a compute resource(s) and bare metal discovery, this section can be as large as we want. 
 
-In our sample configuration, this phase deploys 4 additional servers. These servers can be deployed on bare metal or vmware. If using bare metal pxe provisioning must be allowed and your configuration must point next-server to the Satellite. VMware deployments are also pxe based. 
+In our sample configuration this phase deploys 4 additional servers. These servers can be deployed on bare metal or a compute resource (default is vmware). We are using PXE provisioning for our MVP, so it must be allowed and your configuration must point next-server to the Satellite. (Our base tests were done with external DHCP - opnsense in the VMware case)
 
-Aside: We are adding code to register VMware images - a work in progress. We will provide 3 methods. 
- 1. Register an existing template image with Satellite
- 2. Build a system with Satellite via PXE, save as a template and register the image with Satellite
- 3. Build an image with imagebuilder, upload to the compute resource and register with Satellite (this will eventually work for cloud providers as well).
- 
+Future: We are adding code to perform more image based deployments. This is a work in progress. Some of the methods discussed include:
+ 1. Register an existing template image with Satellite and configure hostgroup
+ 2. Build a custom image with Satellite via PXE on a hypervisor or using satellite PXE-less provisioning, save as a template and register the image with Satellite
+ 3. Build an image with imagebuilder, upload to the compute resource and register with Satellite.
+
+### Building the hosts 
 We build the AAP controller node - currently 1, but trivial to make a cluster, including:
   - build the server instance using Satellite, includes configuring the hosts as IdM clients
   - download and extract the installer
-  - template our setup configuration
+  - template our setup configuration (the template supports complex/clustered installations)
   - launch ansible controller installer
   - create and configure IdM certificates for the controller
-  - build an exection environment with the proper certs for Satellite
+  - build an execution environment with the proper certs for Satellite
   - register the execution environment
-  - import the sample AAP configuration - inventories, projects, credentials, templates, workflows, etc.
+  - generate the sample AAP configuration - inventories, projects, credentials, templates, workflows, etc.
   - configure AAP for integrated authentication with IdM
   - test the configuration
   
@@ -178,7 +182,7 @@ We build the AAP hub node - currently 1, including:
   - configure synchronization
   
 We build 2 container hosts to support our [tang servers](https://github.com/latchset/tang) for [Network Bound Disk Encryption (NBDE)](https://access.redhat.com/articles/6987053)
-  - build the server instance using Satellite, includes configuring the host as IdM client
+  - build the server instances using Satellite, includes configuring the host as IdM client
   - download the tang container to each host
   - configure and test the container deployment
   - register the tang server urls with Satellite for encrypted deployments
@@ -186,8 +190,8 @@ We build 2 container hosts to support our [tang servers](https://github.com/latc
 See the Wiki pages for [configuring Ansible hosts](https://github.com/parmstro/labbuilder2/wiki/Configuring-the-Ansible-hosts) and [configuring the NBDE hosts](https://github.com/parmstro/labbuilder2/wiki/Configuring-Container-hosts-for-NBDE-tang-servers).
 
 
-## Phase 5 
-
 Finally, we test the entire configuration by launching a content promotion pipeline from ansible. This section is based on the [Automating Content Management project](https://github.com/parmstro/AutomatingContentManagement) and the Automating Content Management blog series on redhat.com.
 
+Ask to join the Project PRs will be welcomed.
 
+Enjoy!
