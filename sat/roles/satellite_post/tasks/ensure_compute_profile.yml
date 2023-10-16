@@ -1,14 +1,3 @@
-- name: "Ensure the compute profile state - {{cpr.name}}"
-  redhat.satellite.compute_profile:
-    username: "{{ satellite_admin_username }}"
-    password: "{{ satellite_admin_password }}"
-    server_url: "{{ satellite_url }}"
-    validate_certs: "{{ satellite_validate_certs }}"
-    name: "{{ cpr.name }}"
-    updated_name: "{{ cpr.updated_name | default(omit) }}"
-    state: "{{ cpr.state | default(omit) }}"
-    compute_attributes: "{{ cpr.compute_attributes | default(omit) }}"
-
 - name: "Get the compute resource id"
   redhat.satellite.compute_resource:
     username: "{{ satellite_admin_username }}"
@@ -36,3 +25,14 @@
 
 - debug:
     var: refresh_result.json.message    
+
+- name: "Ensure the compute profile state - {{cpr.name}}"
+  redhat.satellite.compute_profile:
+    username: "{{ satellite_admin_username }}"
+    password: "{{ satellite_admin_password }}"
+    server_url: "{{ satellite_url }}"
+    validate_certs: "{{ satellite_validate_certs }}"
+    name: "{{ cpr.name }}"
+    updated_name: "{{ cpr.updated_name | default(omit) }}"
+    state: "{{ cpr.state | default(omit) }}"
+    compute_attributes: "{{ cpr.compute_attributes | default(omit) }}"
