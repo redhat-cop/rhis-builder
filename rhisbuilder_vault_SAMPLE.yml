@@ -23,6 +23,37 @@ rhisbuilder_default_user: "ansiblerunner"
 #####################################
 # Phase 1 - init_env secrets
 #####################################
+
+## Secrets needed for using AWS bootstrap target
+# Your 12-digit AWS account number
+aws_account_nbr_vault: 121212121212
+aws_access_key_vault: 'YOUR-AWS-ACCESS-KEY'
+aws_secret_key_vault: 'YOUR-AWS-SECRET-KEY-which-should-be-longer'
+
+# Region in which to manage resources
+ec2_region: us-east-1
+
+## AWS EC2 naming parameters - used to create FQDNs in route53 and identify machines
+# name_prefix is provided so you do not have to create a new route53 zone
+# Given these two values, hosts will have rhis.a-route53-zone-you-own.com as
+# the non-host part of the DNS FQDN
+ec2_name_prefix: rhis
+workshop_dns_zone: 'a-route53-zone-you-own.com'
+
+# Allow rhisbuilder to interact with route53
+manage_public_dns: true
+
+## When these two variables are set, it skips the imagebuilder and uses the
+## AMI you provide with this variable instead. This is useful if you have
+## already built an AMI and do not want to rebuild it every time
+# skip_imagebuilder_build: true
+# imagebuilder_ami: 'a valid AMI'
+
+## We strongly recommend to not split up an AWS image with filesystem elements
+## but it is possible. (This has to do with how AWS images use cloud-init and how they interact with LVM)
+# imagebuilder_image_type: 'aws'
+# imagebuilder_include_filesystem: false
+
 # These are technically no longer secrets as the no longer contain organization identifying data.
 automation_hub_url_vault: "https://console.redhat.com/api/automation-hub/content/published/"
 automation_hub_auth_url_vault: "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
@@ -110,6 +141,8 @@ satellite_manifest_zip_vault: "~/satellite_manifest.zip"
 # allows you to predefine the ssh keys for Satellite remote execution
 remote_execution_ssh_keys_vault: "{{ lookup('file', '/home/ansiblerunner/.ssh/id_rsa.pub') }}"
 remote_execution_ssh_user_vault: "ansiblerunner"
+# On AWS, the workflows by default add the SSH key to the user 'ec2-user'
+# remote_execution_ssh_user_vault: "ec2-user"
 
 # Satellite Compute Resource secrets
 # It is strongly suggested that you use a service account here
