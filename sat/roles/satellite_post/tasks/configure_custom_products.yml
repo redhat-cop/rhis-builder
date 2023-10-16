@@ -11,5 +11,5 @@
   loop: "{{ custom_products }}"
   loop_control:
     loop_var: cp
-  when: "{{ custom_products is defined }}"
+  when: "custom_products is defined"
 
