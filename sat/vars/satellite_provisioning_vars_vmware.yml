@@ -74,7 +74,7 @@ compute_profiles_mandatory:
           corespersocket: 1
           memory_mb: 4096
           cluster: "NUCLab"
-          resource_pool: "Resources"
+          # resource_pool: "Resources"
           path: "/Datacenters/example.ca/vm"
           guest_id: "rhel8_64Guest"
           hardware_version: "Default"
@@ -104,11 +104,11 @@ compute_profiles_mandatory:
     compute_attributes:
       - compute_resource: "VMware_Lab"
         vm_attrs:
-          cpus: 2
+          cpus: 1
           corespersocket: 1
           memory_mb: 8192
           cluster: "NUCLab"
-          resource_pool: "Resources"
+          # resource_pool: "Resources"
           path: "/Datacenters/example.ca/vm"
           guest_id: "rhel8_64Guest"
           hardware_version: "Default"
@@ -138,11 +138,11 @@ compute_profiles_mandatory:
     compute_attributes:
       - compute_resource: "VMware_Lab"
         vm_attrs:
-          cpus: 4
+          cpus: 2
           corespersocket: 1
-          memory_mb: 8192
+          memory_mb: 16364
           cluster: "NUCLab"
-          resource_pool: "Resources"
+          # resource_pool: "Resources"
           path: "/Datacenters/example.ca/vm"
           guest_id: "rhel8_64Guest"
           hardware_version: "Default"

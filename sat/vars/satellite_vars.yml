@@ -1,5 +1,5 @@
 ---
-satellite_fqdn: "{{ ansible_fqdn }}"
+satellite_fqdn: "{{ groups['sat_primary'][0] }}"
 satellite_domain: "{{ ansible_domain }}"
 
 satellite_url: "https://{{ satellite_fqdn }}"
