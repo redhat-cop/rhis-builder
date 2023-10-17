@@ -36,7 +36,7 @@ compute_resources_mandatory:
     locations: "{{ satellite_initial_location }}"
     organizations: "{{ satellite_initial_organization }}"
     provider_params:
-      caching_enabled: true
+      caching_enabled: false  #setting this to true currently causes some server faults.
       datacenter: "example.ca"
       url: "192.168.140.30"
       user: "{{ vcenter_service_username }}"

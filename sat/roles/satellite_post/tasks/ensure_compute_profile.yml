@@ -1,30 +1,37 @@
-- name: "Get the compute resource id"
-  redhat.satellite.compute_resource:
-    username: "{{ satellite_admin_username }}"
-    password: "{{ satellite_admin_password }}"
-    server_url: "{{ satellite_url }}"
-    validate_certs: "{{ satellite_validate_certs }}"
-    name: "{{ cpr.compute_attributes[0].compute_resource }}"
-    state: "present"
-  register: result
+---
 
-- ansible.builtin.set_fact:
-    cr_id: "{{ result.entity.compute_resources[0].id }}"
+# Commenting out the refresh code
+# Setting caching_enabled: false 
+# in the compute resource to avoid API errors 
+# see: https://github.com/theforeman/foreman-ansible-modules/issues/1677
 
-# you can change the name of the compute profile by simply passing name and updated_name
-- name: "Force refresh of Compute Resource API cache"
-  ansible.builtin.uri:
-    url: "{{ satellite_url }}/api/compute_resources/{{ cr_id }}-{{ cpr.compute_attributes[0].compute_resource }}/refresh_cache"
-    method: "PUT"
-    body_format: "json"
-    user: "{{ satellite_admin_username }}"
-    password: "{{ satellite_admin_password }}"
-    force_basic_auth: true
-    validate_certs: "{{ satellite_validate_certs }}"
-  register: refresh_result
+# - name: "Get the compute resource id"
+#   redhat.satellite.compute_resource:
+#     username: "{{ satellite_admin_username }}"
+#     password: "{{ satellite_admin_password }}"
+#     server_url: "{{ satellite_url }}"
+#     validate_certs: "{{ satellite_validate_certs }}"
+#     name: "{{ cpr.compute_attributes[0].compute_resource }}"
+#     state: "present"
+#   register: result
 
-- debug:
-    var: refresh_result.json.message    
+# - ansible.builtin.set_fact:
+#     cr_id: "{{ result.entity.compute_resources[0].id }}"
+
+# # you can change the name of the compute profile by simply passing name and updated_name
+# - name: "Force refresh of Compute Resource API cache"
+#   ansible.builtin.uri:
+#     url: "{{ satellite_url }}/api/compute_resources/{{ cr_id }}-{{ cpr.compute_attributes[0].compute_resource }}/refresh_cache"
+#     method: "PUT"
+#     body_format: "json"
+#     user: "{{ satellite_admin_username }}"
+#     password: "{{ satellite_admin_password }}"
+#     force_basic_auth: true
+#     validate_certs: "{{ satellite_validate_certs }}"
+#   register: refresh_result
+
+# - debug:
+#     var: refresh_result.json.message    
 
 - name: "Ensure the compute profile state - {{cpr.name}}"
   redhat.satellite.compute_profile:
