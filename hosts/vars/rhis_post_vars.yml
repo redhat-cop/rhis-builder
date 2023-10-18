@@ -1,6 +1,6 @@
 ---
 # vars file for rhis_post
-rhis_default_git_dest: "/root/rhis_ee_repos"
+rhis_default_git_dest: "~/rhis_ee_repos"
 redhat_container_registry_url: "registry.redhat.io"
 redhat_registry_username: "{{ redhat_registry_username_vault }}"
 redhat_registry_password: "{{ redhat_registry_password_vault }}"
