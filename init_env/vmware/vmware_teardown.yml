@@ -1,5 +1,6 @@
 ---
-# VMware specific initialization begins here
+# VMware specific cleanup begins here
+
 - name: "Unregister rhis Env"
   hosts: all:!build_control
   become: true
@@ -56,3 +57,16 @@
         - all:!build_control
       ignore_errors: true
 
+    - name: "Clean up known_hosts"
+      ansible.builtin.file: 
+        path: "/home/ansiblerunner/.ssh/known_hosts"
+        state: absent
+
+    - name: "Get the content of the runner's known_hosts"
+      ansible.builtin.file:
+        path: "/home/ansiblerunner/.ssh/known_hosts"
+        state: touch
+
+      
+    
+      
