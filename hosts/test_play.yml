@@ -1,6 +1,6 @@
 ---
-- name: "Post deploy configuration - hosts"
-  hosts: build_control
+- name: "Build Execution Environments"
+  hosts: automation_hub
   remote_user: ansiblerunner
   become: true
   gather_facts: true
@@ -12,6 +12,10 @@
     - "~/rhisbuilder_vault.yml"
 
   tasks:
-     # Add the pipeline workflow template
-     - name: "Add AAP workflows"
-       ansible.builtin.include_tasks: "rhis_post/tasks/add_workflow_templates.yml"
+
+    # Create the ee's and add them to the Hub and Controller
+    - name: "Build Execution Environments"
+      ansible.builtin.include_tasks: "rhis_post/tasks/build_ees.yml"
+
+    - name: "Register Execution Environments"
+      ansible.builtin.include_tasks: "rhis_post/tasks/add_ees.yml"
