@@ -2,19 +2,6 @@
 # Run the post build tasks
 # Run and launch from provisioner
 
-# Get the credentials for sync'd collections and add our namespace
-- name: "Create Automation Hub Credentials"
-  ansible.builtin.include_tasks: "tasks/add_hub_credentials.yml"
-  no_log: true
-
-# Add the above credentials + standard credentials to Controller
-# This includes the hub admin credentials for adding ee containers.
-- name: "Add AAP Credentials"
-  ansible.builtin.include_tasks: "tasks/add_aap_credentials.yml"
-  no_log: true
-
-- name: "Map Galaxy Credentials to Organizations"
-  ansible.builtin.include_tasks: "tasks/add_hub_credentials_to_org.yml"
 
 # Add the inventory
 - name: "Add AAP inventories"
