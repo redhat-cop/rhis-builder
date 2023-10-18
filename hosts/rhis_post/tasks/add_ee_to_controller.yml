@@ -3,9 +3,9 @@
 
 - name: "Ensure the EEs are registered on the controller"
   ansible.controller.execution_environment:
-    controller_host: "{{ active_controller }}"
-    controller_username: "{{ aap_admin_username }}"
-    controller_password: "{{ aap_admin_password }}"
+    controller_host: "{{ controller_host }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
     validate_certs: "{{ aap_validate_certs }}"
     name: "{{ ee.name }}"
     image: "{{ ee.image }}"

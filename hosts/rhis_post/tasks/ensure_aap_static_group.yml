@@ -3,9 +3,9 @@
 
 - name: "Ensure that group {{ group.name }} is {{ group.state }}"
   ansible.controller.group:
-    controller_host: "{{ active_controller }}"
-    controller_username: "{{ aap_admin_username }}"
-    controller_password: "{{ aap_admin_password }}"
+    controller_host: "{{ controller_host }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
     children: "{{ group.children | default(omit) }}"
     description: "{{ group.description | default(omit) }}"
     hosts: "{{ group.hosts | default(omit) }}"

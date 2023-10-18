@@ -16,15 +16,6 @@
 - name: "Map Galaxy Credentials to Organizations"
   ansible.builtin.include_tasks: "tasks/add_hub_credentials_to_org.yml"
 
-# Create the ee's and add them to the Hub and Controller
-- name: "Build Execution Environments"
-  ansible.builtin.include_tasks: "tasks/build_ees.yml"
-  no_log: true
-
-- name: "Register Execution Environments"
-  ansible.builtin.include_tasks: "tasks/add_ees.yml"
-  no_log: true
-
 # Add the inventory
 - name: "Add AAP inventories"
   ansible.builtin.include_tasks: "tasks/add_inventories.yml"

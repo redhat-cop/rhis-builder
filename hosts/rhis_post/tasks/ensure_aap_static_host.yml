@@ -3,9 +3,9 @@
 
 - name: "Ensure that host {{ host.name }} is {{ host.state }}"
   ansible.controller.host:
-    controller_host: "{{ active_controller }}"
-    controller_username: "{{ aap_admin_username }}"
-    controller_password: "{{ aap_admin_password }}"
+    controller_host: "{{ controller_host }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
     description: "{{ host.description | default(omit) }}"
     enabled: "{{ host.enabled | default('enabled') }}"
     inventory: "{{ host.inventory }}"
