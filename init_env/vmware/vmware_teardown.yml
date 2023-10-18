@@ -3,6 +3,7 @@
 
 - name: "Unregister rhis Env"
   hosts: all:!build_control
+  remote_user: ansiblerunner
   become: true
 
   tasks:
@@ -13,6 +14,7 @@
 
 - name: "Tear down rhis Env"
   hosts: build_control
+  remote_user: ansiblerunner
   connection: local
   become: true
 
