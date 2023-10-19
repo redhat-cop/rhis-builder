@@ -4,7 +4,6 @@
   ansible.builtin.file:
     path: "{{ ee.git_dest }}"
     state: directory
-  delegate_to: "{{ hubs[0].fqdn }}"
 
 - name: "Clone the git repo for the ee"
   ansible.builtin.git:
@@ -12,26 +11,22 @@
     dest: "{{ ee.git_dest }}/{{ ee.name }}"
     clone: "{{ ee.git_clone | default(omit) }}"
     force: "{{ ee.git_force | default(omit) }}"
-  delegate_to: "{{ hubs[0].fqdn }}"
 
 - name: "Add ansible.cfg template"
   ansible.builtin.template:
     src: "../templates/builder_ansible.cfg.j2"
     dest: "{{ ee.git_dest }}/{{ ee.name }}/ansible.cfg"
-  delegate_to: "{{ hubs[0].fqdn }}"
 
 - name: "Add our ca certficate to the image"
   ansible.builtin.copy:
     src: "/etc/ipa/ca.crt"
     dest: "{{ ee.git_dest }}/{{ ee.name }}/context"
     remote_src: true
-  delegate_to: "{{ hubs[0].fqdn }}"
 
 - name: "Build the ee on the target os"
   ansible.builtin.command: "ansible-builder build -t {{ ee.name }} --prune-images"
   args:
     chdir: "{{ ee.git_dest }}/{{ ee.name }}"
-  delegate_to: "{{ hubs[0].fqdn }}"
 
 - name: "Push the finished container to the hub"
   containers.podman.podman_image:
@@ -42,5 +37,4 @@
     push_args:
       dest: "{{ hubs[0].fqdn }}"
       remove_signatures: true
-  delegate_to: "{{ hubs[0].fqdn }}"
   

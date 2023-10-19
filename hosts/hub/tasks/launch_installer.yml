@@ -25,7 +25,7 @@
 
 - name: "Launching installer"
   debug:
-    msg: "Please be patient. This will take 35-60 minutes depending content to sync."
+    msg: "Please be patient. This will take 35-60 minutes depending on the content to sync."
 
 - name: "Run the AAP installer configuration"
   ansible.builtin.command: "{{ aap_installer_inventory_dir }}/setup.sh"

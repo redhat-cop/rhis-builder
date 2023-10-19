@@ -3,9 +3,9 @@
   ansible.builtin.import_playbook: ../init_env/aws/fix_aws_dns.yml
   when: rhisbuilder_bootstrap_target == 'aws'
 
+# we are building all hosts with satellite compute resources
 - name: "Collect hosts and add to inventory"
   ansible.builtin.import_playbook: "collect_hosts.yml"
-  when: rhisbuilder_bootstrap_target == 'vmware'
 
 - name: "Build aap"
   hosts: aap_controller
@@ -61,7 +61,58 @@
         - tags_nbde
         - tags_tang
 
-- name: "Post deploy configuration - hosts"
+
+- name: "Post deploy configuration - Part 1 - Credentials"
+  hosts: build_control
+  connection: local
+  remote_user: ansiblerunner
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/common_vars.yml"
+    - "vars/controller_vars.yml"
+    - "vars/hub_vars.yml"
+    - "vars/rhis_post_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+
+    # Get the credentials for sync'd collections and add our namespace
+    - name: "Create Automation Hub Credentials"
+      ansible.builtin.include_tasks: "rhis_post/tasks/add_hub_credentials.yml"
+
+    # Add the above credentials + standard credentials to Controller
+    # This includes the hub admin credentials for adding ee containers.
+    - name: "Add AAP Credentials"
+      ansible.builtin.include_tasks: "rhis_post/tasks/add_aap_credentials.yml"
+
+    - name: "Map Galaxy Credentials to Organizations"
+      ansible.builtin.include_tasks: "rhis_post/tasks/add_hub_credentials_to_org.yml"
+
+
+- name: "Post deploy configuration - Part 2 - Execution Environments"
+  hosts: automation_hub
+  remote_user: ansiblerunner
+  become: true
+  gather_facts: true
+  vars_files:
+    - "vars/common_vars.yml"
+    - "vars/controller_vars.yml"
+    - "vars/hub_vars.yml"
+    - "vars/rhis_post_vars.yml"
+    - "~/rhisbuilder_vault.yml"
+
+  tasks:
+
+    # Create the ee's and add them to the Hub and Controller
+    - name: "Build Execution Environments"
+      ansible.builtin.include_tasks: "rhis_post/tasks/build_ees.yml"
+
+    - name: "Register Execution Environments"
+      ansible.builtin.include_tasks: "rhis_post/tasks/add_ees.yml"
+
+
+- name: "Post deploy configuration - Part 3 - AAP Objects"
   hosts: build_control
   connection: local
   remote_user: ansiblerunner
@@ -79,4 +130,3 @@
       tags:
         - tags_phase_4
         - tags_rhis_post
-
